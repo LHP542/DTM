@@ -248,4 +248,22 @@ Remove-Variable __cmd, __sb -ErrorAction SilentlyContinue
         _logger.Info(text);
         Notice?.Invoke(this, text);
     }
+
+    /// <summary>
+    /// Setzt eine globale Runspace-Variable direkt via SessionStateProxy —
+    /// KEIN Command-Interpreter, keine Command-Line, kein Log-Leak. Genutzt
+    /// von Phase 9.5, um <c>$global:DtmCredMap</c> (PSCredential-Hashtable)
+    /// in den Runspace zu geben, ohne dass Passwoerter je durch den
+    /// Terminal-Ausgabe-Pfad laufen.
+    /// </summary>
+    public void SetGlobalVariable(string name, object? value)
+    {
+        if (_runspace is null || _runspace.RunspaceStateInfo.State != RunspaceState.Opened)
+        {
+            _logger.Debug("SetGlobalVariable('{0}') ignoriert: Runspace nicht offen.", name);
+            return;
+        }
+        _runspace.SessionStateProxy.SetVariable(name, value);
+        _logger.Debug("Runspace-Variable '{0}' gesetzt.", name);
+    }
 }

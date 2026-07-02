@@ -66,5 +66,18 @@ public sealed partial class ConnectionManagerViewModel : ViewModelBase
         Save();
     }
 
-    private void Save() => ConnectionStore.Save([.. Connections]);
+    private void Save()
+    {
+        ConnectionStore.Save([.. Connections]);
+        // Phase 9.5: PS-Remoting-Credentials koennen sich mit dem Save geaendert
+        // haben (neuer DMZ-Server, Passwort-Rotation, …). $global:DtmCredMap
+        // im Runspace muss synchron ziehen — sonst laufen laufende Sessions
+        // gegen die alten Credentials.
+        var servers = Connections
+            .Select(e => new DB_SERVER(
+                Enum.TryParse<DB_SERVER.ServerTyp>(e.Key, out var t) ? t : DB_SERVER.ServerTyp.MSSQL,
+                e.ToCredential()))
+            .ToList();
+        TerminalBus.SetCredMap(servers);
+    }
 }

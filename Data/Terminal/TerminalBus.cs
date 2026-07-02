@@ -18,6 +18,13 @@ public static class TerminalBus
     private static readonly object _lock = new();
     private static ITerminalSession? _powerShellSession;
 
+    // Phase 9.5: gecachete Server-Liste, damit die $global:DtmCredMap injiziert
+    // werden kann sobald die pwsh-Session registriert wird — die Server-Liste
+    // ist beim App-Start bekannt, die Session laeuft aber erst wenn das
+    // ConsoleControl attached. Bei ConnectionManager-Save wird SetCredMap
+    // erneut aufgerufen und (falls Session aktiv) sofort re-injiziert.
+    private static IReadOnlyList<DB_SERVER>? _servers;
+
     /// <summary>
     /// Wird fuer jede Output-/Error-Zeile gefeuert, die durch die aktuell
     /// registrierte Session laeuft. Erlaubt der UI (MainWindowViewModel),
@@ -46,6 +53,43 @@ public static class TerminalBus
             session.ErrorReceived  += ForwardError;
         }
         _logger.Debug("TerminalBus: PowerShell-Session registriert.");
+        InjectCredMapIfAvailable();
+    }
+
+    /// <summary>
+    /// Phase 9.5: setzt / aktualisiert die Server-Liste, aus der
+    /// <c>$global:DtmCredMap</c> gebaut wird. Beim App-Start einmal, beim
+    /// Connection-Manager-Save nach dem Reload. Injiziert sofort, wenn eine
+    /// pwsh-Session bereits laeuft — sonst passiert die Injektion sobald die
+    /// Session registriert wird.
+    /// </summary>
+    public static void SetCredMap(IReadOnlyList<DB_SERVER> servers)
+    {
+        lock (_lock) _servers = servers;
+        InjectCredMapIfAvailable();
+    }
+
+    private static void InjectCredMapIfAvailable()
+    {
+        ITerminalSession? sess;
+        IReadOnlyList<DB_SERVER>? servers;
+        lock (_lock)
+        {
+            sess = _powerShellSession;
+            servers = _servers;
+        }
+        if (sess is not PowerShellTerminalSession psSess || servers is null) return;
+
+        try
+        {
+            var map = DtmCredMapBuilder.Build(servers);
+            psSess.SetGlobalVariable("DtmCredMap", map);
+            _logger.Info("TerminalBus: $global:DtmCredMap injiziert ({0} Server mit Remote-Credentials).", map.Count);
+        }
+        catch (Exception ex)
+        {
+            _logger.Warn(ex, "TerminalBus: DtmCredMap-Injektion fehlgeschlagen.");
+        }
     }
 
     /// <summary>Hebt die Registrierung auf (wenn das Control disposed wird).</summary>

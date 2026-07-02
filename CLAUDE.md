@@ -575,23 +575,41 @@ Sub-Items:
       DMZ-Server bleibt „ODBC-only" (nur Stats-Panel, alle FOC-SQL-
       Actions ausgegraut) — Feature-Toggle ueber DB_SERVER-Property.
       Wenn ja: 9.2 - 9.5 rollout. — `S`
-- [ ] **9.2** `ServerCredential` + `ConnectionEntry` um optionale Felder
+- [x] **9.2** `ServerCredential` + `ConnectionEntry` um optionale Felder
       `RemoteUser` / `RemotePassword(Protected)` erweitern; leer =
       Fallback aufs globale `credential.xml`. Backward-kompatibel zu
       bestehender `connections.json` (fehlende Felder → leer). — `S`
-- [ ] **9.3** ConnectionManagerWindow: Panel „PS-Remoting-Credentials
+      _(erledigt: `e15b902`. `HasRemoteCredential`-Property, DPAPI-
+      Roundtrip via `PlainRemotePassword`, Legacy-JSON-Deserialisierung
+      getestet.)_
+- [x] **9.3** ConnectionManagerWindow: Panel „PS-Remoting-Credentials
       (falls abweichend)" — zwei zusaetzliche Zellen pro Zeile (User +
       Password). Leer lassen = Fallback. Beim Speichern DPAPI wie beim
       ODBC-Passwort. — `M`
-- [ ] **9.4** 📦 FOC-SQL: `Invoke-MssqlServerScript` bekommt optionalen
+      _(erledigt: `a1627c0`. Panel im EditConnectionWindow, nur MSSQL
+      sichtbar (Oracle nutzt SSH-Keys). Typ-Wechsel MSSQL→Oracle droppt
+      Remote-Felder, damit kein "vergessener" DPAPI-Blob zurueckbleibt.)_
+- [x] **9.4** 📦 FOC-SQL: `Invoke-MssqlServerScript` bekommt optionalen
       `[PSCredential]$Credential`-Parameter. Reihenfolge der Aufloesung:
-      Parameter → `$global:DtmCredMap[$Server]` → `credential.xml`. Alle
-      8 MSSQL-Wrapper reichen `-Credential` durch (optional). — `M`
-- [ ] **9.5** DTM injiziert `$global:DtmCredMap` in den pwsh-Runspace
+      Parameter → `$global:DtmCredMap[$Server]` → `credential.xml`. — `M`
+      _(erledigt: FOC-SQL `d5a38ee`. Wrapper unveraendert — geben nur
+      `-Server` weiter, Helper macht Map-Lookup pro Server. Fehlermeldung
+      bei fehlender xml erwaehnt den DTM-Weg fuer DMZ-Setup.)_
+- [x] **9.5** DTM injiziert `$global:DtmCredMap` in den pwsh-Runspace
       beim `RegisterPowerShellSession` — aus der Server-Liste alle
       Eintraege mit gesetztem `RemoteUser` einsammeln, als
       `PSCredential`-Objekte in die Map schreiben. Bei
       Connection-Manager-Save neu synchronisieren. — `S`
+      _(erledigt: `DtmCredMapBuilder` baut Hashtable
+      (case-insensitive Keys) mit `PSCredential`-Objekten aus
+      SecureString-Passwoertern. Injektion via
+      `PowerShellTerminalSession.SetGlobalVariable` — direkt ueber
+      `SessionStateProxy`, KEIN Command-Interpreter, keine
+      Klartext-Passwoerter im pwsh-Log. `TerminalBus.SetCredMap` cached
+      Server-Liste, injiziert sofort bei registrierter Session.
+      `App.axaml.cs` (Startup) + `ConnectionManagerViewModel.Save`
+      (nach Reload) rufen `SetCredMap`. Oracle-Server werden bewusst
+      ausgefiltert.)_
 
 **Sicherheit:** Passwoerter nur DPAPI-verschluesselt in `connections.json`;
 niemals Klartext ins pwsh-Tab, ins Log, in Fehlermeldungen. Log-Maske via
