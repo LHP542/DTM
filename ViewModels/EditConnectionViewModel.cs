@@ -8,12 +8,23 @@ public sealed partial class EditConnectionViewModel : ViewModelBase
     public static IReadOnlyList<DB_SERVER.ServerTyp> ServerTypes { get; } =
         Enum.GetValues<DB_SERVER.ServerTyp>().ToArray();
 
-    [ObservableProperty] private DB_SERVER.ServerTyp _selectedServerType = DB_SERVER.ServerTyp.MSSQL;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMssql))]
+    private DB_SERVER.ServerTyp _selectedServerType = DB_SERVER.ServerTyp.MSSQL;
+
     [ObservableProperty] private string _server = string.Empty;
     [ObservableProperty] private string _user = string.Empty;
     [ObservableProperty] private string _password = string.Empty;
     [ObservableProperty] private string _database = "Master";
     [ObservableProperty] private string _connectionString = string.Empty;
+
+    // Phase 9.3: optionale PS-Remoting-Credentials, nur MSSQL — Oracle geht
+    // ueber SSH-Keys, keine Windows-Credentials. Leer = FOC-SQL nimmt sein
+    // globales credential.xml.
+    [ObservableProperty] private string _remoteUser = string.Empty;
+    [ObservableProperty] private string _remotePassword = string.Empty;
+
+    public bool IsMssql => SelectedServerType == DB_SERVER.ServerTyp.MSSQL;
 
     public EditConnectionViewModel() { }
 
@@ -26,6 +37,8 @@ public sealed partial class EditConnectionViewModel : ViewModelBase
         _password = entry.PlainPassword;
         _database = entry.Database;
         _connectionString = entry.ConnectionString;
+        _remoteUser = entry.RemoteUser;
+        _remotePassword = entry.PlainRemotePassword;
     }
 
     public ConnectionEntry ToEntry()
@@ -36,9 +49,14 @@ public sealed partial class EditConnectionViewModel : ViewModelBase
             Server = Server,
             User = User,
             Database = Database,
-            ConnectionString = ConnectionString
+            ConnectionString = ConnectionString,
+            RemoteUser = IsMssql ? RemoteUser : string.Empty
         };
         e.PlainPassword = Password;
+        // Fuer Oracle die Remote-Felder bewusst leer speichern — verhindert
+        // "vergessene" DPAPI-Blobs, falls der User den Typ von MSSQL nach
+        // Oracle wechselt.
+        e.PlainRemotePassword = IsMssql ? RemotePassword : string.Empty;
         return e;
     }
 }

@@ -7,8 +7,8 @@
         x:Class="DTM.Views.EditConnectionWindow"
         x:DataType="vm:EditConnectionViewModel"
         Title="Verbindung bearbeiten"
-        Width="460" Height="380"
-        MinWidth="420" MinHeight="340"
+        Width="480" Height="560"
+        MinWidth="440" MinHeight="480"
         WindowStartupLocation="CenterOwner">
 
     <Grid RowDefinitions="Auto,*">
@@ -31,32 +31,63 @@
         <!-- Inhalt -->
         <Grid Grid.Row="1" RowDefinitions="*,Auto" Margin="20,16">
 
-            <Grid Grid.Row="0" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="140,*">
+            <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="16">
 
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="Typ" VerticalAlignment="Center" Margin="0,0,8,8" />
-                <ComboBox  Grid.Row="0" Grid.Column="1"
-                           ItemsSource="{Binding ServerTypes}"
-                           SelectedItem="{Binding SelectedServerType, Mode=TwoWay}"
-                           HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="140,*">
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="Server" VerticalAlignment="Center" Margin="0,0,8,8" />
-                <TextBox   Grid.Row="1" Grid.Column="1" Text="{Binding Server, Mode=TwoWay}" Margin="0,0,0,8" />
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Typ" VerticalAlignment="Center" Margin="0,0,8,8" />
+                        <ComboBox  Grid.Row="0" Grid.Column="1"
+                                   ItemsSource="{Binding ServerTypes}"
+                                   SelectedItem="{Binding SelectedServerType, Mode=TwoWay}"
+                                   HorizontalAlignment="Stretch" Margin="0,0,0,8" />
 
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="Benutzer" VerticalAlignment="Center" Margin="0,0,8,8" />
-                <TextBox   Grid.Row="2" Grid.Column="1" Text="{Binding User, Mode=TwoWay}" Margin="0,0,0,8" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Server" VerticalAlignment="Center" Margin="0,0,8,8" />
+                        <TextBox   Grid.Row="1" Grid.Column="1" Text="{Binding Server, Mode=TwoWay}" Margin="0,0,0,8" />
 
-                <TextBlock Grid.Row="3" Grid.Column="0" Text="Passwort" VerticalAlignment="Center" Margin="0,0,8,8" />
-                <TextBox   Grid.Row="3" Grid.Column="1" Text="{Binding Password, Mode=TwoWay}"
-                           PasswordChar="●" Margin="0,0,0,8" />
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Benutzer" VerticalAlignment="Center" Margin="0,0,8,8" />
+                        <TextBox   Grid.Row="2" Grid.Column="1" Text="{Binding User, Mode=TwoWay}" Margin="0,0,0,8" />
 
-                <TextBlock Grid.Row="4" Grid.Column="0" Text="Datenbank" VerticalAlignment="Center" Margin="0,0,8,8" />
-                <TextBox   Grid.Row="4" Grid.Column="1" Text="{Binding Database, Mode=TwoWay}" Margin="0,0,0,8" />
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Passwort" VerticalAlignment="Center" Margin="0,0,8,8" />
+                        <TextBox   Grid.Row="3" Grid.Column="1" Text="{Binding Password, Mode=TwoWay}"
+                                   PasswordChar="●" Margin="0,0,0,8" />
 
-                <TextBlock Grid.Row="5" Grid.Column="0" Text="ConnectionString" VerticalAlignment="Center"
-                           TextWrapping="Wrap" Margin="0,0,8,0" />
-                <TextBox   Grid.Row="5" Grid.Column="1" Text="{Binding ConnectionString, Mode=TwoWay}"
-                           ToolTip.Tip="Optionaler ODBC-ConnectionString. Wenn gesetzt, werden Server/User/Passwort ignoriert." />
-            </Grid>
+                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Datenbank" VerticalAlignment="Center" Margin="0,0,8,8" />
+                        <TextBox   Grid.Row="4" Grid.Column="1" Text="{Binding Database, Mode=TwoWay}" Margin="0,0,0,8" />
+
+                        <TextBlock Grid.Row="5" Grid.Column="0" Text="ConnectionString" VerticalAlignment="Center"
+                                   TextWrapping="Wrap" Margin="0,0,8,0" />
+                        <TextBox   Grid.Row="5" Grid.Column="1" Text="{Binding ConnectionString, Mode=TwoWay}"
+                                   ToolTip.Tip="Optionaler ODBC-ConnectionString. Wenn gesetzt, werden Server/User/Passwort ignoriert." />
+                    </Grid>
+
+                    <!-- Phase 9.3: PS-Remoting-Credentials (nur MSSQL) -->
+                    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                            CornerRadius="4" Padding="12"
+                            IsVisible="{Binding IsMssql}">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="PowerShell-Remoting-Credentials (optional)"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Text="Leer lassen = FOC-SQL nimmt seine globale credential.xml aus dem User-Profil. Nur ausfüllen, wenn dieser Server abweichende Windows-Credentials braucht (z. B. DMZ mit lokaler Domain)."
+                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       FontSize="12" TextWrapping="Wrap" />
+
+                            <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="140,*">
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Remote-Benutzer"
+                                           VerticalAlignment="Center" Margin="0,4,8,8" />
+                                <TextBox   Grid.Row="0" Grid.Column="1" Text="{Binding RemoteUser, Mode=TwoWay}"
+                                           PlaceholderText="z. B. DMZ\svc-dtm"
+                                           Margin="0,4,0,8" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Remote-Passwort"
+                                           VerticalAlignment="Center" Margin="0,0,8,0" />
+                                <TextBox   Grid.Row="1" Grid.Column="1" Text="{Binding RemotePassword, Mode=TwoWay}"
+                                           PasswordChar="●" Margin="0,0,0,0" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
 
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right"
                         Spacing="8" Margin="0,16,0,0">
