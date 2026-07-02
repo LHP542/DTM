@@ -55,4 +55,33 @@ public class ConnectionEntryTests
         var cred = entry.ToCredential();
         cred.ConnectionString.Should().BeEmpty();
     }
+
+    [Fact]
+    public void PlainRemotePassword_RoundTrip_AndPropagatesToCredential()
+    {
+        var entry = new ConnectionEntry
+        {
+            Server = "dmz-sql01",
+            RemoteUser = "DMZ\\svc-dtm"
+        };
+        entry.PlainRemotePassword = "DmzP@ss!";
+
+        entry.RemotePasswordProtected.Should().NotBe("DmzP@ss!");
+        entry.RemotePasswordProtected.Should().NotBeEmpty();
+        entry.PlainRemotePassword.Should().Be("DmzP@ss!");
+
+        var cred = entry.ToCredential();
+        cred.RemoteUser.Should().Be("DMZ\\svc-dtm");
+        cred.RemotePassword.Should().Be("DmzP@ss!");
+        cred.HasRemoteCredential.Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasRemoteCredential_DefaultsToFalse_WhenFieldsEmpty()
+    {
+        var cred = new ConnectionEntry { Server = "s", User = "u" }.ToCredential();
+        cred.RemoteUser.Should().BeEmpty();
+        cred.RemotePassword.Should().BeEmpty();
+        cred.HasRemoteCredential.Should().BeFalse();
+    }
 }

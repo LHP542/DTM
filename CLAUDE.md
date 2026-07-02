@@ -540,6 +540,63 @@ Aktion pro Server bedeutet.
       StatusBar-Setzung; Komplett-Banner mit Auto-Pre-Check beim DB-Wechsel
       ist eigener Posten 7.4 / spaeter.)_
 
+#### Phase 9 — Multi-Credential-Support fuer PowerShell-Remoting
+
+Kontext: DTM verbindet sich zum SQL-Server auf zwei Wegen — ODBC/1433
+(Stats, Datenbank-Liste) und PowerShell-Remoting/WinRM (FOC-SQL-
+Cmdlets: Backup, Snapshot, Wartung, …). Die ODBC-Credentials liegen
+seit Phase 6 pro Server in `connections.json` (DPAPI-verschluesselt).
+Die PS-Remoting-Credentials aber kamen bisher aus **einer** globalen
+`credential.xml` im User-Profil — reicht, solange alle Server derselben
+AD-Zone angehoeren.
+
+Kaputt sobald ein Server in einer anderen Zone steht (z. B. DMZ mit
+lokaler Domain). Aktuell gibt's keinen Weg, DTM/FOC-SQL fuer diesen
+Server abweichende Windows-Credentials zu geben.
+
+Entscheidungen:
+- **Kombi B + Fallback A:** DTM ist Owner der Multi-Server-PS-Credentials
+  (im ConnectionManager pro Server pflegbar, DPAPI in `connections.json`).
+  Fallback = globales `credential.xml`, sodass Konsolen-Nutzer und
+  Bestandssetups unveraendert weiterlaufen.
+- **Runspace-Injektion:** DTM pusht beim pwsh-Session-Setup eine
+  `$global:DtmCredMap = @{'<Server>' = <PSCredential>; …}` in den
+  Runspace. Der FOC-SQL-Helper `Invoke-MssqlServerScript` konsultiert
+  die Map anhand des `-Server`-Parameters vor dem xml-Fallback.
+- **Kein Klartext im pwsh-Tab:** Credentials landen als Runspace-Variable
+  in Memory, laufen nie durch die sichtbare Command-Line.
+- **Optional pro Server:** wenn `RemoteUser` leer ist, verhaelt sich DTM
+  wie bisher — kein Regressions-Risiko fuer den FOC-SQL-Server-Setup.
+
+Sub-Items:
+
+- [ ] **9.1** Netzwerk-Vorfrage: `Test-WSMan -ComputerName <dmz-host>
+      -Credential (Get-Credential)` von Lars durchgefuehrt. Wenn nein:
+      DMZ-Server bleibt „ODBC-only" (nur Stats-Panel, alle FOC-SQL-
+      Actions ausgegraut) — Feature-Toggle ueber DB_SERVER-Property.
+      Wenn ja: 9.2 - 9.5 rollout. — `S`
+- [ ] **9.2** `ServerCredential` + `ConnectionEntry` um optionale Felder
+      `RemoteUser` / `RemotePassword(Protected)` erweitern; leer =
+      Fallback aufs globale `credential.xml`. Backward-kompatibel zu
+      bestehender `connections.json` (fehlende Felder → leer). — `S`
+- [ ] **9.3** ConnectionManagerWindow: Panel „PS-Remoting-Credentials
+      (falls abweichend)" — zwei zusaetzliche Zellen pro Zeile (User +
+      Password). Leer lassen = Fallback. Beim Speichern DPAPI wie beim
+      ODBC-Passwort. — `M`
+- [ ] **9.4** 📦 FOC-SQL: `Invoke-MssqlServerScript` bekommt optionalen
+      `[PSCredential]$Credential`-Parameter. Reihenfolge der Aufloesung:
+      Parameter → `$global:DtmCredMap[$Server]` → `credential.xml`. Alle
+      8 MSSQL-Wrapper reichen `-Credential` durch (optional). — `M`
+- [ ] **9.5** DTM injiziert `$global:DtmCredMap` in den pwsh-Runspace
+      beim `RegisterPowerShellSession` — aus der Server-Liste alle
+      Eintraege mit gesetztem `RemoteUser` einsammeln, als
+      `PSCredential`-Objekte in die Map schreiben. Bei
+      Connection-Manager-Save neu synchronisieren. — `S`
+
+**Sicherheit:** Passwoerter nur DPAPI-verschluesselt in `connections.json`;
+niemals Klartext ins pwsh-Tab, ins Log, in Fehlermeldungen. Log-Maske via
+`LogMask` (schon vorhanden fuer ConnectionString) wiederverwenden.
+
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 
 Lars-Idee aus dem v2.0.0-Test: ein eigener Button bzw. Dialog, der **mehr

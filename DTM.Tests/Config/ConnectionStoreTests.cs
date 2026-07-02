@@ -105,4 +105,57 @@ public class ConnectionStoreTests : IDisposable
         SystemFile.WriteAllText(_tmp, "{ not valid json [[[");
         ConnectionStore.Load().Should().BeEmpty();
     }
+
+    [Fact]
+    public void Load_LegacyJson_WithoutRemoteFields_DeserializesWithDefaults()
+    {
+        // Bestandssetups (vor Phase 9) haben keine RemoteUser/RemotePasswordProtected-
+        // Felder. System.Text.Json muss fehlende Properties still auf leer setzen —
+        // sonst reisst der Update die connections.json bei bestehenden Nutzern auf.
+        Directory.CreateDirectory(Path.GetDirectoryName(_tmp)!);
+        string legacyJson = """
+        [
+          {
+            "Key": "MSSQL",
+            "Server": "FOC-SQL01",
+            "User": "sa",
+            "PasswordProtected": "",
+            "Database": "Master",
+            "ConnectionString": ""
+          }
+        ]
+        """;
+        SystemFile.WriteAllText(_tmp, legacyJson);
+
+        var loaded = ConnectionStore.Load();
+        loaded.Should().HaveCount(1);
+        loaded[0].RemoteUser.Should().BeEmpty();
+        loaded[0].RemotePasswordProtected.Should().BeEmpty();
+        loaded[0].PlainRemotePassword.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Save_Then_Load_PreservesRemoteCredentialFields()
+    {
+        var entry = new ConnectionEntry
+        {
+            Key = "MSSQL",
+            Server = "dmz-sql01",
+            User = "sa",
+            Database = "Master",
+            RemoteUser = "DMZ\\svc-dtm"
+        };
+        entry.PlainPassword = "sqlpass";
+        entry.PlainRemotePassword = "DmzP@ss!";
+
+        ConnectionStore.Save([entry]);
+        var loaded = ConnectionStore.Load();
+
+        loaded.Should().HaveCount(1);
+        var e = loaded[0];
+        e.RemoteUser.Should().Be("DMZ\\svc-dtm");
+        e.RemotePasswordProtected.Should().NotBeEmpty();
+        e.RemotePasswordProtected.Should().NotBe("DmzP@ss!");
+        e.PlainRemotePassword.Should().Be("DmzP@ss!");
+    }
 }

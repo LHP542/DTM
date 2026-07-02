@@ -52,4 +52,28 @@ public class ServerCredentialTests
     {
         new ServerCredential().ConnectionString.Should().BeEmpty();
     }
+
+    [Fact]
+    public void RemoteFields_DefaultsAreEmpty_AndHasRemoteCredentialIsFalse()
+    {
+        var cred = new ServerCredential();
+        cred.RemoteUser.Should().BeEmpty();
+        cred.RemotePassword.Should().BeEmpty();
+        cred.HasRemoteCredential.Should().BeFalse();
+    }
+
+    [Fact]
+    public void HasRemoteCredential_TrueOnlyWhenBothFieldsSet()
+    {
+        // User allein reicht nicht (Windows-Passwort fehlt).
+        var userOnly = new ServerCredential(RemoteUser: "DMZ\\svc");
+        userOnly.HasRemoteCredential.Should().BeFalse();
+
+        // Passwort allein reicht auch nicht (User fehlt).
+        var pwOnly = new ServerCredential(RemotePassword: "p");
+        pwOnly.HasRemoteCredential.Should().BeFalse();
+
+        var both = new ServerCredential(RemoteUser: "DMZ\\svc", RemotePassword: "p");
+        both.HasRemoteCredential.Should().BeTrue();
+    }
 }
