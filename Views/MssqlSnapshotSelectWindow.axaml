@@ -1,0 +1,108 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DTM.ViewModels"
+        x:Class="DTM.Views.MssqlSnapshotSelectWindow"
+        x:DataType="vm:MssqlSnapshotSelectViewModel"
+        Title="Snapshot auswählen"
+        Width="720" Height="520"
+        MinWidth="580" MinHeight="380"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBgBrush}">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Titelleiste -->
+        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                PointerPressed="OnTitleBarPointerPressed">
+            <Grid ColumnDefinitions="*,Auto" Height="36">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                            VerticalAlignment="Center" Margin="14,0"
+                            IsHitTestVisible="False">
+                    <TextBlock Text="Snapshot auswählen" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+                <Button Grid.Column="1" Classes="titleBtn close"
+                        Click="OnTitleClose" Content="&#x2715;" />
+            </Grid>
+        </Border>
+
+        <!-- Inhalt -->
+        <Grid Grid.Row="1" Margin="20,16,20,16" RowDefinitions="Auto,Auto,*,Auto">
+
+            <!-- Header: DB-Name -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+                <TextBlock Grid.Column="0" Classes="infoLabel" Text="Datenbank" />
+                <TextBlock Grid.Column="1" Classes="infoValue"
+                           Text="{Binding DatabaseName}" FontWeight="Bold" />
+            </Grid>
+
+            <!-- Fehler-Zeile -->
+            <Border Grid.Row="1" Margin="0,14,0,0" Padding="12,8"
+                    CornerRadius="6"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource DangerBrush}" FontSize="12" />
+            </Border>
+
+            <!-- Snapshots: Spinner ODER DataGrid ODER "keine Snapshots" -->
+            <Grid Grid.Row="2" Margin="0,14,0,0">
+
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Spacing="10" IsVisible="{Binding IsLoading}">
+                    <TextBlock Text="Lade Snapshots …"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               FontSize="13" HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Text="Keine Snapshots für diese Datenbank vorhanden."
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           FontSize="13">
+                    <TextBlock.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="!IsLoading" />
+                            <Binding Path="!HasSnapshots" />
+                            <Binding Path="ErrorMessage" Converter="{x:Static ObjectConverters.IsNull}" />
+                        </MultiBinding>
+                    </TextBlock.IsVisible>
+                </TextBlock>
+
+                <Border Background="{DynamicResource SurfaceBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" ClipToBounds="True"
+                        IsVisible="{Binding HasSnapshots}">
+                    <DataGrid ItemsSource="{Binding Snapshots}"
+                              SelectedItem="{Binding SelectedSnapshot, Mode=TwoWay}"
+                              IsReadOnly="True"
+                              AutoGenerateColumns="False"
+                              GridLinesVisibility="Horizontal"
+                              SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Snapshot-Name" Binding="{Binding Name}" Width="*" />
+                            <DataGridTextColumn Header="Erstellt am" Binding="{Binding CreatedAt}" Width="200" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </Grid>
+
+            <!-- Footer-Buttons -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal"
+                        HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
+                <Button Content="Abbrechen" Click="OnCancel" MinWidth="100" />
+                <Button Content="Löschen" Click="OnDrop"
+                        MinWidth="130"
+                        IsEnabled="{Binding HasSnapshots}"
+                        Classes="action danger"
+                        ToolTip.Tip="Ausgewählten Snapshot löschen (DROP DATABASE)." />
+                <Button Content="Restore ausführen" Click="OnRestore"
+                        MinWidth="160"
+                        IsEnabled="{Binding HasSnapshots}"
+                        Classes="action" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+
+</Window>

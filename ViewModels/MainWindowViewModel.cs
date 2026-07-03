@@ -393,13 +393,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
 
-        // OdbcDirect: Auswahl-Dialog fuer Snapshot kommt in Phase 10.4d
-        // (MssqlSnapshotSelectWindow). Bis dahin nur eine klare Meldung —
-        // der FOC-SQL-Weg wuerde in der DMZ scheitern.
-        if (TryGetOdbcActions(db) is not null)
+        // OdbcDirect: MssqlSnapshotSelectWindow zeigt die Liste; User waehlt
+        // Snapshot und Aktion. Bei Restore hier, bei Drop faellt in denselben
+        // Dispatcher-Zweig.
+        var odbc = TryGetOdbcActions(db);
+        if (odbc is not null)
         {
-            DTM.Data.Terminal.TerminalBus.InjectNotice(
-                "[Restore-Snapshot: Snapshot-Auswahl-Dialog folgt in Phase 10.4d.]");
+            await ShowMssqlSnapshotDialogAsync(db, odbc, MssqlSnapshotAction.Restore);
             return;
         }
 
@@ -426,16 +426,52 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void RemoveSnapshot()
+    private async Task RemoveSnapshot()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
-        if (TryGetOdbcActions(db) is not null)
+        var odbc = TryGetOdbcActions(db);
+        if (odbc is not null)
         {
-            DTM.Data.Terminal.TerminalBus.InjectNotice(
-                "[Remove-Snapshot: Snapshot-Auswahl-Dialog folgt in Phase 10.4d.]");
+            await ShowMssqlSnapshotDialogAsync(db, odbc, MssqlSnapshotAction.Drop);
             return;
         }
         RunSimpleAction("Remove-Snapshot", db, "", "Remove Snapshot");
+    }
+
+    // Phase 10.4d: OdbcDirect-Weg fuer Snapshot-Restore + Snapshot-Drop.
+    // Ein Dialog fuer beide Aktionen — der Aufrufer gibt an, was
+    // initial im Fokus stehen soll, der User kann per Button-Klick am
+    // Ende immer noch zwischen Restore und Drop entscheiden.
+    private async Task ShowMssqlSnapshotDialogAsync(
+        DatabaseNodeViewModel db,
+        DTM.Data.Mssql.OdbcMssqlActionService odbc,
+        MssqlSnapshotAction initial)
+    {
+        Window? owner = GetMainWindow();
+        if (owner is null || _services is null) return;
+
+        MssqlSnapshotSelectViewModel vm =
+            _services.GetRequiredService<MssqlSnapshotSelectViewModel>();
+        MssqlSnapshotSelectWindow dlg = new() { DataContext = vm };
+        _ = vm.LoadAsync(db.Database.Name, odbc, initial);
+
+        MssqlSnapshotSelectResult? result =
+            await dlg.ShowDialog<MssqlSnapshotSelectResult?>(owner);
+        if (result is null) return;
+
+        switch (result.Action)
+        {
+            case MssqlSnapshotAction.Restore:
+                await RunOdbcActionAsync($"Restore Snapshot '{result.Snapshot.Name}'",
+                    db.Database.Name,
+                    onInfo => odbc.RestoreSnapshotAsync(db.Database.Name, result.Snapshot.Name, onInfo));
+                break;
+            case MssqlSnapshotAction.Drop:
+                await RunOdbcActionAsync($"Drop Snapshot '{result.Snapshot.Name}'",
+                    db.Database.Name,
+                    onInfo => odbc.DropSnapshotAsync(result.Snapshot.Name, onInfo));
+                break;
+        }
     }
 
     // Set-Archive-Log dispatched im FOC-SQL-Modul nach DB-Typ:

@@ -64,6 +64,7 @@ internal static class ServiceRegistrations
         services.AddTransient<TimePickerViewModel>();
         services.AddTransient<OracleRestoreSelectViewModel>();
         services.AddTransient<BackupBrowserViewModel>();
+        services.AddTransient<MssqlSnapshotSelectViewModel>();
         services.AddTransient<DbConfigurationViewModel>();
 
         return services;
