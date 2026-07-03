@@ -419,4 +419,134 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
 
         return _odbc.ExecuteNonQueryAsync(sql, new object?[] { database, backupFile }, onInfo, ct);
     }
+
+    // ------------------------------------------------------------------
+    // Phase 10.3e: Sessions-Kill + CHECKDB + Index-Rebuild + Shrink-Log
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Beendet alle User-Sessions zur angegebenen Datenbank (analog zu
+    /// <c>Close-DbSessions-MSSQL</c>). Der eigene Session-Kontext
+    /// (@@SPID) wird ausgeschlossen — sonst killt sich der Aufruf selbst.
+    /// </summary>
+    public Task KillUserSessionsAsync(
+        string database,
+        Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        _logger.Info("OdbcDirect: KILL user sessions fuer '{0}'", database);
+
+        string sql =
+            "DECLARE @db NVARCHAR(128) = ?;" +
+            "DECLARE @sql NVARCHAR(MAX) = N'';" +
+            "SELECT @sql = @sql + N'KILL ' + CAST(session_id AS NVARCHAR(10)) + N';' " +
+            "FROM sys.dm_exec_sessions " +
+            "WHERE database_id = DB_ID(@db) AND session_id <> @@SPID AND is_user_process = 1;" +
+            "IF LEN(@sql) > 0 EXEC (@sql);";
+
+        return _odbc.ExecuteNonQueryAsync(sql, new object?[] { database }, onInfo, ct);
+    }
+
+    /// <summary>
+    /// <c>DBCC CHECKDB(&lt;db&gt;) WITH ALL_ERRORMSGS</c>. Alle DBCC-Meldungen
+    /// (auch die grossen Table-Summaries) kommen live per
+    /// <paramref name="onInfo"/>-Callback — der User sieht im pwsh-Tab
+    /// exakt was der Server ausgibt.
+    /// </summary>
+    public Task CheckDbAsync(
+        string database,
+        Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        _logger.Info("OdbcDirect: DBCC CHECKDB fuer '{0}'", database);
+
+        string sql =
+            "DECLARE @db NVARCHAR(128) = ?;" +
+            "DECLARE @sql NVARCHAR(MAX) = N'DBCC CHECKDB (' + QUOTENAME(@db) + N') WITH ALL_ERRORMSGS';" +
+            "EXEC (@sql);";
+
+        return _odbc.ExecuteNonQueryAsync(sql, new object?[] { database }, onInfo, ct);
+    }
+
+    /// <summary>
+    /// Rebuild aller Indizes auf User-Tables der DB. Statt eines langen
+    /// dyn.-SQL-Cursors (der schwer zu debuggen ist) baut DTM die Table-
+    /// Liste selbst und feuert pro Table einen kurzen ALTER-INDEX-Aufruf.
+    /// Vorteil: Live-Progress per <paramref name="onInfo"/>-Notice fuer
+    /// jede Table, klare Log-Zuordnung im pwsh-Tab.
+    /// </summary>
+    public async Task IndexRebuildAsync(
+        string database,
+        Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        // Tables der Ziel-DB via QUERY auf sys.tables mit expliziter DB-
+        // Referenz. Zwei-Teil-Namen: <schema>.<table>.
+        string listSql =
+            "DECLARE @db NVARCHAR(128) = ?;" +
+            "DECLARE @sql NVARCHAR(MAX) = " +
+            "  N'SELECT SCHEMA_NAME(t.schema_id) AS SchemaName, t.name AS TableName " +
+            "     FROM ' + QUOTENAME(@db) + N'.sys.tables t WHERE t.is_ms_shipped = 0 " +
+            "     ORDER BY SCHEMA_NAME(t.schema_id), t.name';" +
+            "EXEC (@sql);";
+
+        var tables = await _odbc.ExecuteReaderAsync<(string Schema, string Table)>(
+            listSql,
+            r => (r.GetString(0), r.GetString(1)),
+            new object?[] { database }, ct).ConfigureAwait(false);
+
+        _logger.Info("OdbcDirect: Index-Rebuild auf '{0}' — {1} Table(s)", database, tables.Count);
+        onInfo?.Invoke($"[Index-Rebuild: {tables.Count} Table(s) in '{database}']");
+
+        foreach (var (schema, table) in tables)
+        {
+            ct.ThrowIfCancellationRequested();
+            string qName = $"{QuoteName(schema)}.{QuoteName(table)}";
+            onInfo?.Invoke($"  Rebuilding indexes on {qName} …");
+
+            string sql =
+                "DECLARE @db NVARCHAR(128) = ?;" +
+                $"DECLARE @sql NVARCHAR(MAX) = N'USE ' + QUOTENAME(@db) + N'; ALTER INDEX ALL ON {qName} REBUILD';" +
+                "EXEC (@sql);";
+
+            await _odbc.ExecuteNonQueryAsync(sql, new object?[] { database }, onInfo, ct)
+                       .ConfigureAwait(false);
+        }
+
+        onInfo?.Invoke($"[Index-Rebuild fertig fuer '{database}']");
+    }
+
+    /// <summary>
+    /// Schrumpft alle Log-Files der DB auf 100 MB. Multi-Log-File-Setups
+    /// (selten) werden korrekt behandelt. Analog zu
+    /// <c>Database-Shrink-Log-File</c> im MSSQL-Modul.
+    /// </summary>
+    public async Task ShrinkLogAsync(
+        string database,
+        Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        string logFilesSql =
+            "SELECT name FROM sys.master_files WHERE database_id = DB_ID(?) AND type = 1;";
+
+        var logFiles = await _odbc.ExecuteReaderAsync<string>(
+            logFilesSql, r => r.GetString(0),
+            new object?[] { database }, ct).ConfigureAwait(false);
+
+        if (logFiles.Count == 0)
+            throw new InvalidOperationException(
+                $"ShrinkLog: keine Log-Datei fuer '{database}' gefunden.");
+
+        _logger.Info("OdbcDirect: SHRINK LOG fuer '{0}' ({1} Log-File(s))", database, logFiles.Count);
+
+        foreach (string logFile in logFiles)
+        {
+            ct.ThrowIfCancellationRequested();
+            onInfo?.Invoke($"  DBCC SHRINKFILE({QuoteName(logFile)}, 100) in '{database}' …");
+
+            string sql =
+                "DECLARE @db NVARCHAR(128) = ?;" +
+                $"DECLARE @sql NVARCHAR(MAX) = N'USE ' + QUOTENAME(@db) + N'; DBCC SHRINKFILE ({QuoteName(logFile)}, 100)';" +
+                "EXEC (@sql);";
+
+            await _odbc.ExecuteNonQueryAsync(sql, new object?[] { database }, onInfo, ct)
+                       .ConfigureAwait(false);
+        }
+    }
 }
