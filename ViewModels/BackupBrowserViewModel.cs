@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using DTM.Data.Mssql;
 using DTM.Data.Terminal;
 using NLog;
 
@@ -7,9 +8,16 @@ namespace DTM.ViewModels;
 
 /// <summary>
 /// ViewModel fuer den Backup-Browser-Dialog. Laedt asynchron alle
-/// Backup-Dateien der ausgewaehlten MSSQL-DB via <see cref="BackupBrowserService"/>.
-/// Oracle wird in v1 nicht unterstuetzt — der Dialog wird fuer Oracle gar nicht
-/// erst geoeffnet (Filter in MainWindowViewModel).
+/// Backup-Dateien der ausgewaehlten MSSQL-DB.
+///
+/// Phase 10.4c: Backend-Switch. Bei FocSql-Servern via
+/// <see cref="BackupBrowserService"/> (FOC-SQL Get-DbBackups im eigenen
+/// PS-Runspace); bei OdbcDirect via <see cref="OdbcMssqlActionService"/>
+/// (msdb.dbo.backupset). UI ist identisch — der User sieht keinen
+/// Unterschied.
+///
+/// Oracle wird in v1 nicht unterstuetzt — der Dialog wird fuer Oracle gar
+/// nicht erst geoeffnet (Filter in MainWindowViewModel).
 /// </summary>
 public sealed partial class BackupBrowserViewModel : ViewModelBase
 {
@@ -29,15 +37,23 @@ public sealed partial class BackupBrowserViewModel : ViewModelBase
         _service = service;
     }
 
-    /// <summary>
-    /// Server-Hostname fuer den Restore-Aufruf (Multi-Server-Support).
-    /// </summary>
+    /// <summary>Server-Hostname fuer den FOC-SQL-Restore-Aufruf.</summary>
     public string? ServerHost { get; set; }
 
-    public async Task LoadAsync(string database, string? server = null)
+    /// <summary>Wenn gesetzt: OdbcDirect-Pfad; sonst FOC-SQL-Pfad.</summary>
+    public OdbcMssqlActionService? OdbcActions { get; set; }
+
+    /// <summary>
+    /// Vom MainWindowViewModel vor dem Anzeigen aufzurufen. Setzt DB,
+    /// Server-Host und (Phase 10.4c) optional den OdbcActionService fuer
+    /// den OdbcDirect-Pfad.
+    /// </summary>
+    public async Task LoadAsync(string database, string? server = null,
+                                 OdbcMssqlActionService? odbcActions = null)
     {
         DatabaseName = database;
         ServerHost = server;
+        OdbcActions = odbcActions;
         IsLoading = true;
         ErrorMessage = null;
         Backups.Clear();
@@ -46,14 +62,17 @@ public sealed partial class BackupBrowserViewModel : ViewModelBase
 
         try
         {
-            IReadOnlyList<MssqlBackup> list = await _service.FetchAsync(database, server);
+            IReadOnlyList<MssqlBackup> list = odbcActions is not null
+                ? await LoadViaOdbcAsync(database, odbcActions).ConfigureAwait(true)
+                : await _service.FetchAsync(database, server).ConfigureAwait(true);
+
             foreach (MssqlBackup b in list) Backups.Add(b);
             HasBackups = Backups.Count > 0;
             SelectedBackup = Backups.FirstOrDefault();
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Get-DbBackups fuer '{0}' fehlgeschlagen.", database);
+            _logger.Error(ex, "Backup-Liste fuer '{0}' fehlgeschlagen.", database);
             ErrorMessage = ex.Message;
         }
         finally
@@ -62,16 +81,39 @@ public sealed partial class BackupBrowserViewModel : ViewModelBase
         }
     }
 
+    private static async Task<IReadOnlyList<MssqlBackup>> LoadViaOdbcAsync(
+        string database, OdbcMssqlActionService svc)
+    {
+        var raw = await svc.ListBackupsAsync(database).ConfigureAwait(false);
+        // msdb liefert den vollen physical_device_name — das Filename-only
+        // Feld baut die UI selbst. LastWriteTime = backup_finish_date.
+        return raw
+            .Select(b => new MssqlBackup(
+                Name: System.IO.Path.GetFileName(b.Path),
+                LastWriteTime: b.FinishedAt,
+                SizeBytes: b.SizeBytes,
+                Path: b.Path))
+            .ToList();
+    }
+
     /// <summary>
-    /// Setzt den eigentlichen Invoke-DbRestore-Aufruf in den pwsh-Tab ab.
-    /// Bestaetigung passiert im Code-Behind (ConfirmWindow); diese Methode
-    /// triggert die Aktion ohne weitere Rueckfrage.
+    /// Startet den Restore. Bei OdbcDirect: direkt via
+    /// <see cref="OdbcMssqlActionService.RestoreBackupAsync"/> mit dem
+    /// vollen Path aus msdb. Bei FOC-SQL: Invoke-DbRestore-Aufruf im
+    /// pwsh-Tab. Bestaetigung passiert im Code-Behind (ConfirmWindow).
     /// </summary>
     public void PerformRestore(MssqlBackup backup)
     {
         if (backup is null || string.IsNullOrWhiteSpace(DatabaseName)) return;
 
-        // Invoke-DbRestore -Database '<db>' -BackupFile '<file>' [-Server '<host>']
+        if (OdbcActions is { } svc)
+        {
+            _ = RunOdbcRestoreAsync(svc, backup);
+            return;
+        }
+
+        // FOC-SQL: Invoke-DbRestore erwartet nur den Filename (Modul baut
+        // den Pfad ueber $global:BackupRoot).
         string dbEsc = DatabaseName.Replace("'", "''");
         string fileEsc = backup.Name.Replace("'", "''");
         string script = $"Invoke-DbRestore -Database '{dbEsc}' -BackupFile '{fileEsc}'";
@@ -81,5 +123,21 @@ public sealed partial class BackupBrowserViewModel : ViewModelBase
             script += $" -Server '{srvEsc}'";
         }
         TerminalBus.SendScript(script);
+    }
+
+    private async Task RunOdbcRestoreAsync(OdbcMssqlActionService svc, MssqlBackup backup)
+    {
+        string label = $"Restore aus '{backup.Name}'";
+        TerminalBus.InjectNotice($"[{label} für {DatabaseName} (OdbcDirect)]");
+        try
+        {
+            Action<string> onInfo = t => TerminalBus.InjectNotice($"  {t}");
+            await svc.RestoreBackupAsync(DatabaseName, backup.Path, onInfo).ConfigureAwait(false);
+            TerminalBus.InjectNotice($"[{label} fertig für {DatabaseName}]");
+        }
+        catch (Exception ex)
+        {
+            TerminalBus.InjectNotice($"[FEHLER: {ex.Message}]");
+        }
     }
 }

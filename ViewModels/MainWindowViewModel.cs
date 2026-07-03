@@ -749,7 +749,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         BackupBrowserWindow dlg = new() { DataContext = vm };
 
         // Spinner ist sofort sichtbar, Daten laden parallel.
-        _ = vm.LoadAsync(ModuleDatabaseId(db), ServerParamFor(db));
+        _ = vm.LoadAsync(ModuleDatabaseId(db), ServerParamFor(db), TryGetOdbcActions(db));
 
         await dlg.ShowDialog(owner);
     }
