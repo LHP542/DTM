@@ -549,4 +549,57 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
                        .ConfigureAwait(false);
         }
     }
+
+    // ------------------------------------------------------------------
+    // Phase 10.3f: Cluster Health
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Always-On-Cluster-Status aus <c>sys.availability_groups</c> +
+    /// <c>sys.availability_replicas</c> + <c>sys.dm_hadr_availability_replica_states</c>.
+    /// Output geht als Text-Notice pro Zeile in den pwsh-Tab (analog zum
+    /// FOC-SQL-Get-ClusterHealthStatus-Output). Wenn kein Always-On
+    /// konfiguriert ist, eine erklaerende Notice statt einer leeren
+    /// Ergebnismenge. Read-only, harmlos.
+    /// </summary>
+    public async Task GetClusterHealthAsync(
+        Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        _logger.Info("OdbcDirect: Get-ClusterHealthStatus");
+
+        string sql =
+            "SELECT ag.name, ar.replica_server_name, ars.role_desc, " +
+            "       ars.operational_state_desc, ars.synchronization_health_desc, " +
+            "       ars.connected_state_desc " +
+            "FROM sys.availability_groups ag " +
+            "JOIN sys.availability_replicas ar ON ag.group_id = ar.group_id " +
+            "LEFT JOIN sys.dm_hadr_availability_replica_states ars ON ars.replica_id = ar.replica_id " +
+            "ORDER BY ag.name, ar.replica_server_name;";
+
+        var rows = await _odbc.ExecuteReaderAsync(
+            sql,
+            r => (
+                Ag: r.IsDBNull(0) ? "?" : r.GetString(0),
+                Replica: r.IsDBNull(1) ? "?" : r.GetString(1),
+                Role: r.IsDBNull(2) ? "?" : r.GetString(2),
+                Op: r.IsDBNull(3) ? "?" : r.GetString(3),
+                Sync: r.IsDBNull(4) ? "?" : r.GetString(4),
+                Conn: r.IsDBNull(5) ? "?" : r.GetString(5)
+            ),
+            null, ct).ConfigureAwait(false);
+
+        if (rows.Count == 0)
+        {
+            onInfo?.Invoke("Kein Always-On-Cluster konfiguriert (keine Availability-Groups).");
+            return;
+        }
+
+        onInfo?.Invoke($"[Cluster-Health: {rows.Count} Replica(s)]");
+        foreach (var row in rows)
+        {
+            onInfo?.Invoke(
+                $"  AG='{row.Ag}' Replica='{row.Replica}' Role={row.Role} " +
+                $"Op={row.Op} Sync={row.Sync} Conn={row.Conn}");
+        }
+    }
 }
