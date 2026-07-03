@@ -280,4 +280,143 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
     // Semantik: eckige Klammern, ']' → ']]' escape.
     private static string QuoteName(string identifier) =>
         "[" + identifier.Replace("]", "]]") + "]";
+
+    // ------------------------------------------------------------------
+    // Phase 10.3d: Backup + Restore + Backup-Browser
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Baut den Backup-Filepath deterministisch aus BackupRoot, DB und
+    /// Timestamp. Flaches Layout (Lars-Entscheidung Phase 10.3d):
+    /// <c>&lt;root&gt;\&lt;db&gt;\&lt;db&gt;-&lt;yyyyMMdd_HHmm&gt;.bak</c> —
+    /// bewusst OHNE FOC-SQL-Unterordner '01 Taeglich', weil in der DMZ die
+    /// FOC-SQL-Retention-Rotation nicht laeuft.
+    /// </summary>
+    public static string BuildBackupPath(string backupRoot, string database, DateTime timestamp) =>
+        Path.Combine(
+            backupRoot.TrimEnd('\\', '/'),
+            database,
+            $"{database}-{timestamp:yyyyMMdd_HHmm}.bak");
+
+    /// <summary>
+    /// Liest den SQL-Server-Default-BackupPath aus der Server-Registry
+    /// (<c>xp_instance_regread</c>). Kein Extra-Config-Feld in DTM noetig.
+    /// Kann leer sein, wenn der Server die Registry-Property nicht gesetzt
+    /// hat — dann wirft die Methode InvalidOperationException.
+    /// </summary>
+    public async Task<string> GetBackupRootAsync(CancellationToken ct = default)
+    {
+        string sql =
+            "DECLARE @root NVARCHAR(500);" +
+            "EXEC master.dbo.xp_instance_regread " +
+            "  N'HKEY_LOCAL_MACHINE'," +
+            "  N'Software\\Microsoft\\MSSQLServer\\MSSQLServer'," +
+            "  N'BackupDirectory'," +
+            "  @root OUTPUT;" +
+            "SELECT @root AS BackupRoot;";
+
+        var rows = await _odbc.ExecuteReaderAsync(sql, r => r.IsDBNull(0) ? string.Empty : r.GetString(0),
+                                                   null, ct).ConfigureAwait(false);
+        string root = rows.FirstOrDefault() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(root))
+            throw new InvalidOperationException(
+                "SQL-Server-Default-BackupPath ist leer (xp_instance_regread).");
+        return root;
+    }
+
+    /// <summary>
+    /// Legt ein Full-Backup der Datenbank an. Ziel-Datei nach flachem
+    /// Layout (siehe <see cref="BuildBackupPath"/>), Ziel-Verzeichnis wird
+    /// per <c>xp_create_subdir</c> idempotent angelegt. WITH INIT, FORMAT,
+    /// STATS = 10 → 10%-Progress-Meldungen kommen live via
+    /// <paramref name="onInfo"/>. Rueckgabe: der Backup-Filepath (fuer
+    /// UI-Feedback / Log).
+    /// </summary>
+    public async Task<string> BackupAsync(
+        string database,
+        Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        string root = await GetBackupRootAsync(ct).ConfigureAwait(false);
+        var timestamp = DateTime.Now;
+        string file = BuildBackupPath(root, database, timestamp);
+        string dir = Path.GetDirectoryName(file) ?? root;
+
+        _logger.Info("OdbcDirect: BACKUP DATABASE '{0}' TO DISK = '{1}'", database, file);
+
+        string sql =
+            "DECLARE @db NVARCHAR(128) = ?;" +
+            "DECLARE @dir NVARCHAR(500) = ?;" +
+            "DECLARE @file NVARCHAR(500) = ?;" +
+            "EXEC master.dbo.xp_create_subdir @dir;" +
+            "DECLARE @sql NVARCHAR(MAX) = " +
+            "  N'BACKUP DATABASE ' + QUOTENAME(@db) + " +
+            "  N' TO DISK = @f WITH INIT, FORMAT, STATS = 10';" +
+            "EXEC sp_executesql @sql, N'@f NVARCHAR(500)', @f = @file;";
+
+        await _odbc.ExecuteNonQueryAsync(sql, new object?[] { database, dir, file }, onInfo, ct)
+                   .ConfigureAwait(false);
+
+        return file;
+    }
+
+    /// <summary>
+    /// Listet die letzten 100 Full-Backups der DB aus <c>msdb.dbo.backupset</c>
+    /// (Lars-Entscheidung: nur Fulls, konsistent zu <c>Get-DbBackups-MSSQL</c>
+    /// im FOC-SQL-Weg). Sortiert nach <c>backup_finish_date</c> absteigend.
+    /// </summary>
+    public Task<List<MssqlBackupInfo>> ListBackupsAsync(
+        string database, CancellationToken ct = default)
+    {
+        string sql =
+            "SELECT TOP 100 " +
+            "  s.database_name, s.backup_finish_date, s.backup_size, mf.physical_device_name " +
+            "FROM msdb.dbo.backupset s " +
+            "JOIN msdb.dbo.backupmediafamily mf ON s.media_set_id = mf.media_set_id " +
+            "WHERE s.database_name = ? AND s.type = 'D' " +
+            "ORDER BY s.backup_finish_date DESC;";
+
+        return _odbc.ExecuteReaderAsync(
+            sql,
+            r => new MssqlBackupInfo(
+                r.GetString(0),
+                r.GetDateTime(1),
+                r.IsDBNull(2) ? 0L : Convert.ToInt64(r.GetValue(2)),
+                r.IsDBNull(3) ? string.Empty : r.GetString(3)),
+            new object?[] { database }, ct);
+    }
+
+    /// <summary>
+    /// Restore aus Backup-Datei. Vor RESTORE wird die Ziel-DB in
+    /// SINGLE_USER geschaltet (rollback pending transactions), sonst
+    /// bricht RESTORE mit "database is in use" ab. TRY/CATCH stellt
+    /// MULTI_USER auf jeden Fall wieder her. WITH REPLACE, STATS = 10 →
+    /// Fortschritt kommt via <paramref name="onInfo"/>.
+    /// </summary>
+    public Task RestoreBackupAsync(
+        string database, string backupFile,
+        Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(backupFile))
+            throw new ArgumentException("BackupFile darf nicht leer sein.", nameof(backupFile));
+
+        _logger.Info("OdbcDirect: RESTORE DATABASE '{0}' FROM DISK = '{1}'", database, backupFile);
+
+        string sql =
+            "DECLARE @db NVARCHAR(128) = ?;" +
+            "DECLARE @file NVARCHAR(500) = ?;" +
+            "DECLARE @qDb NVARCHAR(258) = QUOTENAME(@db);" +
+            "EXEC (N'ALTER DATABASE ' + @qDb + N' SET SINGLE_USER WITH ROLLBACK IMMEDIATE');" +
+            "BEGIN TRY " +
+            "  DECLARE @sql NVARCHAR(MAX) = " +
+            "    N'RESTORE DATABASE ' + @qDb + N' FROM DISK = @f WITH REPLACE, STATS = 10';" +
+            "  EXEC sp_executesql @sql, N'@f NVARCHAR(500)', @f = @file;" +
+            "  EXEC (N'ALTER DATABASE ' + @qDb + N' SET MULTI_USER');" +
+            "END TRY " +
+            "BEGIN CATCH " +
+            "  EXEC (N'ALTER DATABASE ' + @qDb + N' SET MULTI_USER');" +
+            "  THROW;" +
+            "END CATCH;";
+
+        return _odbc.ExecuteNonQueryAsync(sql, new object?[] { database, backupFile }, onInfo, ct);
+    }
 }

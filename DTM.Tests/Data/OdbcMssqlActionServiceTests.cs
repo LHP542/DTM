@@ -78,4 +78,39 @@ public class OdbcMssqlActionServiceTests
         OdbcMssqlActionService.BuildSnapshotName("MyMixedCaseDb", DateTime.Now)
             .Should().StartWith("MyMixedCaseDb_Snapshot_");
     }
+
+    // ---- Phase 10.3d: Backup-Path-Naming ----
+
+    [Fact]
+    public void BuildBackupPath_UsesFlatLayout_WithDbSubdirAndTimestamp()
+    {
+        var ts = new DateTime(2026, 7, 3, 15, 22, 0);
+        var path = OdbcMssqlActionService.BuildBackupPath(@"C:\Backups", "MyDb", ts);
+
+        // Flach: <root>\<db>\<db>-<yyyyMMdd_HHmm>.bak.
+        // Kein "01 Taeglich"-Unterordner mehr (unterschiedlich zum
+        // FOC-SQL-Layout).
+        path.Should().EndWith("MyDb-20260703_1522.bak");
+        path.Should().Contain("MyDb");
+    }
+
+    [Fact]
+    public void BuildBackupPath_TrimsTrailingSeparators_FromRoot()
+    {
+        var ts = new DateTime(2026, 7, 3, 15, 22, 0);
+        var withSlash = OdbcMssqlActionService.BuildBackupPath(@"C:\Backups\", "db", ts);
+        var withoutSlash = OdbcMssqlActionService.BuildBackupPath(@"C:\Backups", "db", ts);
+        withSlash.Should().Be(withoutSlash);
+    }
+
+    [Fact]
+    public void BuildBackupPath_HasDbSubdirectory()
+    {
+        var ts = new DateTime(2026, 7, 3, 15, 22, 0);
+        var path = OdbcMssqlActionService.BuildBackupPath(@"C:\Backups", "MyDb", ts);
+
+        // <root>\<db>\<file> — die zweite Ebene ist immer der DB-Name.
+        var parts = path.Replace('/', '\\').Split('\\');
+        parts.Should().Contain("MyDb");
+    }
 }
