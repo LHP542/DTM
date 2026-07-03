@@ -8,6 +8,9 @@ public sealed partial class EditConnectionViewModel : ViewModelBase
     public static IReadOnlyList<DB_SERVER.ServerTyp> ServerTypes { get; } =
         Enum.GetValues<DB_SERVER.ServerTyp>().ToArray();
 
+    public static IReadOnlyList<ServerBackend> Backends { get; } =
+        Enum.GetValues<ServerBackend>().ToArray();
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsMssql))]
     private DB_SERVER.ServerTyp _selectedServerType = DB_SERVER.ServerTyp.MSSQL;
@@ -24,6 +27,10 @@ public sealed partial class EditConnectionViewModel : ViewModelBase
     [ObservableProperty] private string _remoteUser = string.Empty;
     [ObservableProperty] private string _remotePassword = string.Empty;
 
+    // Phase 10.2: Backend-Wahl pro MSSQL-Server. Default FocSql; OdbcDirect
+    // fuer DMZ-Server ohne WinRM. Oracle ignoriert das Feld.
+    [ObservableProperty] private ServerBackend _selectedBackend = ServerBackend.FocSql;
+
     public bool IsMssql => SelectedServerType == DB_SERVER.ServerTyp.MSSQL;
 
     public EditConnectionViewModel() { }
@@ -39,6 +46,7 @@ public sealed partial class EditConnectionViewModel : ViewModelBase
         _connectionString = entry.ConnectionString;
         _remoteUser = entry.RemoteUser;
         _remotePassword = entry.PlainRemotePassword;
+        _selectedBackend = entry.Backend;
     }
 
     public ConnectionEntry ToEntry()
@@ -50,7 +58,10 @@ public sealed partial class EditConnectionViewModel : ViewModelBase
             User = User,
             Database = Database,
             ConnectionString = ConnectionString,
-            RemoteUser = IsMssql ? RemoteUser : string.Empty
+            RemoteUser = IsMssql ? RemoteUser : string.Empty,
+            // Oracle wird immer auf FocSql zurueckgesetzt — es gibt keinen
+            // OdbcDirect-Weg fuer Oracle (siehe Phase 10 Design-Doc).
+            Backend = IsMssql ? SelectedBackend : ServerBackend.FocSql
         };
         e.PlainPassword = Password;
         // Fuer Oracle die Remote-Felder bewusst leer speichern — verhindert

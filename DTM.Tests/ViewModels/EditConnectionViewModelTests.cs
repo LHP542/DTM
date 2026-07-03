@@ -150,4 +150,58 @@ public class EditConnectionViewModelTests
         rebuilt.RemoteUser.Should().Be("DMZ\\svc-dtm");
         rebuilt.PlainRemotePassword.Should().Be("DmzP@ss!");
     }
+
+    [Fact]
+    public void SelectedBackend_DefaultsToFocSql()
+    {
+        new EditConnectionViewModel().SelectedBackend.Should().Be(ServerBackend.FocSql);
+    }
+
+    [Fact]
+    public void ToEntry_Mssql_PropagatesBackend()
+    {
+        var vm = new EditConnectionViewModel
+        {
+            SelectedServerType = DB_SERVER.ServerTyp.MSSQL,
+            SelectedBackend = ServerBackend.OdbcDirect
+        };
+        vm.ToEntry().Backend.Should().Be(ServerBackend.OdbcDirect);
+    }
+
+    [Fact]
+    public void ToEntry_Oracle_ForcesBackendToFocSql()
+    {
+        // Selbst wenn der User zuvor OdbcDirect gewaehlt hat und dann
+        // auf Oracle umschaltet: fuer Oracle gibt es keinen ODBC-Direct-
+        // Weg. Persistiere immer FocSql, damit der DMZ-Weg nicht
+        // versehentlich fuer Oracle aktiv wird.
+        var vm = new EditConnectionViewModel
+        {
+            SelectedServerType = DB_SERVER.ServerTyp.ORACLE,
+            SelectedBackend = ServerBackend.OdbcDirect
+        };
+        vm.ToEntry().Backend.Should().Be(ServerBackend.FocSql);
+    }
+
+    [Fact]
+    public void FromEntry_RoundTrip_PreservesBackend()
+    {
+        var original = new ConnectionEntry
+        {
+            Key = "MSSQL",
+            Server = "dmz-sql01",
+            Backend = ServerBackend.OdbcDirect
+        };
+
+        var vm = new EditConnectionViewModel(original);
+        vm.SelectedBackend.Should().Be(ServerBackend.OdbcDirect);
+        vm.ToEntry().Backend.Should().Be(ServerBackend.OdbcDirect);
+    }
+
+    [Fact]
+    public void Backends_ContainsAllEnumValues()
+    {
+        EditConnectionViewModel.Backends.Should().BeEquivalentTo(
+            Enum.GetValues<ServerBackend>());
+    }
 }
