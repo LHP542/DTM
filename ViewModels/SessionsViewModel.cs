@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using DTM.Data.Mssql;
 using DTM.Data.Terminal;
 
 namespace DTM.ViewModels;
@@ -17,6 +18,9 @@ public sealed partial class SessionsViewModel : ViewModelBase
     /// <summary>Zeigt an, ob die Kill-Session-Aktion verfuegbar ist.</summary>
     [ObservableProperty] private bool _canCloseSessions;
 
+    /// <summary>Wenn gesetzt: OdbcDirect-Pfad; sonst FOC-SQL-Pfad.</summary>
+    public OdbcMssqlActionService? OdbcActions { get; set; }
+
     public void SetSessions(IEnumerable<Session>? sessions)
     {
         Sessions.Clear();
@@ -30,12 +34,15 @@ public sealed partial class SessionsViewModel : ViewModelBase
     /// <summary>
     /// Vor dem Anzeigen vom MainWindowViewModel aufzurufen — setzt DB-Kontext,
     /// damit der „Alle Sessions beenden"-Button die richtige DB ansteuert.
-    /// Wenn nicht gesetzt, bleibt der Button deaktiviert.
+    /// Wenn nicht gesetzt, bleibt der Button deaktiviert. Phase 10.4:
+    /// optionaler OdbcActionService fuer den OdbcDirect-Pfad.
     /// </summary>
-    public void Configure(string focDatabaseId, string displayName)
+    public void Configure(string focDatabaseId, string displayName,
+                          OdbcMssqlActionService? odbcActions = null)
     {
         FocDatabaseId = focDatabaseId;
         DatabaseDisplayName = displayName;
+        OdbcActions = odbcActions;
         CanCloseSessions = !string.IsNullOrWhiteSpace(focDatabaseId);
     }
 
@@ -47,10 +54,33 @@ public sealed partial class SessionsViewModel : ViewModelBase
     public void PerformCloseAllSessions()
     {
         if (!CanCloseSessions) return;
+
+        if (OdbcActions is { } svc)
+        {
+            _ = RunOdbcAsync(svc);
+            return;
+        }
+
         TerminalBus.RunFocSqlSimple(
             functionName: "Close-DbSessions",
             database: FocDatabaseId,
             extraArgs: string.Empty,
             title: $"Alle Sessions zu {DatabaseDisplayName} beenden");
+    }
+
+    private async Task RunOdbcAsync(OdbcMssqlActionService svc)
+    {
+        string label = $"Alle Sessions zu {DatabaseDisplayName} beenden (OdbcDirect)";
+        TerminalBus.InjectNotice($"[{label}]");
+        try
+        {
+            Action<string> onInfo = t => TerminalBus.InjectNotice($"  {t}");
+            await svc.KillUserSessionsAsync(FocDatabaseId, onInfo).ConfigureAwait(false);
+            TerminalBus.InjectNotice("[Sessions beendet]");
+        }
+        catch (Exception ex)
+        {
+            TerminalBus.InjectNotice($"[FEHLER: {ex.Message}]");
+        }
     }
 }

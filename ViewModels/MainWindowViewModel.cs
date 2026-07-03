@@ -232,6 +232,21 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task Backup()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
+
+        // OdbcDirect: kein Scheduling (Task-Scheduler-Weg des FOC-SQL-Moduls
+        // faellt weg). Backup laeuft sofort.
+        var odbc = TryGetOdbcActions(db);
+        if (odbc is not null)
+        {
+            await RunOdbcActionAsync("Backup", db.Database.Name,
+                async onInfo =>
+                {
+                    string path = await odbc.BackupAsync(db.Database.Name, onInfo).ConfigureAwait(false);
+                    onInfo($"Backup-Datei: {path}");
+                });
+            return;
+        }
+
         await RunDbActionAsync("Backup-Database", db, "Backup");
     }
 
@@ -239,6 +254,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task Clone()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
+        // Sync-Database-ToTest ist Multi-Step-PS-Orchestrierung, kein
+        // SQL-Weg — OdbcDirect kann das nicht, Button wird in 10.5 fuer
+        // OdbcDirect ausgeblendet. Falls doch durchgerutscht: klarer
+        // Hinweis, kein Silent-Fail.
+        var odbc = TryGetOdbcActions(db);
+        if (odbc is not null)
+        {
+            DTM.Data.Terminal.TerminalBus.InjectNotice(
+                "[Clone (Sync-Database-ToTest) ist bei OdbcDirect nicht verfuegbar — nur ueber FocSql-Server.]");
+            return;
+        }
+
         await RunDbActionAsync("Sync-Database-ToTest", db, "Clone");
     }
 
@@ -246,6 +273,19 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task Snapshot()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
+
+        var odbc = TryGetOdbcActions(db);
+        if (odbc is not null)
+        {
+            await RunOdbcActionAsync("Snapshot", db.Database.Name,
+                async onInfo =>
+                {
+                    string name = await odbc.CreateSnapshotAsync(db.Database.Name, onInfo).ConfigureAwait(false);
+                    onInfo($"Snapshot: {name}");
+                });
+            return;
+        }
+
         await RunDbActionAsync("Set-Snapshot", db, "Snapshot");
     }
 
@@ -276,6 +316,42 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         StatusBar = $"{label} für {db.Database.Name} ausgelöst.";
     }
 
+    // Phase 10.4: liefert den OdbcMssqlActionService, wenn der Server der
+    // DB im OdbcDirect-Modus ist. Sonst null → Aufrufer geht den FOC-SQL-Weg.
+    // Fuer Oracle immer null (kein OdbcDirect fuer Oracle).
+    private DTM.Data.Mssql.OdbcMssqlActionService? TryGetOdbcActions(DatabaseNodeViewModel db)
+    {
+        var server = _data.Servers.FirstOrDefault(s => s.Identity == db.ServerIdentity);
+        if (server?.Backend != ServerBackend.OdbcDirect) return null;
+        if (server.Typ != DB_SERVER.ServerTyp.MSSQL) return null;
+        return _data.GetMssqlActions(db.ServerIdentity);
+    }
+
+    // Phase 10.4: einheitlicher Ausfuehrungspfad fuer OdbcDirect-Actions.
+    // Statusbar + Notice-Header/-Footer, Exception-Handling, Live-Output
+    // per InjectNotice — der pwsh-Tab sieht die ODBC-Aktion wie eine
+    // FOC-SQL-Aktion (nur ohne Live-Stream aus dem Modul).
+    private async Task RunOdbcActionAsync(string label, string dbName, Func<Action<string>, Task> action)
+    {
+        StatusBar = $"{label} für {dbName} …";
+        DTM.Data.Terminal.TerminalBus.InjectNotice($"[{label} für {dbName} (OdbcDirect)]");
+        try
+        {
+            Action<string> onInfo = t => DTM.Data.Terminal.TerminalBus.InjectNotice($"  {t}");
+            await action(onInfo).ConfigureAwait(false);
+            DTM.Data.Terminal.TerminalBus.InjectNotice($"[{label} fertig für {dbName}]");
+            await Dispatcher.UIThread.InvokeAsync(() =>
+                StatusBar = $"{label} für {dbName} fertig.");
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "{0} fuer {1} fehlgeschlagen", label, dbName);
+            DTM.Data.Terminal.TerminalBus.InjectNotice($"[FEHLER: {ex.Message}]");
+            await Dispatcher.UIThread.InvokeAsync(() =>
+                StatusBar = $"{label} fehlgeschlagen: {ex.Message}");
+        }
+    }
+
     /// <summary>
     /// Bezeichner, den die FOC-SQL-Modulfunktionen erwarten:
     /// MSSQL → DB-Name, Oracle → FQDN (das Modul baut daraus 'oracle@&lt;FQDN&gt;'
@@ -301,6 +377,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void DbToSamba()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
+        // File-System-Op, kein SQL-Weg — 10.5 blendet den Button aus.
+        // Sicherheitsnetz: falls doch durchgerutscht, klarer Hinweis.
+        if (TryGetOdbcActions(db) is not null)
+        {
+            DTM.Data.Terminal.TerminalBus.InjectNotice(
+                "[Copy-Database-ToSamba ist bei OdbcDirect nicht verfuegbar — nur ueber FocSql-Server.]");
+            return;
+        }
         RunSimpleAction("Copy-Database-ToSamba", db, "", "DB → Samba");
     }
 
@@ -308,6 +392,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task RestoreSnapshot()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
+
+        // OdbcDirect: Auswahl-Dialog fuer Snapshot kommt in Phase 10.4d
+        // (MssqlSnapshotSelectWindow). Bis dahin nur eine klare Meldung —
+        // der FOC-SQL-Weg wuerde in der DMZ scheitern.
+        if (TryGetOdbcActions(db) is not null)
+        {
+            DTM.Data.Terminal.TerminalBus.InjectNotice(
+                "[Restore-Snapshot: Snapshot-Auswahl-Dialog folgt in Phase 10.4d.]");
+            return;
+        }
 
         // Oracle: Vorab Restore-Vorschau-Dialog mit Restore-Points und
         // PDB-Liste + Multi-PDB-Warnung. MSSQL ueberspringt das.
@@ -335,6 +429,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void RemoveSnapshot()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
+        if (TryGetOdbcActions(db) is not null)
+        {
+            DTM.Data.Terminal.TerminalBus.InjectNotice(
+                "[Remove-Snapshot: Snapshot-Auswahl-Dialog folgt in Phase 10.4d.]");
+            return;
+        }
         RunSimpleAction("Remove-Snapshot", db, "", "Remove Snapshot");
     }
 
@@ -346,23 +446,43 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // (siehe CLAUDE.md / Roadmap 1.1); fuer MSSQL bringt 3.4 einen dedizierten
     // Recovery-Mode-Dropdown als saubere Alternative.
     [RelayCommand]
-    private void ArchiveLogOn()
+    private async Task ArchiveLogOn()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
-        RunSimpleAction("Set-Archive-Log", db, "", "ArchiveLog An");
         ArchiveLogOnEnabled = false;
         ArchiveLogOffEnabled = false;
+
+        var odbc = TryGetOdbcActions(db);
+        if (odbc is not null)
+        {
+            await RunOdbcActionAsync("ArchiveLog An", db.Database.Name,
+                onInfo => odbc.SetArchiveLogAsync(db.Database.Name, on: true, onInfo));
+        }
+        else
+        {
+            RunSimpleAction("Set-Archive-Log", db, "", "ArchiveLog An");
+        }
         _ = Task.Delay(TimeSpan.FromSeconds(8))
                 .ContinueWith(_ => Dispatcher.UIThread.InvokeAsync(() => LoadStatsAsync(db)));
     }
 
     [RelayCommand]
-    private void ArchiveLogOff()
+    private async Task ArchiveLogOff()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
-        RunSimpleAction("Set-Archive-Log", db, "-Off", "ArchiveLog Aus");
         ArchiveLogOnEnabled = false;
         ArchiveLogOffEnabled = false;
+
+        var odbc = TryGetOdbcActions(db);
+        if (odbc is not null)
+        {
+            await RunOdbcActionAsync("ArchiveLog Aus", db.Database.Name,
+                onInfo => odbc.SetArchiveLogAsync(db.Database.Name, on: false, onInfo));
+        }
+        else
+        {
+            RunSimpleAction("Set-Archive-Log", db, "-Off", "ArchiveLog Aus");
+        }
         _ = Task.Delay(TimeSpan.FromSeconds(8))
                 .ContinueWith(_ => Dispatcher.UIThread.InvokeAsync(() => LoadStatsAsync(db)));
     }
@@ -426,9 +546,22 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // Get-ClusterHealthStatus -Server <host> — Always-On/Failover-Cluster-Status.
     // Read-only, MSSQL-only; Output erscheint im pwsh-Tab.
     [RelayCommand]
-    private void CheckClusterHealth()
+    private async Task CheckClusterHealth()
     {
         if (string.IsNullOrWhiteSpace(DbHost) || DbHost == "—") return;
+
+        // OdbcDirect: liest sys.dm_hadr_* direkt via ODBC.
+        if (SelectedNode is DatabaseNodeViewModel db)
+        {
+            var odbc = TryGetOdbcActions(db);
+            if (odbc is not null)
+            {
+                await RunOdbcActionAsync("Cluster-Health", DbHost,
+                    onInfo => odbc.GetClusterHealthAsync(onInfo));
+                return;
+            }
+        }
+
         DTM.Data.Terminal.TerminalBus.RunFocSqlServerAction(
             "Get-ClusterHealthStatus", DbHost, "Cluster-Health");
     }
@@ -493,7 +626,16 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        RunSimpleAction("Set-DbRecoveryMode", db, $"-Recovery {newMode}", $"Recovery -> {newMode}");
+        var odbc = TryGetOdbcActions(db);
+        if (odbc is not null)
+        {
+            await RunOdbcActionAsync($"Recovery → {newMode}", db.Database.Name,
+                onInfo => odbc.SetRecoveryModeAsync(db.Database.Name, newMode, onInfo));
+        }
+        else
+        {
+            RunSimpleAction("Set-DbRecoveryMode", db, $"-Recovery {newMode}", $"Recovery -> {newMode}");
+        }
         // Optimistisches Update — der naechste DB-Select holt den echten Stand neu.
         _lastSyncedRecoveryMode = newMode;
     }
@@ -501,16 +643,30 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     // --- Wartung (Phase 3.2, MSSQL-only via Invoke-DbMaintenance) ---
 
     [RelayCommand]
-    private void RunCheckDb()
+    private async Task RunCheckDb()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
+        var odbc = TryGetOdbcActions(db);
+        if (odbc is not null)
+        {
+            await RunOdbcActionAsync("DBCC CHECKDB", db.Database.Name,
+                onInfo => odbc.CheckDbAsync(db.Database.Name, onInfo));
+            return;
+        }
         RunSimpleAction("Invoke-DbMaintenance", db, "-CheckDb", "DBCC CHECKDB");
     }
 
     [RelayCommand]
-    private void RunIndexRebuild()
+    private async Task RunIndexRebuild()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
+        var odbc = TryGetOdbcActions(db);
+        if (odbc is not null)
+        {
+            await RunOdbcActionAsync("Index-Rebuild", db.Database.Name,
+                onInfo => odbc.IndexRebuildAsync(db.Database.Name, onInfo));
+            return;
+        }
         RunSimpleAction("Invoke-DbMaintenance", db, "-IndexRebuild", "Index-Rebuild");
     }
 
@@ -535,6 +691,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         bool ok = await dlg.ShowDialog<bool>(owner);
         if (!ok) return;
+
+        var odbc = TryGetOdbcActions(db);
+        if (odbc is not null)
+        {
+            await RunOdbcActionAsync("Shrink-Log", db.Database.Name,
+                onInfo => odbc.ShrinkLogAsync(db.Database.Name, onInfo));
+            return;
+        }
 
         RunSimpleAction("Invoke-DbMaintenance", db, "-ShrinkLog", "Shrink-Log");
     }
@@ -562,7 +726,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             database: ModuleDatabaseId(db),
             serverHost: ServerParamFor(db),
             currentPageVerify: null,
-            currentCompatibility: currentCompat);
+            currentCompatibility: currentCompat,
+            odbcActions: TryGetOdbcActions(db));
 
         DbConfigurationWindow dlg = new() { DataContext = vm };
         await dlg.ShowDialog(owner);
@@ -598,7 +763,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         SessionsViewModel vm = ResolveOrNew<SessionsViewModel>();
         vm.SetSessions(_currentSessions);
         if (SelectedNode is DatabaseNodeViewModel db)
-            vm.Configure(ModuleDatabaseId(db), db.Database.Name);
+            vm.Configure(ModuleDatabaseId(db), db.Database.Name, TryGetOdbcActions(db));
         SessionsWindow dlg = new SessionsWindow { DataContext = vm };
         await dlg.ShowDialog(owner);
     }

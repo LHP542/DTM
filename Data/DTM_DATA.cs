@@ -68,5 +68,17 @@ namespace DTM
                 $"Kein registrierter Server mit Identitaet '{identity}'. "
                 + "Pruefe ConnectionStore / DI-Setup.");
         }
+
+        public DTM.Data.Mssql.OdbcMssqlActionService GetMssqlActions(ServerIdentity identity)
+        {
+            DB_SERVER server = ResolveServer(identity);
+            if (server.Typ != DB_SERVER.ServerTyp.MSSQL)
+                throw new InvalidOperationException(
+                    $"OdbcMssqlActionService nur fuer MSSQL verfuegbar (Server '{identity}' ist {server.Typ}).");
+            var odbc = _factory.Get_DATA("MSSQL", server.serverCredential!) as DTM.MSSQL.MSSQL_ODBC
+                       ?? throw new InvalidOperationException(
+                           $"Factory lieferte keine MSSQL_ODBC-Instanz fuer '{identity}'.");
+            return new DTM.Data.Mssql.OdbcMssqlActionService(odbc);
+        }
     }
 }

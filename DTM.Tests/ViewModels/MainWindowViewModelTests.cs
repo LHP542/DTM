@@ -13,6 +13,8 @@ public class MainWindowViewModelTests
         public List<Database_Info> get_Database_Names(ServerIdentity id) => [];
         public Database_Stats get_Database_Stats(ServerIdentity id, Database_Info db)
             => new Database_Stats_MSSQL();
+        public DTM.Data.Mssql.OdbcMssqlActionService GetMssqlActions(ServerIdentity id)
+            => throw new NotSupportedException("Stub: MainWindowViewModelTests testen den FOC-SQL-Weg.");
     }
 
     private static MainWindowViewModel MakeVm(params DB_SERVER.ServerTyp[] types)

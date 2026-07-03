@@ -19,5 +19,14 @@ namespace DTM
         /// Statistiken einer Datenbank auf einem konkreten Server.
         /// </summary>
         Database_Stats get_Database_Stats(ServerIdentity identity, Database_Info database);
+
+        /// <summary>
+        /// Phase 10.4: liefert den <see cref="Data.Mssql.OdbcMssqlActionService"/>
+        /// fuer den benannten Server. Nutzt die interne <see cref="IODBC_Factory"/>
+        /// (dieselbe Cache-Instanz wie Stats/Namen-Abfragen — kein Doppel-Connect).
+        /// Wirft <see cref="InvalidOperationException"/> wenn der Server nicht
+        /// MSSQL ist (Oracle hat keinen ODBC-Direct-Weg).
+        /// </summary>
+        Data.Mssql.OdbcMssqlActionService GetMssqlActions(ServerIdentity identity);
     }
 }

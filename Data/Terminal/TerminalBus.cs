@@ -250,6 +250,23 @@ public static class TerminalBus
     }
 
     /// <summary>
+    /// Injiziert eine synthetische Notice-Zeile in den pwsh-Tab, ohne
+    /// dass dafuer ein PS-Command ausgefuehrt werden muss. Genutzt von
+    /// OdbcDirect-Actions (Phase 10.4), damit Backup-/Restore-/Wartungs-
+    /// Output im selben pwsh-Tab landet wie der FOC-SQL-Live-Stream — der
+    /// User sieht alles an einem Ort. Wenn keine Session aktiv ist,
+    /// nur ins Log.
+    /// </summary>
+    public static void InjectNotice(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+        ITerminalSession? sess;
+        lock (_lock) sess = _powerShellSession;
+        if (sess is ITerminalBusInjector injector) injector.InjectNotice(text);
+        else _logger.Info(text);
+    }
+
+    /// <summary>
     /// Sendet ein beliebiges PowerShell-Skript an die laufende Session.
     /// Fire-and-forget — kein Fehler wenn kein Tab aktiv ist.
     /// </summary>
