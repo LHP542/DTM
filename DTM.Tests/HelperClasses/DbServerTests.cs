@@ -58,4 +58,21 @@ public class DbServerTests
     {
         Enum.GetValues<DB_SERVER.ServerTyp>().Should().HaveCount(3);
     }
+
+    [Fact]
+    public void Backend_DefaultsToFocSql()
+    {
+        var server = new DB_SERVER(DB_SERVER.ServerTyp.MSSQL, new ServerCredential("srv"));
+        server.Backend.Should().Be(ServerBackend.FocSql);
+    }
+
+    [Fact]
+    public void Backend_CanBeSetToOdbcDirect()
+    {
+        var server = new DB_SERVER(
+            DB_SERVER.ServerTyp.MSSQL,
+            new ServerCredential("dmz-sql"),
+            ServerBackend.OdbcDirect);
+        server.Backend.Should().Be(ServerBackend.OdbcDirect);
+    }
 }

@@ -13,6 +13,14 @@ namespace DTM
         public ServerCredential? serverCredential { get; private set; }
 
         /// <summary>
+        /// Phase 10: Ausfuehrungspfad fuer FOC-SQL-Actions. Fuer MSSQL vom User
+        /// waehlbar (FocSql vs. OdbcDirect), fuer Oracle irrelevant und wird
+        /// beim Speichern in <see cref="Config.ConnectionEntry"/> auf Default
+        /// zurueckgesetzt. Siehe <see cref="ServerBackend"/>.
+        /// </summary>
+        public ServerBackend Backend { get; }
+
+        /// <summary>
         /// Composite-Identitaet (Typ, Hostname). Wird in Phase 6 zur eindeutigen
         /// Adressierung eines Servers genutzt — frueher reichte der Typ allein
         /// (Dictionary-Key), jetzt koennen mehrere Hosts pro Typ existieren.
@@ -20,10 +28,12 @@ namespace DTM
         public ServerIdentity Identity =>
             new(Typ, serverCredential?.Server ?? string.Empty);
 
-        public DB_SERVER(ServerTyp typ, ServerCredential serverCredential)
+        public DB_SERVER(ServerTyp typ, ServerCredential serverCredential,
+                         ServerBackend backend = ServerBackend.FocSql)
         {
             this.Typ = typ;
             this.serverCredential = serverCredential;
+            this.Backend = backend;
         }
     }
 }

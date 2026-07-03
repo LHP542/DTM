@@ -76,7 +76,8 @@ public sealed partial class ConnectionManagerViewModel : ViewModelBase
         var servers = Connections
             .Select(e => new DB_SERVER(
                 Enum.TryParse<DB_SERVER.ServerTyp>(e.Key, out var t) ? t : DB_SERVER.ServerTyp.MSSQL,
-                e.ToCredential()))
+                e.ToCredential(),
+                e.Backend))
             .ToList();
         TerminalBus.SetCredMap(servers);
     }

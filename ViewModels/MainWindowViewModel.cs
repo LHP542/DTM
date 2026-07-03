@@ -403,7 +403,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         foreach (DTM.Config.ConnectionEntry entry in DTM.Config.ConnectionStore.Load())
         {
             if (Enum.TryParse<DB_SERVER.ServerTyp>(entry.Key, ignoreCase: true, out var typ))
-                newServers.Add(new DB_SERVER(typ, entry.ToCredential()));
+                newServers.Add(new DB_SERVER(typ, entry.ToCredential(), entry.Backend));
         }
 
         _data = new DTM_DATA(newServers, new ODBC_Factory());

@@ -17,6 +17,12 @@ public sealed class ConnectionEntry
     public string RemoteUser { get; set; } = string.Empty;
     public string RemotePasswordProtected { get; set; } = string.Empty;
 
+    // Phase 10: Ausfuehrungspfad pro Server (FocSql vs. OdbcDirect). Legacy-JSON
+    // ohne das Feld → Default = FocSql (Bestandsverhalten). JsonStringEnumConverter,
+    // damit die Datei lesbar bleibt.
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public ServerBackend Backend { get; set; } = ServerBackend.FocSql;
+
     [JsonIgnore]
     public string PlainPassword
     {

@@ -158,4 +158,60 @@ public class ConnectionStoreTests : IDisposable
         e.RemotePasswordProtected.Should().NotBe("DmzP@ss!");
         e.PlainRemotePassword.Should().Be("DmzP@ss!");
     }
+
+    [Fact]
+    public void Load_LegacyJson_WithoutBackend_DefaultsToFocSql()
+    {
+        // Legacy connections.json vor Phase 10 hat kein Backend-Feld.
+        // System.Text.Json muss auf Default (FocSql) fallen — sonst blockt
+        // der Bestandsuser den Update.
+        Directory.CreateDirectory(Path.GetDirectoryName(_tmp)!);
+        string legacyJson = """
+        [
+          { "Key": "MSSQL", "Server": "FOC-SQL01", "User": "sa",
+            "PasswordProtected": "", "Database": "Master", "ConnectionString": "" }
+        ]
+        """;
+        SystemFile.WriteAllText(_tmp, legacyJson);
+
+        var loaded = ConnectionStore.Load();
+        loaded.Should().HaveCount(1);
+        loaded[0].Backend.Should().Be(ServerBackend.FocSql);
+    }
+
+    [Fact]
+    public void Save_Then_Load_PreservesBackend()
+    {
+        var entry = new ConnectionEntry
+        {
+            Key = "MSSQL",
+            Server = "dmz-sql01",
+            User = "sa",
+            Database = "Master",
+            Backend = ServerBackend.OdbcDirect
+        };
+
+        ConnectionStore.Save([entry]);
+        var loaded = ConnectionStore.Load();
+
+        loaded.Should().HaveCount(1);
+        loaded[0].Backend.Should().Be(ServerBackend.OdbcDirect);
+    }
+
+    [Fact]
+    public void Save_Backend_IsWrittenAsString()
+    {
+        // Lesbarkeit von connections.json ist ein Feature; wenn irgendwer die
+        // Datei manuell inspiziert, soll "OdbcDirect" dort stehen, nicht 1.
+        var entry = new ConnectionEntry
+        {
+            Key = "MSSQL",
+            Server = "dmz-sql01",
+            Backend = ServerBackend.OdbcDirect
+        };
+
+        ConnectionStore.Save([entry]);
+        string raw = SystemFile.ReadAllText(_tmp);
+        raw.Should().Contain("\"OdbcDirect\"");
+    }
 }

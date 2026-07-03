@@ -35,7 +35,7 @@ internal static class ServiceRegistrations
             foreach (ConnectionEntry entry in ConnectionStore.Load())
             {
                 if (Enum.TryParse<DB_SERVER.ServerTyp>(entry.Key, ignoreCase: true, out var typ))
-                    list.Add(new DB_SERVER(typ, entry.ToCredential()));
+                    list.Add(new DB_SERVER(typ, entry.ToCredential(), entry.Backend));
             }
             return list;
         });

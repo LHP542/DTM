@@ -615,6 +615,99 @@ Sub-Items:
 niemals Klartext ins pwsh-Tab, ins Log, in Fehlermeldungen. Log-Maske via
 `LogMask` (schon vorhanden fuer ConnectionString) wiederverwenden.
 
+#### Phase 10 — ODBC-Direct-Backend fuer DMZ-Server (`v2.2.0`)
+
+Kontext: In der DMZ ist WinRM (5985/5986) hart deaktiviert (Vorfrage
+9.1 negativ). ODBC/1433 zum SQL-Server geht aber. FOC-SQL im
+Standard-Setup ist zwei Dinge in einem: (a) T-SQL-Ausfuehrung
+(BACKUP, RESTORE, Snapshot, Recovery-Mode, CHECKDB, …) und (b)
+PowerShell-Orchestrierung drumherum (Mail nach Backup, Cluster-
+Health-Aggregation, File-Copy zu Samba, ScheduledTasks, …). Fuer die
+DMZ willst du (a) direkt ueber ODBC, ohne (b).
+
+Kernentscheidung: **Backend-Wahl pro Server**, persistiert in
+`connections.json` als `ServerBackend`-Enum. Default = `FocSql` →
+Bestandssetups unveraendert. `OdbcDirect` = neue Codepfade,
+15 von 17 Actions machbar (Copy-Database-ToSamba +
+Sync-Database-ToTest sind File-System-Ops und werden bei OdbcDirect
+ausgegraut).
+
+Design-Entscheidungen (siehe Ultrathink-Notiz vor Phase-Start):
+- **Dispatch am Aufrufer** (im MainWindowViewModel switch auf Backend),
+  KEIN Backend-Interface — FOC-SQL ist fire-and-forget im pwsh-Tab,
+  ODBC-Direct ist synchrones SQL, Signaturen passen nicht in eine
+  gemeinsame Abstraktion. Erweitern wenn wirklich 3+ Backends.
+- **Output-Kanal = derselbe pwsh-Tab** via
+  `ITerminalBusInjector.InjectNotice`. `OdbcConnection.InfoMessage`
+  wird gehookt und liefert `DBCC CHECKDB`- / `DBCC SHRINKFILE`-Live-
+  Meldungen als Notices — konsistente UX zum FOC-SQL-Live-Stream.
+- **SQL-Injection: `sp_executesql` + `QUOTENAME`** fuer Object-Namen,
+  ODBC-Parameter fuer Werte. Kein String-Concat auf Client.
+- **`MSSQL_ODBC`** bekommt `ExecuteNonQueryAsync` +
+  `ExecuteReaderAsync` public. Bestehende Connection-Instanz wird
+  geshared (Factory cached pro Server, Fix `0c7a4d5`).
+- **Backup-Browser** ueber `msdb.dbo.backupset` join
+  `backupmediafamily` — Server-verwaltete History, findet DTM-eigene
+  Backups zuverlaessig. Kein FS-Zugriff noetig.
+- **BackupRoot** via `master.dbo.xp_instance_regread` (SQL-Server-
+  Default-BackupPath). Kein Extra-Config-Feld.
+- **Snapshot-Naming**: File-Layout aus `sys.master_files` lesen,
+  Snapshot-Filenames als `<Original>_Snapshot_<yyyyMMddHHmmss>.ss`,
+  Multi-Data-File-DBs werden korrekt behandelt.
+- **Async**: `Task.Run` um synchrone ODBC-Calls, `SemaphoreSlim` pro
+  Server serialisiert parallele Actions (OdbcConnection nicht thread-
+  safe).
+
+Sub-Items:
+
+- [ ] **10.1** `ServerBackend`-Enum (`FocSql | OdbcDirect`) +
+      `ConnectionEntry.Backend` + `DB_SERVER.Backend`-Property.
+      Default `FocSql`. `JsonStringEnumConverter` fuer Lesbarkeit.
+      Legacy-JSON deserialisiert korrekt zu Default. — `S`
+- [ ] **10.2** `EditConnectionWindow` bekommt Backend-Dropdown, nur
+      bei MSSQL sichtbar (Oracle bleibt unveraendert; SSH ist
+      alternativlos). Bei Typ-Wechsel MSSQL→Oracle Backend auf Default
+      zurueck. — `S`
+- [ ] **10.3a** `MSSQL_ODBC.ExecuteNonQueryAsync(sql, params)` +
+      `ExecuteReaderAsync<T>(sql, mapper, params)` public. Optionaler
+      `InfoMessage`-Callback fuer Live-Notices. Alle Connection-
+      Lifecycle-Details bleiben intern. — `S`
+- [ ] **10.3b** `OdbcMssqlActionService`: Recovery-Mode, Query-Store,
+      Page-Verify, Compatibility-Reset (4 einfache `ALTER DATABASE`-
+      Statements plus Archive-Log-Toggle-Wrapper fuer MSSQL). — `M`
+- [ ] **10.3c** `OdbcMssqlActionService`: Snapshot Create / Restore /
+      Drop. Multi-Data-File-Support via `sys.master_files`-Query. — `M`
+- [ ] **10.3d** `OdbcMssqlActionService`: Backup (mit
+      `xp_instance_regread` fuer BackupRoot) + Backup-Browser (msdb-
+      Query) + Restore. — `M`
+- [ ] **10.3e** `OdbcMssqlActionService`: Sessions-Kill (KILL-Loop),
+      CHECKDB, Index-Rebuild (Cursor ueber User-Tables), Shrink-Log
+      (Log-File aus `sys.master_files` type=1). InfoMessage-Streaming
+      aktiv. — `M`
+- [ ] **10.3f** `OdbcMssqlActionService`: Cluster-Health via
+      `sys.dm_hadr_availability_replica_states` + Aggregation zu
+      demselben POCO wie FOC-SQL-Version. — `S`
+- [ ] **10.4** `MainWindowViewModel` + relevante Sub-VMs dispatchen
+      pro Action auf Backend:
+      `switch { FocSql → TerminalBus, OdbcDirect → _odbcActions }`.
+      SemaphoreSlim pro Server, Notices als Live-Feedback. — `M`
+- [ ] **10.5** Sichtbarkeit: bei `OdbcDirect` `CopyToSambaVisible`
+      = false, `SyncToTestVisible` = false. StatusBar-Hinweis
+      dokumentiert dass Feature-Set kompakter ist. — `S`
+
+**Was NICHT in Phase 10:**
+- Copy-Database-ToSamba (FS-Operation, kein SQL-Weg)
+- Sync-Database-ToTest (Multi-Step-PS-Orchestrierung)
+- Mail-Versand nach Backup (bewusst weg im DMZ)
+- Get-DatabaseStats-Konsolidierung (bleibt ODBC-Weg wie schon)
+
+**Sicherheit:** SQL-Login-Credentials sind fuer BACKUP/RESTORE/
+ALTER DATABASE zwingend `sysadmin`-privilegiert; das ist Realitaet
+fuer Backup-Tools. Kein neuer Angriffsvektor gegenueber Status quo.
+Windows-Credentials werden fuer OdbcDirect-Server nicht gebraucht —
+Phase-9-Infrastruktur bleibt inaktiv, aber intakt fuer echte
+WinRM-Multi-Zone-Setups.
+
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 
 Lars-Idee aus dem v2.0.0-Test: ein eigener Button bzw. Dialog, der **mehr

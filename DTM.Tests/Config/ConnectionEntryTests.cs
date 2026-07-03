@@ -84,4 +84,17 @@ public class ConnectionEntryTests
         cred.RemotePassword.Should().BeEmpty();
         cred.HasRemoteCredential.Should().BeFalse();
     }
+
+    [Fact]
+    public void Backend_DefaultsToFocSql()
+    {
+        new ConnectionEntry().Backend.Should().Be(ServerBackend.FocSql);
+    }
+
+    [Fact]
+    public void Backend_CanBeSetToOdbcDirect()
+    {
+        var entry = new ConnectionEntry { Backend = ServerBackend.OdbcDirect };
+        entry.Backend.Should().Be(ServerBackend.OdbcDirect);
+    }
 }
