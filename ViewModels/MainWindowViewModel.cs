@@ -61,6 +61,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private bool _recoveryModeVisible;
     [ObservableProperty] private string _recoveryModeSelected = "FULL";
 
+    // Phase 10.5: die zwei bei OdbcDirect nicht verfuegbaren Actions —
+    // Copy-Database-ToSamba (FS-Operation) und Sync-Database-ToTest
+    // (Multi-Step-PS-Orchestrierung). Default true, damit bestehende
+    // FocSql-Server unveraendert alles sehen; bei OdbcDirect-Server-
+    // Auswahl setzt der ApplyStats-Pfad die Flags auf false.
+    [ObservableProperty] private bool _copyToSambaVisible = true;
+    [ObservableProperty] private bool _syncToTestVisible = true;
+
     public IReadOnlyList<string> RecoveryModeOptions { get; } =
         new[] { "FULL", "SIMPLE", "BULK_LOGGED" };
 
@@ -147,6 +155,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         BackupBrowserVisible = false;
         MaintenanceVisible = false;
         RecoveryModeVisible = false;
+        // 10.5: bei OdbcDirect-DB werden Copy/Sync ausgeblendet (Ausgangs-Default
+        // = sichtbar; ApplyStats setzt bei OdbcDirect auf false).
+        CopyToSambaVisible = true;
+        SyncToTestVisible = true;
 
         switch (value)
         {
@@ -199,6 +211,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             ClusterHealthVisible = true;
             BackupBrowserVisible = true;
             MaintenanceVisible   = true;
+
+            // 10.5: Copy-ToSamba + Sync-Test brauchen den FOC-SQL-Server-Weg
+            // (FS-Op bzw. PS-Orchestrierung). Bei OdbcDirect ausblenden.
+            if (SelectedNode is DatabaseNodeViewModel selDb
+                && _data.Servers.FirstOrDefault(s => s.Identity == selDb.ServerIdentity)?.Backend == ServerBackend.OdbcDirect)
+            {
+                CopyToSambaVisible = false;
+                SyncToTestVisible  = false;
+            }
             BackupButtonText = "Backup";
             DbName = m.Name ?? "—";
             DbHost = m.Server ?? "—";
@@ -575,6 +596,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         BackupBrowserVisible = false;
         MaintenanceVisible = false;
         RecoveryModeVisible = false;
+        CopyToSambaVisible = true;
+        SyncToTestVisible = true;
         StatusBar = "Verbindungen aktualisiert.";
         _logger.Debug("Verbindungen neu geladen: {0} Server.", newServers.Count);
     }

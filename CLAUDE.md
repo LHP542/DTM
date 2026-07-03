@@ -660,40 +660,69 @@ Design-Entscheidungen (siehe Ultrathink-Notiz vor Phase-Start):
 
 Sub-Items:
 
-- [ ] **10.1** `ServerBackend`-Enum (`FocSql | OdbcDirect`) +
+- [x] **10.1** `ServerBackend`-Enum (`FocSql | OdbcDirect`) +
       `ConnectionEntry.Backend` + `DB_SERVER.Backend`-Property.
       Default `FocSql`. `JsonStringEnumConverter` fuer Lesbarkeit.
       Legacy-JSON deserialisiert korrekt zu Default. — `S`
-- [ ] **10.2** `EditConnectionWindow` bekommt Backend-Dropdown, nur
+      _(erledigt: `817f713`.)_
+- [x] **10.2** `EditConnectionWindow` bekommt Backend-Dropdown, nur
       bei MSSQL sichtbar (Oracle bleibt unveraendert; SSH ist
       alternativlos). Bei Typ-Wechsel MSSQL→Oracle Backend auf Default
       zurueck. — `S`
-- [ ] **10.3a** `MSSQL_ODBC.ExecuteNonQueryAsync(sql, params)` +
+      _(erledigt: `8ec66c1`.)_
+- [x] **10.3a** `MSSQL_ODBC.ExecuteNonQueryAsync(sql, params)` +
       `ExecuteReaderAsync<T>(sql, mapper, params)` public. Optionaler
       `InfoMessage`-Callback fuer Live-Notices. Alle Connection-
       Lifecycle-Details bleiben intern. — `S`
-- [ ] **10.3b** `OdbcMssqlActionService`: Recovery-Mode, Query-Store,
+      _(erledigt: `8ff4cf4`.)_
+- [x] **10.3b** `OdbcMssqlActionService`: Recovery-Mode, Query-Store,
       Page-Verify, Compatibility-Reset (4 einfache `ALTER DATABASE`-
       Statements plus Archive-Log-Toggle-Wrapper fuer MSSQL). — `M`
-- [ ] **10.3c** `OdbcMssqlActionService`: Snapshot Create / Restore /
-      Drop. Multi-Data-File-Support via `sys.master_files`-Query. — `M`
-- [ ] **10.3d** `OdbcMssqlActionService`: Backup (mit
+      _(erledigt: `90c1efe`. Whitelist-Predicates
+      `IsValidRecoveryMode`/`IsValidPageVerify` als static public
+      exposed fuer Unit-Tests ohne ODBC-Roundtrip.)_
+- [x] **10.3c** `OdbcMssqlActionService`: Snapshot Create / List /
+      Restore / Drop. Multi-Data-File-Support via `sys.master_files`-Query. — `M`
+      _(erledigt: `1678f28`. Naming
+      `<db>_Snapshot_<yyyyMMddHHmmss>` per Lars-Entscheidung.)_
+- [x] **10.3d** `OdbcMssqlActionService`: Backup (mit
       `xp_instance_regread` fuer BackupRoot) + Backup-Browser (msdb-
-      Query) + Restore. — `M`
-- [ ] **10.3e** `OdbcMssqlActionService`: Sessions-Kill (KILL-Loop),
-      CHECKDB, Index-Rebuild (Cursor ueber User-Tables), Shrink-Log
-      (Log-File aus `sys.master_files` type=1). InfoMessage-Streaming
+      Query, nur Fulls, TOP 100) + Restore. Backup-Layout flach:
+      `<root>\<db>\<db>-<yyyyMMdd_HHmm>.bak` (Lars-Entscheidung). — `M`
+      _(erledigt: `9fc30ff`.)_
+- [x] **10.3e** `OdbcMssqlActionService`: Sessions-Kill (KILL-Loop),
+      CHECKDB, Index-Rebuild (Table-Liste + pro-Table-Notice), Shrink-Log
+      (Log-Files aus `sys.master_files` type=1). InfoMessage-Streaming
       aktiv. — `M`
-- [ ] **10.3f** `OdbcMssqlActionService`: Cluster-Health via
-      `sys.dm_hadr_availability_replica_states` + Aggregation zu
-      demselben POCO wie FOC-SQL-Version. — `S`
-- [ ] **10.4** `MainWindowViewModel` + relevante Sub-VMs dispatchen
+      _(erledigt: `47f834f`.)_
+- [x] **10.3f** `OdbcMssqlActionService`: Cluster-Health via
+      `sys.dm_hadr_availability_replica_states`. — `S`
+      _(erledigt: `48c1a7a`. Output als Text-Notice pro Replica,
+      konsistent zum FOC-SQL-Weg.)_
+- [x] **10.4** `MainWindowViewModel` + relevante Sub-VMs dispatchen
       pro Action auf Backend:
       `switch { FocSql → TerminalBus, OdbcDirect → _odbcActions }`.
       SemaphoreSlim pro Server, Notices als Live-Feedback. — `M`
-- [ ] **10.5** Sichtbarkeit: bei `OdbcDirect` `CopyToSambaVisible`
-      = false, `SyncToTestVisible` = false. StatusBar-Hinweis
-      dokumentiert dass Feature-Set kompakter ist. — `S`
+      _(erledigt in vier Commits:
+      `19ba184` (10.4a+b Simple-Actions), `9d90650` (10.4c Backup-
+      Browser Backend-Aware), `683cefb` (10.4d Snapshot-Select-Dialog
+      fuer Restore/Drop). `TerminalBus.InjectNotice` + `IDTM_DATA.
+      GetMssqlActions` als Infrastruktur; `MainWindowViewModel.
+      TryGetOdbcActions` + `RunOdbcActionAsync` als Dispatcher-Helper.
+      DbConfigurationViewModel + SessionsViewModel + BackupBrowser-
+      ViewModel bekommen `OdbcActions`-Property und switchen intern.
+      Neuer `MssqlSnapshotSelectWindow` (analog OracleRestoreSelect-
+      Window) fuer Restore + Drop im OdbcDirect-Modus — bei FocSql
+      bleibt der interaktive pwsh-Read-Host-Weg.)_
+- [x] **10.5** Sichtbarkeit: bei `OdbcDirect` `CopyToSambaVisible`
+      = false, `SyncToTestVisible` = false. — `S`
+      _(erledigt: dieser Commit. Beide Properties Default true, in
+      ApplyStats bei OdbcDirect-DB auf false. Buttons „Clone" und
+      „DB → Samba" in MainWindow.axaml haengen an den Bindings.
+      MainWindowViewModel-Fallback-Guards in Backup/Clone/DbToSamba-
+      Commands rufen bei OdbcDirect eine InjectNotice („nicht
+      verfuegbar") — sicheres Netz falls ein Command doch getriggert
+      wird.)_
 
 **Was NICHT in Phase 10:**
 - Copy-Database-ToSamba (FS-Operation, kein SQL-Weg)

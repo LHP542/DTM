@@ -173,13 +173,15 @@
                                         <TextBlock Text="{Binding BackupButtonText}" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
-                                <Button Classes="action" Command="{Binding CloneCommand}">
+                                <Button Classes="action" Command="{Binding CloneCommand}"
+                                        IsVisible="{Binding SyncToTestVisible}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Classes="glyph" Text="&#x29C9;" />
                                         <TextBlock Text="Clone" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
-                                <Button Classes="action" Command="{Binding DbToSambaCommand}">
+                                <Button Classes="action" Command="{Binding DbToSambaCommand}"
+                                        IsVisible="{Binding CopyToSambaVisible}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Classes="glyph" Text="&#x2197;" />
                                         <TextBlock Text="DB → Samba" VerticalAlignment="Center" />
