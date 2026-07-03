@@ -1,5 +1,19 @@
 [
   {
+    "version": "2.2.0",
+    "date": "2026-07-03",
+    "notes": [
+      "ODBC-Direct-Backend für MSSQL-Server: neuer Backend-Modus pro Server (im ConnectionManager wählbar). DMZ-Server ohne WinRM können damit Backup, Restore, Snapshot, Wartung, Konfiguration und Cluster-Health direkt über die ODBC/1433-Verbindung ausführen — ohne PowerShell-Remoting.",
+      "15 von 17 Actions sind im OdbcDirect-Modus verfügbar (BACKUP, RESTORE, Snapshot Create/Restore/Drop, CHECKDB, Index-Rebuild, Shrink-Log, Recovery-Mode, Query-Store, Page-Verify, Compatibility-Reset, Sessions-Kill, Cluster-Health). Copy-Database-ToSamba und Sync-Database-ToTest bleiben FOC-SQL-only (File-System-Operationen ohne SQL-Weg).",
+      "Snapshot-Restore/Drop bei OdbcDirect: neuer MssqlSnapshotSelectWindow (analog Oracle-Restore-Vorschau). Bei FocSql-Servern bleibt der interaktive pwsh-Read-Host-Weg unverändert.",
+      "Backup-Browser Backend-Aware: bei OdbcDirect kommt die Backup-Liste aus msdb.dbo.backupset (nur Full-Backups, letzte 100), sonst weiterhin Get-DbBackups. Gleiche UI für beide Backends.",
+      "Multi-Credential-Support für PS-Remoting (Phase 9): DTM kann pro Server abweichende Windows-Credentials für WinRM/PSSession vorhalten. DPAPI-verschlüsselt in connections.json, im ConnectionManager pflegbar. Fallback = globales credential.xml wie bisher — Bestandssetups unverändert.",
+      "FOC-SQL: Copy-Database-ToSamba-Oracle grundlegend überarbeitet. Nutzt jetzt Oracle-Directory-Objekte (dba_directories) statt hardcoded Pfad, wechselt bei Multitenant in die PDB (ALTER SESSION SET CONTAINER), und identifiziert neue Dumps über Marker-File + PDB-Prefix-Filter. Behebt den Bug wo bei mehreren DBs im gemeinsamen Backup-Verzeichnis das falsche (neuere) Dump einer anderen DB kopiert wurde.",
+      "DTM erkennt jetzt VERSION_MISMATCH-Meldungen aus FOC-SQL (Phase 7.3) im Terminal-Stream und spiegelt sie in der Statusbar — inkl. Server-Name und gefundener MSSQL-Modul-Version, sodass sofort klar ist, welcher Server ein PS-Profil-Refresh braucht."
+    ],
+    "modulesChanged": ["FOC-SQL"]
+  },
+  {
     "version": "2.1.0",
     "date": "2026-06-27",
     "notes": [
