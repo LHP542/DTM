@@ -99,6 +99,106 @@ namespace DTM.MSSQL
             Connection.Dispose();
         }
 
+        // Phase 10.3a: Public Action-Ausfuehrung fuer OdbcDirect-Backend.
+        // Serialisierung ueber SemaphoreSlim, weil OdbcConnection nicht
+        // thread-safe ist — parallele Actions auf denselben Server sequen-
+        // zieren, keine Kollisionen.
+        private readonly SemaphoreSlim _actionLock = new(1, 1);
+
+        /// <summary>
+        /// Fuehrt ein T-SQL-Statement ohne Ergebnismenge aus (BACKUP, ALTER,
+        /// DBCC, KILL, sp_executesql-Wrapper …). PRINT/RAISERROR/DBCC-
+        /// Meldungen werden ueber <paramref name="onInfo"/> live durchgereicht,
+        /// damit der Aufrufer sie als Notices in den pwsh-Tab injizieren
+        /// kann. Cancellation-Token wird auf den <see cref="OdbcCommand"/>
+        /// registriert.
+        /// </summary>
+        public async Task ExecuteNonQueryAsync(
+            string sql,
+            IReadOnlyList<object?>? positionalParameters = null,
+            Action<string>? onInfo = null,
+            CancellationToken cancellationToken = default)
+        {
+            await _actionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (!conn_open())
+                    throw new InvalidOperationException("Keine Verbindung zur Datenbank");
+
+                OdbcInfoMessageEventHandler? handler = null;
+                if (onInfo is not null)
+                {
+                    handler = (_, e) =>
+                    {
+                        foreach (OdbcError err in e.Errors)
+                            onInfo(err.Message);
+                    };
+                    Connection.InfoMessage += handler;
+                }
+
+                try
+                {
+                    await Task.Run(() =>
+                    {
+                        using var cmd = new OdbcCommand(sql, Connection) { CommandTimeout = 0 };
+                        AddPositionalParams(cmd, positionalParameters);
+                        using var _ = cancellationToken.Register(() => { try { cmd.Cancel(); } catch { } });
+                        cmd.ExecuteNonQuery();
+                    }, cancellationToken).ConfigureAwait(false);
+                }
+                finally
+                {
+                    if (handler is not null) Connection.InfoMessage -= handler;
+                }
+            }
+            finally
+            {
+                _actionLock.Release();
+            }
+        }
+
+        /// <summary>
+        /// Fuehrt ein SELECT-Statement aus und mapt jede Zeile per
+        /// <paramref name="map"/>-Delegate. Wird von Actions wie
+        /// Backup-Browser (msdb-Query), Snapshot-Datei-Layout
+        /// (sys.master_files) und Cluster-Health (sys.dm_hadr_*) genutzt.
+        /// </summary>
+        public async Task<List<T>> ExecuteReaderAsync<T>(
+            string sql,
+            Func<IDataRecord, T> map,
+            IReadOnlyList<object?>? positionalParameters = null,
+            CancellationToken cancellationToken = default)
+        {
+            await _actionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (!conn_open())
+                    throw new InvalidOperationException("Keine Verbindung zur Datenbank");
+
+                return await Task.Run(() =>
+                {
+                    var result = new List<T>();
+                    using var cmd = new OdbcCommand(sql, Connection) { CommandTimeout = 0 };
+                    AddPositionalParams(cmd, positionalParameters);
+                    using var _ = cancellationToken.Register(() => { try { cmd.Cancel(); } catch { } });
+                    using var reader = cmd.ExecuteReader();
+                    while (reader.Read()) result.Add(map(reader));
+                    return result;
+                }, cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                _actionLock.Release();
+            }
+        }
+
+        private static void AddPositionalParams(OdbcCommand cmd, IReadOnlyList<object?>? parameters)
+        {
+            if (parameters is null) return;
+            for (int i = 0; i < parameters.Count; i++)
+                cmd.Parameters.Add(new OdbcParameter($"@p{i}", parameters[i] ?? DBNull.Value));
+        }
+
         public List<Database_Info> get_Datenbank_Names()
         {
             return get_Rows(
