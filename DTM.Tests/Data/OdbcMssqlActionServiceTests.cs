@@ -52,4 +52,30 @@ public class OdbcMssqlActionServiceTests
     {
         OdbcMssqlActionService.IsValidPageVerify(pv).Should().BeFalse();
     }
+
+    // ---- Phase 10.3c: Snapshot-Naming ----
+
+    [Fact]
+    public void BuildSnapshotName_UsesDbAndTimestamp()
+    {
+        var ts = new DateTime(2026, 7, 3, 15, 22, 47);
+        OdbcMssqlActionService.BuildSnapshotName("MyDb", ts)
+            .Should().Be("MyDb_Snapshot_20260703152247");
+    }
+
+    [Fact]
+    public void BuildSnapshotName_IsCollisionFree_ForDistinctTimestamps()
+    {
+        var t1 = new DateTime(2026, 7, 3, 15, 22, 47);
+        var t2 = t1.AddSeconds(1);
+        OdbcMssqlActionService.BuildSnapshotName("db", t1)
+            .Should().NotBe(OdbcMssqlActionService.BuildSnapshotName("db", t2));
+    }
+
+    [Fact]
+    public void BuildSnapshotName_PreservesCaseOfDatabase()
+    {
+        OdbcMssqlActionService.BuildSnapshotName("MyMixedCaseDb", DateTime.Now)
+            .Should().StartWith("MyMixedCaseDb_Snapshot_");
+    }
 }

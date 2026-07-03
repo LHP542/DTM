@@ -129,4 +129,155 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
         string database, bool on,
         Action<string>? onInfo = null, CancellationToken ct = default)
         => SetRecoveryModeAsync(database, on ? "FULL" : "SIMPLE", onInfo, ct);
+
+    // ------------------------------------------------------------------
+    // Phase 10.3c: Snapshot Create / List / Restore / Drop
+    // ------------------------------------------------------------------
+
+    /// <summary>
+    /// Baut den Snapshot-DB-Namen deterministisch aus DB + Timestamp.
+    /// Format: <c>&lt;db&gt;_Snapshot_&lt;yyyyMMddHHmmss&gt;</c>. Kollisionsfrei
+    /// durch Sekunden-Aufloesung, selbsterklaerend beim Restore-Auswahl-
+    /// Dialog. Static gemacht, damit Tests das Muster verifizieren koennen.
+    /// </summary>
+    public static string BuildSnapshotName(string database, DateTime timestamp) =>
+        $"{database}_Snapshot_{timestamp:yyyyMMddHHmmss}";
+
+    /// <summary>
+    /// Legt einen DB-Snapshot der angegebenen Datenbank an. Snapshot-DB-Name
+    /// und -Filenames werden automatisch gebildet (siehe
+    /// <see cref="BuildSnapshotName"/>). Multi-Data-File-DBs sind unterstuetzt:
+    /// pro Original-Data-File eine <c>.ss</c>-Datei im selben Verzeichnis.
+    /// Rueckgabe: Snapshot-Name (fuer spaeteren Restore/Drop-Aufruf).
+    /// </summary>
+    public async Task<string> CreateSnapshotAsync(
+        string database,
+        Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        // 1) Data-File-Layout des Originals lesen. Bei Multi-Data-File-DBs
+        //    liefert das mehrere Zeilen — alle muessen ins CREATE DATABASE-
+        //    Statement, sonst weigert sich SQL Server. Log-Files (type=1)
+        //    werden bewusst ausgeschlossen: Snapshots enthalten keinen Log.
+        string filesSql =
+            "SELECT name AS LogicalName, physical_name AS PhysicalName " +
+            "FROM sys.master_files WHERE database_id = DB_ID(?) AND type = 0 " +
+            "ORDER BY file_id;";
+
+        var files = await _odbc.ExecuteReaderAsync<(string Logical, string Physical)>(
+            filesSql,
+            r => (r.GetString(0), r.GetString(1)),
+            new object?[] { database }, ct).ConfigureAwait(false);
+
+        if (files.Count == 0)
+            throw new InvalidOperationException(
+                $"CreateSnapshot: keine Data-Files fuer '{database}' gefunden (DB existiert nicht oder offline?).");
+
+        string snapName = BuildSnapshotName(database, DateTime.Now);
+        _logger.Info("OdbcDirect: CREATE SNAPSHOT '{0}' fuer '{1}' ({2} File(s))",
+            snapName, database, files.Count);
+
+        // 2) CREATE DATABASE snap ON (NAME = ..., FILENAME = '...') AS SNAPSHOT OF db.
+        //    Filenames werden neben die Original-Data-Files gelegt:
+        //    <dir>\<snapName>_<LogicalName>.ss. Kollisionsfrei durch
+        //    Timestamp im snapName. LogicalName und Filename kommen aus
+        //    sys.master_files (also von der SQL-Server-Registry, kein User-
+        //    Input) — trotzdem defensive Escape fuer Single-Quotes im
+        //    Filename-Literal.
+        var fileClauses = new List<string>();
+        foreach (var (logical, physical) in files)
+        {
+            string dir = Path.GetDirectoryName(physical) ?? string.Empty;
+            string snapFile = Path.Combine(dir, $"{snapName}_{logical}.ss");
+            string snapFileEsc = snapFile.Replace("'", "''");
+            fileClauses.Add(
+                $"(NAME = {QuoteName(logical)}, FILENAME = N'{snapFileEsc}')");
+        }
+
+        string createSql =
+            "DECLARE @src NVARCHAR(128) = ?;" +
+            $"DECLARE @sql NVARCHAR(MAX) = N'CREATE DATABASE {QuoteName(snapName)} ON " +
+            string.Join(", ", fileClauses) +
+            $" AS SNAPSHOT OF ' + QUOTENAME(@src);" +
+            "EXEC (@sql);";
+
+        await _odbc.ExecuteNonQueryAsync(createSql, new object?[] { database }, onInfo, ct)
+                   .ConfigureAwait(false);
+
+        return snapName;
+    }
+
+    /// <summary>
+    /// Listet alle Snapshots der angegebenen Datenbank (sortiert nach
+    /// Erstellungsdatum, neueste zuerst). Aus <c>sys.databases</c> ueber
+    /// <c>source_database_id</c>.
+    /// </summary>
+    public Task<List<MssqlSnapshotInfo>> ListSnapshotsAsync(
+        string database, CancellationToken ct = default)
+    {
+        string sql =
+            "SELECT s.name, s.create_date " +
+            "FROM sys.databases s " +
+            "WHERE s.source_database_id = DB_ID(?) " +
+            "ORDER BY s.create_date DESC;";
+
+        return _odbc.ExecuteReaderAsync(
+            sql,
+            r => new MssqlSnapshotInfo(r.GetString(0), r.GetDateTime(1)),
+            new object?[] { database }, ct);
+    }
+
+    /// <summary>
+    /// <c>RESTORE DATABASE X FROM DATABASE_SNAPSHOT = Y</c>. Vor Restore
+    /// wird die Ziel-DB kurz in SINGLE_USER geschaltet (rollback pending
+    /// transactions), damit RESTORE nicht mit "database is in use"
+    /// abbricht. TRY/CATCH stellt MULTI_USER auf jeden Fall wieder her,
+    /// auch wenn RESTORE fehlschlaegt.
+    /// </summary>
+    public Task RestoreSnapshotAsync(
+        string database, string snapshotName,
+        Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        _logger.Info("OdbcDirect: RESTORE '{0}' FROM DATABASE_SNAPSHOT = '{1}'",
+            database, snapshotName);
+
+        string sql =
+            "DECLARE @db NVARCHAR(128) = ?;" +
+            "DECLARE @snap NVARCHAR(128) = ?;" +
+            "DECLARE @qDb NVARCHAR(258) = QUOTENAME(@db);" +
+            "DECLARE @qSnap NVARCHAR(258) = QUOTENAME(@snap);" +
+            "EXEC (N'ALTER DATABASE ' + @qDb + N' SET SINGLE_USER WITH ROLLBACK IMMEDIATE');" +
+            "BEGIN TRY " +
+            "  EXEC (N'RESTORE DATABASE ' + @qDb + N' FROM DATABASE_SNAPSHOT = ' + @qSnap);" +
+            "  EXEC (N'ALTER DATABASE ' + @qDb + N' SET MULTI_USER');" +
+            "END TRY " +
+            "BEGIN CATCH " +
+            "  EXEC (N'ALTER DATABASE ' + @qDb + N' SET MULTI_USER');" +
+            "  THROW;" +
+            "END CATCH;";
+
+        return _odbc.ExecuteNonQueryAsync(sql, new object?[] { database, snapshotName }, onInfo, ct);
+    }
+
+    /// <summary>
+    /// <c>DROP DATABASE snap</c>. Entfernt den Snapshot inkl. Files.
+    /// </summary>
+    public Task DropSnapshotAsync(
+        string snapshotName,
+        Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        _logger.Info("OdbcDirect: DROP SNAPSHOT '{0}'", snapshotName);
+
+        string sql =
+            "DECLARE @snap NVARCHAR(128) = ?;" +
+            "EXEC (N'DROP DATABASE ' + QUOTENAME(@snap));";
+
+        return _odbc.ExecuteNonQueryAsync(sql, new object?[] { snapshotName }, onInfo, ct);
+    }
+
+    // C#-seitige QUOTENAME-Reproduktion fuer Statement-Teile, die als
+    // Literal in dyn. SQL gehen (nicht ueber sp_executesql lauffaehig, weil
+    // FILENAME nicht parametrisierbar ist). Reine 1:1-Kopie der T-SQL-
+    // Semantik: eckige Klammern, ']' → ']]' escape.
+    private static string QuoteName(string identifier) =>
+        "[" + identifier.Replace("]", "]]") + "]";
 }
