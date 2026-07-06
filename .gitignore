@@ -65,3 +65,6 @@ _ReSharper*/
 # --- App-spezifisch ---
 # Lokale Credentials nicht einchecken (Vorlage: appsettings.example.json)
 appsettings.json
+
+external/Oracle/scripts/generic_expdp.sh
+external/Oracle/scripts/run-generic-export.sh
