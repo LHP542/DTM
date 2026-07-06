@@ -27,6 +27,15 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: NuGet-Cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          # Key hängt an der zentralen Paketliste (CPM): ändert sich die
+          # Directory.Packages.props, wird ein neuer Cache aufgebaut.
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
+
       - name: Build DTM (Release)
         run: dotnet build DTM.csproj -c Release
 

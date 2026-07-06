@@ -1,0 +1,40 @@
+# Dependabot: automatische Update-PRs für Abhängigkeiten.
+#
+# - nuget: liest die zentrale Directory.Packages.props (CPM) und aktualisiert
+#   Versionen direkt dort. Wöchentlich montags als EIN gruppierter Sammel-PR.
+# - github-actions: hält die Action-Versionen in .github/workflows aktuell.
+#
+# WICHTIG — FluentAssertions: ab v8 Xceed-Lizenz, kommerzielle Nutzung
+# kostenpflichtig. v7 bleibt Apache 2.0. Major-Updates werden deshalb
+# ignoriert (zusätzlich zur Versions-Range in Directory.Packages.props).
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
+    groups:
+      nuget-pakete:
+        patterns: ["*"]
+    ignore:
+      - dependency-name: "FluentAssertions"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "Abhängigkeiten"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "CI"

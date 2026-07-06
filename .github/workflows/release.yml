@@ -19,6 +19,15 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.x'
+
+      - name: NuGet-Cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          # Key hängt an der zentralen Paketliste (CPM): ändert sich die
+          # Directory.Packages.props, wird ein neuer Cache aufgebaut.
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
       - name: Tests ausführen
         run: dotnet test DTM.Tests/DTM.Tests.csproj --logger "console;verbosity=normal"
 
@@ -33,6 +42,15 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.x'
+
+      - name: NuGet-Cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          # Key hängt an der zentralen Paketliste (CPM): ändert sich die
+          # Directory.Packages.props, wird ein neuer Cache aufgebaut.
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
       - name: Publish win-x64
         run: dotnet publish DTM.csproj -c Release -r win-x64 --self-contained true -o ./publish
       - name: version.txt erstellen
@@ -58,6 +76,15 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.x'
+
+      - name: NuGet-Cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          # Key hängt an der zentralen Paketliste (CPM): ändert sich die
+          # Directory.Packages.props, wird ein neuer Cache aufgebaut.
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
       - name: Publish linux-x64
         run: dotnet publish DTM.csproj -c Release -r linux-x64 --self-contained true -o ./publish
       - name: version.txt erstellen
@@ -82,6 +109,15 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.x'
+
+      - name: NuGet-Cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          # Key hängt an der zentralen Paketliste (CPM): ändert sich die
+          # Directory.Packages.props, wird ein neuer Cache aufgebaut.
+          key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
+          restore-keys: nuget-${{ runner.os }}-
 
       - name: Publish linux-x64
         run: dotnet publish DTM.csproj -c Release -r linux-x64 --self-contained true -o ./publish

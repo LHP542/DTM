@@ -62,6 +62,14 @@ Zentrale Metadaten, damit nichts pro csproj wiederholt wird:
 </Project>
 ```
 
+### NuGet-Pakete (Central Package Management)
+
+Alle Paketversionen werden zentral in **`Directory.Packages.props`** (Repo-Root)
+gepflegt; die `.csproj` enthalten `<PackageReference>` **ohne** `Version`-Attribut.
+Beim Hinzufügen eines Pakets: Eintrag in `Directory.Packages.props` ergänzen.
+**FluentAssertions bleibt auf 7.x** (Range `[7.x,8.0.0)` + Dependabot-Ignore):
+ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
+
 ### Versionierung via MinVer
 
 - Version kommt aus dem **Git-Tag** (`v1.4.0` → Assembly `1.4.0`), **kein** manuelles
