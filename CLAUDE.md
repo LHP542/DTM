@@ -745,6 +745,61 @@ Windows-Credentials werden fuer OdbcDirect-Server nicht gebraucht —
 Phase-9-Infrastruktur bleibt inaktiv, aber intakt fuer echte
 WinRM-Multi-Zone-Setups.
 
+#### Phase 11 — OLVM-Snapshot fuer Oracle (`v2.3.0` geplant)
+
+Kontext: Oracle-Snapshots werden bei Lars ueber ein Ansible-Playbook
+auf dem zentralen Manager-Host `DBMANAGER01` gefahren. Das Playbook
+faehrt die DB + VM runter, macht ueber OLVM einen VM-Snapshot und
+startet beides wieder. DTM soll das per Button ausloesen — als
+zusaetzlicher Weg neben dem existierenden `Set-Snapshot` (das den
+Oracle-DB-Snapshot per Restore Point macht, ohne VM anzufassen).
+
+Design-Skizze:
+- FOC-SQL: neue Funktion, die sich per SSH auf `DBMANAGER01`
+  verbindet und `cd ansible && ansible-playbook <name>.yml -e ...`
+  ausfuehrt. `-tt` fuer Live-Output im pwsh-Tab.
+- DTM: eigene Action-Gruppe "OLVM" in der Oracle-Sicht, mit
+  ConfirmWindow davor (DB + VM Shutdown ist destruktiv).
+- Multi-Snapshot-Auswahl fuer Restore/Delete: neuer
+  `OlvmSnapshotSelectWindow`, analog zum
+  `MssqlSnapshotSelectWindow` aus Phase 10.4d.
+
+Sub-Items:
+
+- [ ] **11.1** 📦 FOC-SQL: `Invoke-OlvmSnapshot` (create). Ansible-
+      Playbook-Aufruf auf `DBMANAGER01`. Konkreter Playbook-Name,
+      Parameter und Snapshot-Namens-Konvention werden von Lars
+      geliefert bevor implementiert wird. — `M`
+- [ ] **11.2** DTM: Action-Gruppe "OLVM" mit Button „OLVM-Snapshot"
+      fuer Oracle-DBs. ConfirmWindow mit deutlicher Warnung
+      („DB + VM werden heruntergefahren, Dauer ~X min"). — `S`
+- [ ] **11.3** 📦 FOC-SQL: `Get-OlvmSnapshots` — Liste der VM-
+      Snapshots einer DB (fuer Restore/Delete-Auswahl). Rueckgabe
+      als PSCustomObject mit Name/Datum/Groesse (analog
+      MssqlSnapshotInfo). — `M`
+- [ ] **11.4** 📦 FOC-SQL: `Restore-OlvmSnapshot` — Rollback auf
+      einen ausgewaehlten Snapshot (per Ansible-Playbook, VM
+      Shutdown → Restore → Start). — `M`
+- [ ] **11.5** 📦 FOC-SQL: `Remove-OlvmSnapshot` — alte VM-
+      Snapshots loeschen (per Ansible-Playbook). — `S`
+- [ ] **11.6** DTM: `OlvmSnapshotSelectWindow` (analog
+      `MssqlSnapshotSelectWindow` aus 10.4d) — DataGrid mit
+      Snapshots, Buttons „Restore" (rot, destruktiv) und
+      „Loeschen" (rot, destruktiv). Trigger aus 2 Commands
+      (OlvmRestoreSnapshot, OlvmRemoveSnapshot) mit
+      vorgewaehlter Aktion. — `M`
+
+**Klarungen vor 11.1 (Lars liefert):**
+1. Playbook-Dateiname (relativ zu `~oracle/ansible/`).
+2. Parameter-Format: `-e "key=value"` inline, welche Keys?
+3. Snapshot-Namensgebung: automatisch mit Timestamp im Playbook
+   oder User-Input in DTM?
+4. `DBMANAGER01` hardcoded oder als Config-Feld?
+
+**Sicherheit:** SSH-Login als `oracle@DBMANAGER01` per Key-Auth
+(gleiches Setup wie andere Oracle-Ziele — Pageant / OpenSSH
+IdentityAgent). Kein Passwort in Klartext.
+
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 
 Lars-Idee aus dem v2.0.0-Test: ein eigener Button bzw. Dialog, der **mehr
