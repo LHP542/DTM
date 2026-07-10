@@ -69,6 +69,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private bool _copyToSambaVisible = true;
     [ObservableProperty] private bool _syncToTestVisible = true;
 
+    // Phase 11: OLVM-Aktionen (VM-Snapshot per Ansible) sind Oracle-only.
+    // Bei MSSQL-Selection ausgeblendet — der Ansible-Weg macht dort keinen
+    // Sinn (SQL-Server hat keine OLVM-VM-Snapshots).
+    [ObservableProperty] private bool _olvmVisible;
+
     public IReadOnlyList<string> RecoveryModeOptions { get; } =
         new[] { "FULL", "SIMPLE", "BULK_LOGGED" };
 
@@ -159,6 +164,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         // = sichtbar; ApplyStats setzt bei OdbcDirect auf false).
         CopyToSambaVisible = true;
         SyncToTestVisible = true;
+        // 11: OLVM-Aktionen sind Oracle-only, wird in ApplyStats gesetzt.
+        OlvmVisible = false;
 
         switch (value)
         {
@@ -246,6 +253,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             DbSize = $"{o.DataSizeMB.ToString(System.Globalization.CultureInfo.InvariantCulture)} MB";
             RecoveryLabel = "ArchiveLog";
             RecoveryOrArchiveMode = o.ArchiveLogMode ?? "—";
+            // Phase 11: OLVM-Snapshot-Gruppe nur bei Oracle einblenden.
+            OlvmVisible = true;
         }
     }
 
@@ -459,6 +468,38 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         RunSimpleAction("Remove-Snapshot", db, "", "Remove Snapshot");
     }
 
+    // Phase 11.2: OLVM-VM-Snapshot per Ansible-Playbook auf DBMANAGER01.
+    // Oracle-only. Destruktiv (DB + VM Shutdown) → ConfirmWindow zuerst.
+    [RelayCommand]
+    private async Task OlvmSnapshot()
+    {
+        if (SelectedNode is not DatabaseNodeViewModel db) return;
+        if (db.ServerTyp != DB_SERVER.ServerTyp.ORACLE) return;
+
+        Window? owner = GetMainWindow();
+        if (owner is null) return;
+
+        ConfirmWindow dlg = new()
+        {
+            WindowTitle = "OLVM-Snapshot?",
+            Message = $"Für '{db.Database.Name}' wird ein OLVM-VM-Snapshot ausgeführt.\n\n"
+                    + "Ablauf (Ansible-Playbook auf DBMANAGER01):\n"
+                    + "  1) Datenbank herunterfahren\n"
+                    + "  2) VM herunterfahren\n"
+                    + "  3) OLVM-Snapshot erstellen\n"
+                    + "  4) VM starten\n"
+                    + "  5) Datenbank starten\n\n"
+                    + "Dauer: mehrere Minuten. Wirklich fortfahren?",
+            ConfirmText = "Snapshot ausführen",
+            CancelText = "Abbrechen",
+        };
+
+        bool ok = await dlg.ShowDialog<bool>(owner);
+        if (!ok) return;
+
+        RunSimpleAction("Invoke-OlvmSnapshot", db, "", "OLVM-Snapshot");
+    }
+
     // Phase 10.4d: OdbcDirect-Weg fuer Snapshot-Restore + Snapshot-Drop.
     // Ein Dialog fuer beide Aktionen — der Aufrufer gibt an, was
     // initial im Fokus stehen soll, der User kann per Button-Klick am
@@ -598,6 +639,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         RecoveryModeVisible = false;
         CopyToSambaVisible = true;
         SyncToTestVisible = true;
+        OlvmVisible = false;
         StatusBar = "Verbindungen aktualisiert.";
         _logger.Debug("Verbindungen neu geladen: {0} Server.", newServers.Count);
     }

@@ -766,13 +766,23 @@ Design-Skizze:
 
 Sub-Items:
 
-- [ ] **11.1** 📦 FOC-SQL: `Invoke-OlvmSnapshot` (create). Ansible-
-      Playbook-Aufruf auf `DBMANAGER01`. Konkreter Playbook-Name,
-      Parameter und Snapshot-Namens-Konvention werden von Lars
-      geliefert bevor implementiert wird. — `M`
-- [ ] **11.2** DTM: Action-Gruppe "OLVM" mit Button „OLVM-Snapshot"
-      fuer Oracle-DBs. ConfirmWindow mit deutlicher Warnung
-      („DB + VM werden heruntergefahren, Dauer ~X min"). — `S`
+- [x] **11.1** 📦 FOC-SQL: `Invoke-OlvmSnapshot` (create). Ansible-
+      Playbook-Aufruf auf `DBMANAGER01`. — `M`
+      _(erledigt: FOC-SQL `a8bbef2`. Playbook
+      `olvm-create-dbvm-snapshot.yml` mit `-e "vm_dns=<Kurzname>"`;
+      SSH `-tt` fuer Live-Output, Log-Kaskade `ts` + `tee` fuer
+      Audit-Trail auf dem Manager beibehalten. Drei-Punkt-Checkliste
+      psm1+psd1+_ToExport.ps1 eingehalten.)_
+- [x] **11.2** DTM: Action-Gruppe "OLVM" mit Button „VM-Snapshot"
+      fuer Oracle-DBs. ConfirmWindow mit 5-Schritt-Ablauf und
+      „Dauer mehrere Minuten"-Warnung. — `S`
+      _(erledigt: `OlvmVisible`-Property (Default false, in
+      ApplyStats bei Oracle true), `OlvmSnapshotCommand` mit
+      `Confirm→RunSimpleAction("Invoke-OlvmSnapshot", ...)`,
+      neue Gruppe "OLVM" in MainWindow.axaml zwischen SNAPSHOTS
+      und BACKUPS. `RunSimpleAction` reicht bei Oracle `-Server`
+      als null durch — passt zum FOC-SQL-Wrapper der intern
+      hardcoded auf DBMANAGER01 connectet.)_
 - [ ] **11.3** 📦 FOC-SQL: `Get-OlvmSnapshots` — Liste der VM-
       Snapshots einer DB (fuer Restore/Delete-Auswahl). Rueckgabe
       als PSCustomObject mit Name/Datum/Groesse (analog

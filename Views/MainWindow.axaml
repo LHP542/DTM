@@ -215,6 +215,20 @@
                             </StackPanel>
                         </StackPanel>
 
+                        <!-- Gruppe: OLVM (Oracle-only, Phase 11) -->
+                        <StackPanel IsVisible="{Binding OlvmVisible}">
+                            <TextBlock Classes="groupLabel" Text="OLVM" />
+                            <StackPanel Orientation="Horizontal">
+                                <Button Classes="action danger" Command="{Binding OlvmSnapshotCommand}"
+                                        ToolTip.Tip="VM-Snapshot per Ansible auf DBMANAGER01 — DB + VM werden heruntergefahren, Dauer mehrere Minuten">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Classes="glyph" Text="&#x25C9;" />
+                                        <TextBlock Text="VM-Snapshot" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+
                         <!-- Gruppe: Backups (MSSQL-only) -->
                         <StackPanel IsVisible="{Binding BackupBrowserVisible}">
                             <TextBlock Classes="groupLabel" Text="BACKUPS" />
