@@ -500,6 +500,51 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         RunSimpleAction("Invoke-OlvmSnapshot", db, "", "OLVM-Snapshot");
     }
 
+    // Phase 11.3/11.6: Snapshot-Liste via OLVM-REST anzeigen.
+    // Restore- und Löschen-Buttons im Dialog sind disabled, bis
+    // 11.4/11.5 Ansible-Playbooks bereit sind — dann aktivierbar,
+    // Command bleibt unveraendert.
+    [RelayCommand]
+    private Task OlvmRestoreSnapshot() => ShowOlvmSnapshotDialogAsync(MssqlSnapshotAction.Restore);
+
+    [RelayCommand]
+    private Task OlvmRemoveSnapshot() => ShowOlvmSnapshotDialogAsync(MssqlSnapshotAction.Drop);
+
+    private async Task ShowOlvmSnapshotDialogAsync(MssqlSnapshotAction initial)
+    {
+        if (SelectedNode is not DatabaseNodeViewModel db) return;
+        if (db.ServerTyp != DB_SERVER.ServerTyp.ORACLE) return;
+
+        Window? owner = GetMainWindow();
+        if (owner is null || _services is null) return;
+
+        // Die VM-UUID kommt bei Oracle-Nodes aus Database.Id (via OLVM-REST
+        // in ORACLE_ODBC.get_Datenbank_Names gesetzt). Ohne UUID → Abbruch
+        // mit klarer Meldung; die Snapshots-Route braucht sie zwingend.
+        string vmId = db.Database.Id ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(vmId))
+        {
+            StatusBar = $"Keine VM-UUID fuer '{db.Database.Name}' bekannt — Snapshot-Liste nicht ladbar.";
+            return;
+        }
+
+        OlvmSnapshotSelectViewModel vm =
+            _services.GetRequiredService<OlvmSnapshotSelectViewModel>();
+        var svc = _data.GetOlvmSnapshotService(db.ServerIdentity);
+        OlvmSnapshotSelectWindow dlg = new() { DataContext = vm };
+        _ = vm.LoadAsync(db.Database.Name, vmId, svc, initial);
+
+        OlvmSnapshotSelectResult? result =
+            await dlg.ShowDialog<OlvmSnapshotSelectResult?>(owner);
+
+        // Restore/Delete werden erst mit 11.4/11.5 verkabelt — die Buttons
+        // im Dialog sind aktuell disabled, wir werden hier nie ein Ergebnis
+        // ausser null bekommen. Guard trotzdem als Safety-Net.
+        if (result is null) return;
+        DTM.Data.Terminal.TerminalBus.InjectNotice(
+            $"[OLVM Snapshot {result.Action}: '{result.Snapshot.Description}' — Ansible-Playbook noch nicht implementiert (Phase 11.4/11.5).]");
+    }
+
     // Phase 10.4d: OdbcDirect-Weg fuer Snapshot-Restore + Snapshot-Drop.
     // Ein Dialog fuer beide Aktionen — der Aufrufer gibt an, was
     // initial im Fokus stehen soll, der User kann per Button-Klick am

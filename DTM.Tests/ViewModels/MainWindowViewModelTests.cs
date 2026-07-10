@@ -15,6 +15,8 @@ public class MainWindowViewModelTests
             => new Database_Stats_MSSQL();
         public DTM.Data.Mssql.OdbcMssqlActionService GetMssqlActions(ServerIdentity id)
             => throw new NotSupportedException("Stub: MainWindowViewModelTests testen den FOC-SQL-Weg.");
+        public DTM.Data.Olvm.OlvmSnapshotService GetOlvmSnapshotService(ServerIdentity id)
+            => throw new NotSupportedException("Stub: OLVM-REST wird hier nicht aufgerufen.");
     }
 
     private static MainWindowViewModel MakeVm(params DB_SERVER.ServerTyp[] types)

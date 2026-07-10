@@ -28,5 +28,14 @@ namespace DTM
         /// MSSQL ist (Oracle hat keinen ODBC-Direct-Weg).
         /// </summary>
         Data.Mssql.OdbcMssqlActionService GetMssqlActions(ServerIdentity identity);
+
+        /// <summary>
+        /// Phase 11.3: liefert den <see cref="Data.Olvm.OlvmSnapshotService"/>
+        /// fuer den benannten Oracle-Server. Baut intern einen frischen
+        /// <see cref="ORACLE.REST"/>-Client — der Service disposed ihn selbst.
+        /// Wirft <see cref="InvalidOperationException"/> wenn der Server nicht
+        /// Oracle ist.
+        /// </summary>
+        Data.Olvm.OlvmSnapshotService GetOlvmSnapshotService(ServerIdentity identity);
     }
 }

@@ -80,5 +80,18 @@ namespace DTM
                            $"Factory lieferte keine MSSQL_ODBC-Instanz fuer '{identity}'.");
             return new DTM.Data.Mssql.OdbcMssqlActionService(odbc);
         }
+
+        public DTM.Data.Olvm.OlvmSnapshotService GetOlvmSnapshotService(ServerIdentity identity)
+        {
+            DB_SERVER server = ResolveServer(identity);
+            if (server.Typ != DB_SERVER.ServerTyp.ORACLE)
+                throw new InvalidOperationException(
+                    $"OlvmSnapshotService nur fuer Oracle verfuegbar (Server '{identity}' ist {server.Typ}).");
+            // Frischer REST-Client pro Aufruf; der Service disposed ihn.
+            // trustAllCertificates: true — gleiches Verhalten wie ORACLE_ODBC
+            // (Self-signed OLVM-Zertifikate in typischen Setups).
+            var rest = new DTM.ORACLE.REST(server.serverCredential!, trustAllCertificates: true);
+            return new DTM.Data.Olvm.OlvmSnapshotService(rest);
+        }
     }
 }

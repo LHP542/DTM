@@ -97,6 +97,34 @@ namespace DTM.ORACLE
             }
         }
 
+        /// <summary>
+        /// Liest alle Snapshots einer VM (Phase 11.3). OLVM-Endpoint
+        /// <c>GET /vms/{id}/snapshots</c> — der "Active VM"-Snapshot ist
+        /// immer dabei (Type=active), den filtert die UI-Schicht raus.
+        /// </summary>
+        public async Task<IReadOnlyList<SnapshotInfo>> GetSnapshotsAsync(
+            string vmId, CancellationToken ct = default)
+        {
+            if (string.IsNullOrWhiteSpace(vmId))
+                throw new ArgumentException("vmId darf nicht leer sein.", nameof(vmId));
+
+            string url = $"vms/{Uri.EscapeDataString(vmId)}/snapshots";
+            _logger.Debug("Oracle REST: Lade Snapshots fuer VM {0}", vmId);
+            try
+            {
+                SnapshotListResponse? response =
+                    await _http.GetFromJsonAsync<SnapshotListResponse>(url, ct);
+                var result = response?.Snapshots ?? [];
+                _logger.Info("Oracle REST: {0} Snapshots fuer VM {1} geladen.", result.Count, vmId);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Oracle REST: GetSnapshotsAsync fehlgeschlagen (VM {0}).", vmId);
+                throw;
+            }
+        }
+
         public void Dispose()
         {
             _http.Dispose();
@@ -113,4 +141,20 @@ namespace DTM.ORACLE
         [property: JsonPropertyName("status")] string Status);
 
     public sealed record VmFqdnEntry(string Name, string? Fqdn, string Status, string Id);
+
+    public sealed record SnapshotListResponse(
+        [property: JsonPropertyName("snapshot")] List<SnapshotInfo> Snapshots);
+
+    /// <summary>
+    /// Einzelner OLVM/oVirt-Snapshot. Feldsatz absichtlich klein: nur was
+    /// die UI zum Anzeigen + Restore/Delete-Aufruf braucht. Der "Active VM"-
+    /// Snapshot hat <c>SnapshotType = "active"</c> und wird von der UI-
+    /// Schicht rausgefiltert.
+    /// </summary>
+    public sealed record SnapshotInfo(
+        [property: JsonPropertyName("id")] string Id,
+        [property: JsonPropertyName("description")] string? Description,
+        [property: JsonPropertyName("date")] string? Date,
+        [property: JsonPropertyName("snapshot_status")] string? SnapshotStatus,
+        [property: JsonPropertyName("snapshot_type")] string? SnapshotType);
 }

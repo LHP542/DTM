@@ -1,0 +1,119 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:DTM.ViewModels"
+        x:Class="DTM.Views.OlvmSnapshotSelectWindow"
+        x:DataType="vm:OlvmSnapshotSelectViewModel"
+        Title="OLVM-Snapshot auswählen"
+        Width="760" Height="540"
+        MinWidth="600" MinHeight="400"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource WindowBgBrush}">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Titelleiste -->
+        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}"
+                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                PointerPressed="OnTitleBarPointerPressed">
+            <Grid ColumnDefinitions="*,Auto" Height="36">
+                <TextBlock Grid.Column="0"
+                           Text="OLVM-Snapshot auswählen" FontSize="12" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           VerticalAlignment="Center" Margin="14,0"
+                           IsHitTestVisible="False" />
+                <Button Grid.Column="1" Classes="titleBtn close"
+                        Click="OnTitleClose" Content="&#x2715;" />
+            </Grid>
+        </Border>
+
+        <!-- Inhalt -->
+        <Grid Grid.Row="1" Margin="20,16,20,16" RowDefinitions="Auto,Auto,Auto,*,Auto">
+
+            <!-- Header -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+                <TextBlock Grid.Column="0" Classes="infoLabel" Text="Datenbank / VM" />
+                <TextBlock Grid.Column="1" Classes="infoValue"
+                           Text="{Binding DatabaseName}" FontWeight="Bold" />
+            </Grid>
+
+            <!-- Hinweis: Restore/Delete kommen -->
+            <Border Grid.Row="1" Margin="0,12,0,0" Padding="12,8"
+                    CornerRadius="6"
+                    Background="#3A2F1F"
+                    BorderBrush="#B39A3A" BorderThickness="1">
+                <TextBlock TextWrapping="Wrap" FontSize="12"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           Text="Restore und Löschen sind noch nicht implementiert — die zugehörigen Ansible-Playbooks werden noch gebaut (Phase 11.4 / 11.5). Der Dialog dient bis dahin als reine Snapshot-Übersicht." />
+            </Border>
+
+            <!-- Fehler-Zeile -->
+            <Border Grid.Row="2" Margin="0,12,0,0" Padding="12,8"
+                    CornerRadius="6"
+                    Background="{DynamicResource SurfaceBrush}"
+                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap"
+                           Foreground="{DynamicResource DangerBrush}" FontSize="12" />
+            </Border>
+
+            <!-- Snapshots -->
+            <Grid Grid.Row="3" Margin="0,12,0,0">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Spacing="10" IsVisible="{Binding IsLoading}">
+                    <TextBlock Text="Lade Snapshots via OLVM-REST …"
+                               Foreground="{DynamicResource TextMutedBrush}"
+                               FontSize="13" HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Text="Keine Snapshots für diese VM vorhanden."
+                           Foreground="{DynamicResource TextMutedBrush}"
+                           FontSize="13">
+                    <TextBlock.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="!IsLoading" />
+                            <Binding Path="!HasSnapshots" />
+                            <Binding Path="ErrorMessage" Converter="{x:Static ObjectConverters.IsNull}" />
+                        </MultiBinding>
+                    </TextBlock.IsVisible>
+                </TextBlock>
+
+                <Border Background="{DynamicResource SurfaceBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        CornerRadius="8" ClipToBounds="True"
+                        IsVisible="{Binding HasSnapshots}">
+                    <DataGrid ItemsSource="{Binding Snapshots}"
+                              SelectedItem="{Binding SelectedSnapshot, Mode=TwoWay}"
+                              IsReadOnly="True"
+                              AutoGenerateColumns="False"
+                              GridLinesVisibility="Horizontal"
+                              SelectionMode="Single">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Beschreibung" Binding="{Binding Description}" Width="*" />
+                            <DataGridTextColumn Header="Erstellt am" Binding="{Binding CreatedAt}" Width="180" />
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
+                            <DataGridTextColumn Header="Typ" Binding="{Binding Type}" Width="90" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Border>
+            </Grid>
+
+            <!-- Footer-Buttons -->
+            <StackPanel Grid.Row="4" Orientation="Horizontal"
+                        HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
+                <Button Content="Abbrechen" Click="OnCancel" MinWidth="100" />
+                <Button Content="Löschen" Click="OnDrop"
+                        MinWidth="130"
+                        IsEnabled="{Binding DeleteEnabled}"
+                        Classes="action danger"
+                        ToolTip.Tip="Noch nicht verfügbar — Ansible-Playbook (Phase 11.5) steht noch aus." />
+                <Button Content="Restore ausführen" Click="OnRestore"
+                        MinWidth="160"
+                        IsEnabled="{Binding RestoreEnabled}"
+                        Classes="action"
+                        ToolTip.Tip="Noch nicht verfügbar — Ansible-Playbook (Phase 11.4) steht noch aus." />
+            </StackPanel>
+        </Grid>
+    </Grid>
+
+</Window>

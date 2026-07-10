@@ -783,21 +783,35 @@ Sub-Items:
       und BACKUPS. `RunSimpleAction` reicht bei Oracle `-Server`
       als null durch — passt zum FOC-SQL-Wrapper der intern
       hardcoded auf DBMANAGER01 connectet.)_
-- [ ] **11.3** 📦 FOC-SQL: `Get-OlvmSnapshots` — Liste der VM-
-      Snapshots einer DB (fuer Restore/Delete-Auswahl). Rueckgabe
-      als PSCustomObject mit Name/Datum/Groesse (analog
-      MssqlSnapshotInfo). — `M`
+- [x] **11.3** DTM: Snapshot-Liste via OLVM-REST-API (statt Ansible).
+      `ORACLE_REST.GetSnapshotsAsync(vmId)` mit endpoint
+      `GET /api/vms/{id}/snapshots`. `OlvmSnapshotService.ListAsync`
+      filtert den "active"-Eintrag raus und mapt zu `OlvmSnapshotInfo`
+      (Id, Description, CreatedAt, Status, Type). VM-UUID kommt aus
+      `Database_Info.Id` (bereits von REST beim Namen-Laden gesetzt).
+      Der User hat sich fuer REST statt Playbook entschieden, weil
+      List rein lesend ist und die Latenz sonst zu hoch waere. — `M`
+      _(erledigt: dieser Commit. IDTM_DATA.GetOlvmSnapshotService baut
+      pro Aufruf einen frischen REST-Client (trustAllCertificates=true,
+      analog ORACLE_ODBC).)_
 - [ ] **11.4** 📦 FOC-SQL: `Restore-OlvmSnapshot` — Rollback auf
       einen ausgewaehlten Snapshot (per Ansible-Playbook, VM
-      Shutdown → Restore → Start). — `M`
+      Shutdown → Restore → Start). Sobald verfuegbar: den
+      "RestoreEnabled=false"-Placeholder im OlvmSnapshotSelectViewModel
+      auf true setzen + Wrapper aufrufen. — `M`
 - [ ] **11.5** 📦 FOC-SQL: `Remove-OlvmSnapshot` — alte VM-
-      Snapshots loeschen (per Ansible-Playbook). — `S`
-- [ ] **11.6** DTM: `OlvmSnapshotSelectWindow` (analog
+      Snapshots loeschen (per Ansible-Playbook). Sobald verfuegbar:
+      `DeleteEnabled=false` im ViewModel auf true. — `S`
+- [x] **11.6** DTM: `OlvmSnapshotSelectWindow` (analog
       `MssqlSnapshotSelectWindow` aus 10.4d) — DataGrid mit
-      Snapshots, Buttons „Restore" (rot, destruktiv) und
-      „Loeschen" (rot, destruktiv). Trigger aus 2 Commands
-      (OlvmRestoreSnapshot, OlvmRemoveSnapshot) mit
-      vorgewaehlter Aktion. — `M`
+      Snapshots (Description, CreatedAt, Status, Type), Buttons
+      „Restore" und „Löschen" beide DISABLED bis 11.4/11.5
+      bereit sind. ToolTip erklaert warum. Prominenter gelber
+      Hinweis-Banner im Dialog. Trigger aus zwei Commands
+      (OlvmRestoreSnapshotCommand, OlvmRemoveSnapshotCommand) mit
+      vorgewaehlter Aktion. UI-Buttons "VM-Restore" + "VM-Remove"
+      in der OLVM-Gruppe neben "VM-Snapshot". — `M`
+      _(erledigt: dieser Commit.)_
 
 **Klarungen vor 11.1 (Lars liefert):**
 1. Playbook-Dateiname (relativ zu `~oracle/ansible/`).

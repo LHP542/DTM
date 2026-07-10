@@ -226,6 +226,20 @@
                                         <TextBlock Text="VM-Snapshot" VerticalAlignment="Center" />
                                     </StackPanel>
                                 </Button>
+                                <Button Classes="action" Command="{Binding OlvmRestoreSnapshotCommand}"
+                                        ToolTip.Tip="OLVM-Snapshots anzeigen und Restore ausführen (Playbook Phase 11.4)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Classes="glyph" Text="&#x21BA;" />
+                                        <TextBlock Text="VM-Restore" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Classes="action danger" Command="{Binding OlvmRemoveSnapshotCommand}"
+                                        ToolTip.Tip="OLVM-Snapshots anzeigen und löschen (Playbook Phase 11.5)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Classes="glyph" Text="&#x2715;" />
+                                        <TextBlock Text="VM-Remove" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
                             </StackPanel>
                         </StackPanel>
 
