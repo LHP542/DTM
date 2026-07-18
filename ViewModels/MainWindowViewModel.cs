@@ -15,7 +15,7 @@ namespace DTM.ViewModels;
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
     private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-    private IDTM_DATA _data;
+    private IDtmData _data;
 
     // Optional: wird von der App via DI gesetzt; in Tests bleibt es null und die
     // Dialog-Aufrufe fallen auf direktes "new" zurueck (Tests stossen die UI-
@@ -105,7 +105,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         "Write-Host 'FOC-SQL Modul geladen. Bereit.'";
 
     public MainWindowViewModel(
-        IDTM_DATA data,
+        IDtmData data,
         IReadOnlyList<DbServer> servers,
         IServiceProvider? services = null)
     {
@@ -669,7 +669,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 newServers.Add(new DbServer(typ, entry.ToCredential(), entry.Backend));
         }
 
-        _data = new DTM_DATA(newServers, new OdbcFactory());
+        _data = new DtmData(newServers, new OdbcFactory());
 
         SelectedNode = null;
         BuildRootNodes(newServers);

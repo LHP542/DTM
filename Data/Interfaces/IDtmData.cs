@@ -1,6 +1,6 @@
 namespace DTM
 {
-    public interface IDTM_DATA
+    public interface IDtmData
     {
         /// <summary>
         /// Alle registrierten Server-Verbindungen. Wird vom Tree-Aufbau im

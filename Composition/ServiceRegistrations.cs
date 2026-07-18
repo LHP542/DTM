@@ -40,8 +40,8 @@ internal static class ServiceRegistrations
             return list;
         });
 
-        services.AddSingleton<IDTM_DATA>(sp =>
-            new DTM_DATA(
+        services.AddSingleton<IDtmData>(sp =>
+            new DtmData(
                 sp.GetRequiredService<IReadOnlyList<DbServer>>(),
                 sp.GetRequiredService<OdbcFactory>()));
 
@@ -55,7 +55,7 @@ internal static class ServiceRegistrations
         // VMs (ConnectionManager, Sessions, TimePicker) zur Laufzeit aufzu-
         // loesen. Daher explizite Factory statt Default-Activator.
         services.AddTransient<MainWindowViewModel>(sp => new MainWindowViewModel(
-            sp.GetRequiredService<IDTM_DATA>(),
+            sp.GetRequiredService<IDtmData>(),
             sp.GetRequiredService<IReadOnlyList<DbServer>>(),
             sp));
 

@@ -5,7 +5,7 @@ namespace DTM.Tests.Data;
 
 public class DtmDataTests
 {
-    private sealed class FakeOdbc : ODBC.IDTM_ODBC
+    private sealed class FakeOdbc : ODBC.IDtmOdbc
     {
         public List<DatabaseInfo> Names { get; set; } = [];
         public DatabaseStats Stats { get; set; } = new MssqlDatabaseStats();
@@ -19,19 +19,19 @@ public class DtmDataTests
         public string? LastRequested;
         public readonly FakeOdbc Odbc = new();
 
-        public ODBC.IDTM_ODBC? Get_DATA(string name, ServerCredential cred)
+        public ODBC.IDtmOdbc? Get_DATA(string name, ServerCredential cred)
         {
             LastRequested = name;
             return name is "MSSQL" or "ORACLE" ? Odbc : null;
         }
     }
 
-    private static (DTM_DATA data, FakeFactory factory, ServerIdentity identity) Make(
+    private static (DtmData data, FakeFactory factory, ServerIdentity identity) Make(
         DbServer.ServerTyp typ, string host = "testhost")
     {
         var factory = new FakeFactory();
         var server = new DbServer(typ, new ServerCredential(host, "user", "pass", "db", ""));
-        var data = new DTM_DATA(new List<DbServer> { server }, factory);
+        var data = new DtmData(new List<DbServer> { server }, factory);
         return (data, factory, server.Identity);
     }
 
@@ -103,7 +103,7 @@ public class DtmDataTests
         var factory = new FakeFactory();
         var s1 = new DbServer(DbServer.ServerTyp.MSSQL, new ServerCredential("hostA"));
         var s2 = new DbServer(DbServer.ServerTyp.MSSQL, new ServerCredential("hostB"));
-        var data = new DTM_DATA(new List<DbServer> { s1, s2 }, factory);
+        var data = new DtmData(new List<DbServer> { s1, s2 }, factory);
 
         data.Servers.Should().HaveCount(2);
         // Beide ueber ihre Identity einzeln auflosbar.

@@ -4,7 +4,7 @@ namespace DTM
 {
     public interface IOdbcFactory
     {
-        ODBC.IDTM_ODBC? Get_DATA(string Name, ServerCredential credential);
+        ODBC.IDtmOdbc? Get_DATA(string Name, ServerCredential credential);
     }
 
     public class OdbcFactory : IOdbcFactory
@@ -17,10 +17,10 @@ namespace DTM
         // MSSQL-/Oracle-Instanz auf den ersten Server umgebogen: Bug 2
         // "immer die gleichen DBs" und Bug 1 "keine Verbindung zum
         // zweiten Server" waren beide dieser eine Cache-Bug.
-        private readonly Dictionary<string, ODBC.IDTM_ODBC> _cache =
+        private readonly Dictionary<string, ODBC.IDtmOdbc> _cache =
             new(StringComparer.OrdinalIgnoreCase);
 
-        public ODBC.IDTM_ODBC? Get_DATA(string Name, ServerCredential credential)
+        public ODBC.IDtmOdbc? Get_DATA(string Name, ServerCredential credential)
         {
             string key = $"{Name}::{credential.Server}";
             if (_cache.TryGetValue(key, out var existing))
@@ -29,7 +29,7 @@ namespace DTM
                 return existing;
             }
 
-            ODBC.IDTM_ODBC? instance = Name switch
+            ODBC.IDtmOdbc? instance = Name switch
             {
                 "MSSQL"  => new MSSQL.MssqlOdbcClient(credential),
                 "ORACLE" => new ORACLE.OracleOdbcClient(credential),

@@ -2,7 +2,7 @@ using NLog;
 
 namespace DTM
 {
-    public class DTM_DATA : IDTM_DATA
+    public class DtmData : IDtmData
     {
         private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
@@ -14,7 +14,7 @@ namespace DTM
 
         public IReadOnlyList<DbServer> Servers { get; }
 
-        public DTM_DATA(IReadOnlyList<DbServer> servers, IOdbcFactory factory)
+        public DtmData(IReadOnlyList<DbServer> servers, IOdbcFactory factory)
         {
             ArgumentNullException.ThrowIfNull(servers);
             Servers = servers;

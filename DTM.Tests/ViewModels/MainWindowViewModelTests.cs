@@ -7,7 +7,7 @@ namespace DTM.Tests.ViewModels;
 
 public class MainWindowViewModelTests
 {
-    private sealed class StubData : IDTM_DATA
+    private sealed class StubData : IDtmData
     {
         public IReadOnlyList<DbServer> Servers { get; init; } = Array.Empty<DbServer>();
         public List<DatabaseInfo> get_Database_Names(ServerIdentity id) => [];

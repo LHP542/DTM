@@ -9,7 +9,7 @@ using NLog;
 namespace DTM.ORACLE
 {
 
-    public class OracleOdbcClient(ServerCredential credential) : IDisposable, IDTM_ODBC
+    public class OracleOdbcClient(ServerCredential credential) : IDisposable, IDtmOdbc
     {
         private readonly OracleRestClient _rest = new OracleRestClient(credential, true);
         private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();

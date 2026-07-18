@@ -6,20 +6,20 @@ namespace DTM.ViewModels.TreeNodes;
 /// <summary>
 /// Tree-Knoten fuer einen einzelnen Server (Hostname). Liegt unter einem
 /// <see cref="ServerGroupNodeViewModel"/>. Beim Expand laedt der Knoten
-/// die Datenbank-Liste seines Servers via <see cref="IDTM_DATA"/> und legt
+/// die Datenbank-Liste seines Servers via <see cref="IDtmData"/> und legt
 /// pro DB einen <see cref="DatabaseNodeViewModel"/> als Child an.
 /// </summary>
 public sealed class ServerNodeViewModel : NodeViewModelBase
 {
     private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-    private readonly IDTM_DATA _data;
+    private readonly IDtmData _data;
     private bool _childrenLoaded;
 
     public ServerIdentity Identity { get; }
     public DbServer.ServerTyp ServerTyp => Identity.Typ;
     public string ServerHost => Identity.Server;
 
-    public ServerNodeViewModel(ServerIdentity identity, IDTM_DATA data)
+    public ServerNodeViewModel(ServerIdentity identity, IDtmData data)
     {
         Identity = identity;
         _data = data;
