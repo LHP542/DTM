@@ -202,8 +202,40 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
 
 ## DTM-Konventionen
 
+- **Namensregeln (seit Refactor v2.3.0-prep):** C#-Klassen und
+  Interfaces sind **PascalCase ohne Underscores**. Beispiele:
+  - Datenklassen: `DbServer`, `DatabaseInfo`, `DatabaseStats`,
+    `MssqlDatabaseStats`, `OracleDatabaseStats`
+  - Provider-Clients: `MssqlOdbcClient`, `OracleOdbcClient`,
+    `OracleRestClient`
+  - Root-Interfaces: `IDtmData`, `IDtmOdbc`, `IOdbcFactory`
+  - Klasse `DtmData` (statt `DTM_DATA`)
+
+  Ausnahmen: `Session`, `Tablespace`, `File` (Records ohne
+  Underscore; `File` wird durch die `SystemFile`-Alias-Regel
+  adressiert). Method-Namen sind noch teils Underscore-lastig
+  (`get_Datenbank_Names`, `Get_DATA`) — separater Refactor bei
+  Bedarf.
+
+- **Ordner- und Namespace-Struktur (Data-Ebene):** alle Data-Layer-
+  Klassen leben unter `DTM.Data.<Bereich>`. Ordner spiegelt
+  Namespace 1:1:
+  - `Data/Models/`   → `DTM.Data.Models` — POCOs (DbServer, DatabaseInfo, …)
+  - `Data/Common/`   → `DTM.Data.Common` — Utilities (AsyncUtil, LogMask)
+  - `Data/Odbc/`     → `DTM.Data.Odbc` — Interface + Factory
+  - `Data/Mssql/`    → `DTM.Data.Mssql` — MSSQL-Provider (Client, Actions, POCOs)
+  - `Data/Oracle/`   → `DTM.Data.Oracle` — Oracle-Provider (ODBC + REST)
+  - `Data/Olvm/`     → `DTM.Data.Olvm` — OLVM-Snapshots
+  - `Data/Terminal/` → `DTM.Data.Terminal` — PS-Runspace, TerminalBus
+  - `Data/Config/`   → `DTM.Data.Config` — Persistenz (ConnectionEntry, AppSettings)
+  - `Data/Updater/`  → `DTM.Data.Updater` — UpdateService + ReleaseNote
+  - `Data/`          → `DTM.Data` — Wurzel: `DtmData`, `IDtmData`
+
+  ANSI-Rendering (`AnsiPalette`, `AnsiParser`, `AnsiConsole`) liegt
+  bewusst unter `Views/Controls/` — ist UI-Kram, nicht Data-Layer.
+
 - **`SystemFile`-Alias Pflicht:** Im Namespace `DTM` existiert ein eigenes `record File`
-  (in `Data/Database_Stats.cs`), das `System.IO.File` schattiert. In jeder Datei, die
+  (in `Data/Models/DatabaseStats.cs`), das `System.IO.File` schattiert. In jeder Datei, die
   `System.IO.File` braucht, deshalb verpflichtend:
 
   ```csharp
@@ -823,6 +855,38 @@ Sub-Items:
 **Sicherheit:** SSH-Login als `oracle@DBMANAGER01` per Key-Auth
 (gleiches Setup wie andere Oracle-Ziele — Pageant / OpenSSH
 IdentityAgent). Kein Passwort in Klartext.
+
+#### Phase 12 — PowerShell-Module aufraeumen (Future)
+
+Analog zum DTM-Codebase-Refactor (v2.3.0-prep, Branch
+`refactor/cleanup-namespaces-and-naming`) haben die PS-Module noch
+Aufraeum-Bedarf:
+
+**MSSQL.psm1** (1106 Zeilen, 29 Funktionen)
+- Globale Variablen hardcoded auf `FOC-SQL01` + spezifische Storage-
+  Pfade — muss man wissen wenn der Server-Setup mal wandert.
+- `New-DatabaseDynamicParam` + `New-BackupFileDynamicParam` sind
+  bereits ordentlich extrahiert.
+- Function-Naming `Database-<Verb>-<Object>` ist nicht PS-idiomatisch
+  (`Verb-Noun`), aber intern konsistent. Rename waere grosser Blast
+  (jeder DTM-Aufruf via TerminalBus + FOC-SQL-Wrapper haengt am
+  Namen).
+
+**FOC-SQL.psm1** (~3200 Zeilen, 42 Funktionen)
+- Alte Wrapper (`Backup-Database`, `Set-Snapshot`, `Restore-Snapshot`,
+  `Copy-Database-ToSamba-MSSQL`, `Get-DatabaseStats-MSSQL`) haben noch
+  inline PSSession-Boilerplate; die neueren DTM-Wrapper nutzen
+  `Invoke-MssqlServerScript` (Phase 7.2). 5 Legacy-Wrapper koennten
+  auf den Helper migriert werden.
+- Enter-Funktionen (`Enter-SQLServer`, `Enter-FOCSQL`,
+  `Enter-OracleSQL`) haben viel Copy-Paste im SSH-Setup.
+- Kein `#region`-Sectioning — bei 3k Zeilen unuebersichtlich.
+
+Kein akuter Bug-Fix — kann warten. Sinnvoll wenn: (a) das MSSQL-
+Modul mal auf einen neuen Server-Setup muss und die globale-Var-
+Logik aufgeraeumt werden sollte, oder (b) ein neuer DTM-Aufruf einen
+weiteren MSSQL-Wrapper braucht und dabei die letzten Legacy-Wrapper
+mitziehen.
 
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 
