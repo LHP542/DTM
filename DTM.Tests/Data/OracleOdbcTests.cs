@@ -1,4 +1,4 @@
-using DTM.ORACLE;
+using DTM.Data.Oracle;
 using FluentAssertions;
 using Xunit;
 

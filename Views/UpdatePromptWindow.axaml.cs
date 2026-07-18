@@ -1,5 +1,5 @@
 using Avalonia.Interactivity;
-using DTM.Updater;
+using DTM.Data.Updater;
 
 namespace DTM.Views;
 

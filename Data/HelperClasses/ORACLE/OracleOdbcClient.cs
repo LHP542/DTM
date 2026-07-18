@@ -2,11 +2,11 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Data;
-using DTM.ODBC;
-using DTM.Util;
+using DTM.Data.Odbc;
+using DTM.Data.Common;
 using NLog;
 
-namespace DTM.ORACLE
+namespace DTM.Data.Oracle
 {
 
     public class OracleOdbcClient(ServerCredential credential) : IDisposable, IDtmOdbc

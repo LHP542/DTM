@@ -1,10 +1,10 @@
 using System.Data;
 using System.Data.Odbc;
 using System.Text;
-using DTM.ODBC;
+using DTM.Data.Odbc;
 using NLog;
 
-namespace DTM.MSSQL
+namespace DTM.Data.Mssql
 {
     public class MssqlOdbcClient(ServerCredential credential) : IDisposable, IDtmOdbc
     {

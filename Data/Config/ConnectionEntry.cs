@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace DTM.Config;
+namespace DTM.Data.Config;
 
 public sealed class ConnectionEntry
 {

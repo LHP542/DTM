@@ -1,5 +1,5 @@
 using System.Data;
-using DTM.MSSQL;
+using DTM.Data.Mssql;
 using FluentAssertions;
 using Xunit;
 

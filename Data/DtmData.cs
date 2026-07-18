@@ -75,7 +75,7 @@ namespace DTM
             if (server.Typ != DbServer.ServerTyp.MSSQL)
                 throw new InvalidOperationException(
                     $"OdbcMssqlActionService nur fuer MSSQL verfuegbar (Server '{identity}' ist {server.Typ}).");
-            var odbc = _factory.Get_DATA("MSSQL", server.serverCredential!) as DTM.MSSQL.MssqlOdbcClient
+            var odbc = _factory.Get_DATA("MSSQL", server.serverCredential!) as DTM.Data.Mssql.MssqlOdbcClient
                        ?? throw new InvalidOperationException(
                            $"Factory lieferte keine MssqlOdbcClient-Instanz fuer '{identity}'.");
             return new DTM.Data.Mssql.OdbcMssqlActionService(odbc);
@@ -90,7 +90,7 @@ namespace DTM
             // Frischer REST-Client pro Aufruf; der Service disposed ihn.
             // trustAllCertificates: true — gleiches Verhalten wie OracleOdbcClient
             // (Self-signed OLVM-Zertifikate in typischen Setups).
-            var rest = new DTM.ORACLE.OracleRestClient(server.serverCredential!, trustAllCertificates: true);
+            var rest = new DTM.Data.Oracle.OracleRestClient(server.serverCredential!, trustAllCertificates: true);
             return new DTM.Data.Olvm.OlvmSnapshotService(rest);
         }
     }

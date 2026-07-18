@@ -1,4 +1,4 @@
-using DTM.Config;
+using DTM.Data.Config;
 
 namespace DTM.Data.Terminal;
 

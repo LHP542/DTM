@@ -1,4 +1,4 @@
-namespace DTM.ODBC
+namespace DTM.Data.Odbc
 {
     public interface IDtmOdbc
     {

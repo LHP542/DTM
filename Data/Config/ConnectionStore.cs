@@ -4,7 +4,7 @@ using System.Text.Json;
 using NLog;
 using SystemFile = System.IO.File;
 
-namespace DTM.Config;
+namespace DTM.Data.Config;
 
 public static class ConnectionStore
 {

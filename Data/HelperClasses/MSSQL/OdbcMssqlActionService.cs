@@ -1,4 +1,4 @@
-using DTM.MSSQL;
+using DTM.Data.Mssql;
 using NLog;
 
 namespace DTM.Data.Mssql;

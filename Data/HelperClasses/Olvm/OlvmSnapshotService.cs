@@ -1,5 +1,5 @@
 using System.Globalization;
-using DTM.ORACLE;
+using DTM.Data.Oracle;
 using NLog;
 
 namespace DTM.Data.Olvm;

@@ -1,6 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using DTM.Config;
+using DTM.Data.Config;
 using DTM.Data.Terminal;
 using NLog;
 

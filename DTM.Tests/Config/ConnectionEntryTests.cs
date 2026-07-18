@@ -1,4 +1,4 @@
-using DTM.Config;
+using DTM.Data.Config;
 using FluentAssertions;
 using Xunit;
 

@@ -1,3 +1,4 @@
+using DTM.Data.Odbc;
 using FluentAssertions;
 using Xunit;
 
@@ -5,7 +6,7 @@ namespace DTM.Tests.Data;
 
 public class DtmDataTests
 {
-    private sealed class FakeOdbc : ODBC.IDtmOdbc
+    private sealed class FakeOdbc : IDtmOdbc
     {
         public List<DatabaseInfo> Names { get; set; } = [];
         public DatabaseStats Stats { get; set; } = new MssqlDatabaseStats();
@@ -19,7 +20,7 @@ public class DtmDataTests
         public string? LastRequested;
         public readonly FakeOdbc Odbc = new();
 
-        public ODBC.IDtmOdbc? Get_DATA(string name, ServerCredential cred)
+        public IDtmOdbc? Get_DATA(string name, ServerCredential cred)
         {
             LastRequested = name;
             return name is "MSSQL" or "ORACLE" ? Odbc : null;

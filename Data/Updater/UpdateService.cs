@@ -4,7 +4,7 @@ using System.Text.Json;
 using NLog;
 using SystemFile = System.IO.File;
 
-namespace DTM.Updater;
+namespace DTM.Data.Updater;
 
 public static class UpdateService
 {

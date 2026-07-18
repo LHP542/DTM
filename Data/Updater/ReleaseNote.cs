@@ -1,4 +1,4 @@
-namespace DTM.Updater;
+namespace DTM.Data.Updater;
 
 /// <summary>
 /// Eintrag aus <c>release-notes.json</c> auf der Update-Quelle. Wird im

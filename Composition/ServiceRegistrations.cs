@@ -1,4 +1,4 @@
-using DTM.Config;
+using DTM.Data.Config;
 using DTM.Data.Terminal;
 using DTM.ViewModels;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,5 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using DTM.Config;
+using DTM.Data.Config;
 
 namespace DTM.ViewModels;
 

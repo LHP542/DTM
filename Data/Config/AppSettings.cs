@@ -1,4 +1,4 @@
-namespace DTM.Config;
+namespace DTM.Data.Config;
 
 /// <summary>
 /// Konfiguration für das FOC-SQL-PowerShell-Modul.

@@ -2,7 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using DTM.Composition;
-using DTM.Config;
+using DTM.Data.Config;
 using DTM.Diagnostics;
 using DTM.ViewModels;
 using DTM.Views;

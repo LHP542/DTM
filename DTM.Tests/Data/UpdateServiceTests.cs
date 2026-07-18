@@ -1,4 +1,4 @@
-using DTM.Updater;
+using DTM.Data.Updater;
 using FluentAssertions;
 using Xunit;
 using SystemFile = System.IO.File;

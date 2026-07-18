@@ -1,4 +1,4 @@
-﻿namespace DTM.Util
+﻿namespace DTM.Data.Common
 {
   public static class AsyncUtil
   {

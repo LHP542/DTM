@@ -4,7 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using DTM.Data.Terminal;
-using DTM.Updater;
+using DTM.Data.Updater;
 
 namespace DTM.Views;
 

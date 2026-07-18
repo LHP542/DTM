@@ -5,7 +5,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DTM.ViewModels.TreeNodes;
-using DTM.Config;
+using DTM.Data.Config;
 using DTM.Views;
 using Microsoft.Extensions.DependencyInjection;
 using NLog;
@@ -663,7 +663,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void ReloadFromStores()
     {
         List<DbServer> newServers = new();
-        foreach (DTM.Config.ConnectionEntry entry in DTM.Config.ConnectionStore.Load())
+        foreach (DTM.Data.Config.ConnectionEntry entry in DTM.Data.Config.ConnectionStore.Load())
         {
             if (Enum.TryParse<DbServer.ServerTyp>(entry.Key, ignoreCase: true, out var typ))
                 newServers.Add(new DbServer(typ, entry.ToCredential(), entry.Backend));
@@ -928,7 +928,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         try
         {
             string src = DTM.Data.Terminal.FocSqlRuntime.Current.UpdateSource;
-            var newVersion = await DTM.Updater.UpdateService.CheckForUpdateAsync(src);
+            var newVersion = await DTM.Data.Updater.UpdateService.CheckForUpdateAsync(src);
             if (newVersion is not null)
                 await ShowUpdateDialogAsync(newVersion, src);
         }
@@ -940,8 +940,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Window? owner = GetMainWindow();
         if (owner is null) return;
 
-        var current = DTM.Updater.UpdateService.CurrentVersion();
-        var notes = await DTM.Updater.UpdateService.LoadReleaseNotesAsync(updateSource, current, newVersion);
+        var current = DTM.Data.Updater.UpdateService.CurrentVersion();
+        var notes = await DTM.Data.Updater.UpdateService.LoadReleaseNotesAsync(updateSource, current, newVersion);
 
         var dlg = new UpdatePromptWindow(newVersion.ToString(), current.ToString(3), notes);
         await dlg.ShowDialog(owner);
@@ -952,7 +952,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 _logger.Info("Update wird jetzt angewendet: {0}", newVersion);
                 var applyProgress = new Progress<(int Done, int Total, string File)>(p =>
                     StatusBar = $"Update: {p.Done}/{p.Total} — {p.File}");
-                await DTM.Updater.UpdateService.ApplyUpdateAsync(updateSource, applyProgress);
+                await DTM.Data.Updater.UpdateService.ApplyUpdateAsync(updateSource, applyProgress);
                 break;
             case UpdateDialogResult.Later:
                 _logger.Info("Update auf {0} auf später verschoben (30 min).", newVersion);

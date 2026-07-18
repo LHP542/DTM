@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using NLog;
 
-namespace DTM.ORACLE
+namespace DTM.Data.Oracle
 {
     public class OracleRestClient : IDisposable
     {
