@@ -6,22 +6,22 @@ namespace DTM.Data.Mssql;
 /// <summary>
 /// Phase 10: T-SQL-Actions fuer OdbcDirect-Backend. Wickelt alles ab, was
 /// FOC-SQL sonst ueber WinRM + MSSQL-Modul macht — nur eben direkt ueber
-/// die ODBC/1433-Verbindung (siehe <see cref="MSSQL_ODBC.ExecuteNonQueryAsync"/>).
+/// die ODBC/1433-Verbindung (siehe <see cref="MssqlOdbcClient.ExecuteNonQueryAsync"/>).
 ///
 /// Design-Prinzipien:
 /// - SQL-Injection: <c>QUOTENAME(@dbname)</c> serverseitig fuer Object-Namen,
 ///   ODBC-Positional-Params ('?') fuer Werte. Kein String-Concat auf Client.
 /// - Live-Output: Actions reichen einen <c>Action&lt;string&gt; onInfo</c>-
-///   Callback an <see cref="MSSQL_ODBC"/> durch, der PRINT/RAISERROR/DBCC-
+///   Callback an <see cref="MssqlOdbcClient"/> durch, der PRINT/RAISERROR/DBCC-
 ///   Meldungen als Notices in den pwsh-Tab injiziert (siehe 10.4).
 /// - Async: alle Methoden sind <c>Task</c>-basiert und blocken den UI-Thread
 ///   nicht. Serialisierung pro OdbcConnection uebernimmt der ActionLock in
-///   MSSQL_ODBC.
+///   MssqlOdbcClient.
 /// </summary>
-public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
+public sealed class OdbcMssqlActionService(MssqlOdbcClient odbc)
 {
     private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-    private readonly MSSQL_ODBC _odbc = odbc;
+    private readonly MssqlOdbcClient _odbc = odbc;
 
     private static readonly HashSet<string> _recoveryModes = new(StringComparer.OrdinalIgnoreCase)
     { "FULL", "SIMPLE", "BULK_LOGGED" };

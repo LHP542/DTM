@@ -13,7 +13,7 @@ namespace DTM.Data.Terminal;
 ///
 /// Cases:
 /// - Server-Hostname als Key, case-insensitive (Windows-Semantik). Standard-
-///   PS-Hashtable ist case-insensitive → matcht das Verhalten der ODBC_Factory.
+///   PS-Hashtable ist case-insensitive → matcht das Verhalten der OdbcFactory.
 /// - Passwoerter werden nur als <see cref="SecureString"/> in <see cref="PSCredential"/>
 ///   uebergeben — kein Klartext-String im Runspace-State.
 /// - Oracle-Server werden ignoriert (SSH-Keys, kein WinRM/PSCredential).

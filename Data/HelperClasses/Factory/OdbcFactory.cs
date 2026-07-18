@@ -2,12 +2,12 @@ using NLog;
 
 namespace DTM
 {
-    public interface IODBC_Factory
+    public interface IOdbcFactory
     {
         ODBC.IDTM_ODBC? Get_DATA(string Name, ServerCredential credential);
     }
 
-    public class ODBC_Factory : IODBC_Factory
+    public class OdbcFactory : IOdbcFactory
     {
         private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
@@ -25,25 +25,25 @@ namespace DTM
             string key = $"{Name}::{credential.Server}";
             if (_cache.TryGetValue(key, out var existing))
             {
-                _logger.Debug("ODBC_Factory: Bestehende {0}-Instanz fuer '{1}' zurueckgegeben.", Name, credential.Server);
+                _logger.Debug("OdbcFactory: Bestehende {0}-Instanz fuer '{1}' zurueckgegeben.", Name, credential.Server);
                 return existing;
             }
 
             ODBC.IDTM_ODBC? instance = Name switch
             {
-                "MSSQL"  => new MSSQL.MSSQL_ODBC(credential),
-                "ORACLE" => new ORACLE.ORACLE_ODBC(credential),
+                "MSSQL"  => new MSSQL.MssqlOdbcClient(credential),
+                "ORACLE" => new ORACLE.OracleOdbcClient(credential),
                 _        => null
             };
 
             if (instance is null)
             {
-                _logger.Warn("ODBC_Factory: Unbekannter Datenbanktyp '{0}'", Name);
+                _logger.Warn("OdbcFactory: Unbekannter Datenbanktyp '{0}'", Name);
                 return null;
             }
 
             _cache[key] = instance;
-            _logger.Debug("ODBC_Factory: Neue {0}-Instanz erstellt fuer Server '{1}'.", Name, credential.Server);
+            _logger.Debug("OdbcFactory: Neue {0}-Instanz erstellt fuer Server '{1}'.", Name, credential.Server);
             return instance;
         }
     }

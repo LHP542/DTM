@@ -6,7 +6,7 @@ using NLog;
 
 namespace DTM.ORACLE
 {
-    public class REST : IDisposable
+    public class OracleRestClient : IDisposable
     {
         private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
@@ -14,7 +14,7 @@ namespace DTM.ORACLE
         private readonly bool _ownsHandler;
         private readonly SocketsHttpHandler? _handler;
         public ServerCredential serverCredential { get; private set; }
-        public REST(ServerCredential credential, bool trustAllCertificates = false)
+        public OracleRestClient(ServerCredential credential, bool trustAllCertificates = false)
         {
             serverCredential = credential;
 

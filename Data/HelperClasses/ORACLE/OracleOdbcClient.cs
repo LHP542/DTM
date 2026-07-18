@@ -9,9 +9,9 @@ using NLog;
 namespace DTM.ORACLE
 {
 
-    public class ORACLE_ODBC(ServerCredential credential) : IDisposable, IDTM_ODBC
+    public class OracleOdbcClient(ServerCredential credential) : IDisposable, IDTM_ODBC
     {
-        private readonly REST _rest = new REST(credential, true);
+        private readonly OracleRestClient _rest = new OracleRestClient(credential, true);
         private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
         public void Dispose()

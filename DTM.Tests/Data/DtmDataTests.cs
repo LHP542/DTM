@@ -14,7 +14,7 @@ public class DtmDataTests
         public DatabaseStats GetDatabase_Stats(DatabaseInfo db) => Stats;
     }
 
-    private sealed class FakeFactory : IODBC_Factory
+    private sealed class FakeFactory : IOdbcFactory
     {
         public string? LastRequested;
         public readonly FakeOdbc Odbc = new();

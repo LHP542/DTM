@@ -22,7 +22,7 @@ namespace DTM
 
         /// <summary>
         /// Phase 10.4: liefert den <see cref="Data.Mssql.OdbcMssqlActionService"/>
-        /// fuer den benannten Server. Nutzt die interne <see cref="IODBC_Factory"/>
+        /// fuer den benannten Server. Nutzt die interne <see cref="IOdbcFactory"/>
         /// (dieselbe Cache-Instanz wie Stats/Namen-Abfragen — kein Doppel-Connect).
         /// Wirft <see cref="InvalidOperationException"/> wenn der Server nicht
         /// MSSQL ist (Oracle hat keinen ODBC-Direct-Weg).
@@ -32,7 +32,7 @@ namespace DTM
         /// <summary>
         /// Phase 11.3: liefert den <see cref="Data.Olvm.OlvmSnapshotService"/>
         /// fuer den benannten Oracle-Server. Baut intern einen frischen
-        /// <see cref="ORACLE.REST"/>-Client — der Service disposed ihn selbst.
+        /// <see cref="ORACLE.OracleRestClient"/>-Client — der Service disposed ihn selbst.
         /// Wirft <see cref="InvalidOperationException"/> wenn der Server nicht
         /// Oracle ist.
         /// </summary>

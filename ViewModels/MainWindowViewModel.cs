@@ -519,7 +519,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         if (owner is null || _services is null) return;
 
         // Die VM-UUID kommt bei Oracle-Nodes aus Database.Id (via OLVM-REST
-        // in ORACLE_ODBC.get_Datenbank_Names gesetzt). Ohne UUID → Abbruch
+        // in OracleOdbcClient.get_Datenbank_Names gesetzt). Ohne UUID → Abbruch
         // mit klarer Meldung; die Snapshots-Route braucht sie zwingend.
         string vmId = db.Database.Id ?? string.Empty;
         if (string.IsNullOrWhiteSpace(vmId))
@@ -669,7 +669,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 newServers.Add(new DbServer(typ, entry.ToCredential(), entry.Backend));
         }
 
-        _data = new DTM_DATA(newServers, new ODBC_Factory());
+        _data = new DTM_DATA(newServers, new OdbcFactory());
 
         SelectedNode = null;
         BuildRootNodes(newServers);

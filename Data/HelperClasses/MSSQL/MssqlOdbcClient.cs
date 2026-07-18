@@ -6,7 +6,7 @@ using NLog;
 
 namespace DTM.MSSQL
 {
-    public class MSSQL_ODBC(ServerCredential credential) : IDisposable, IDTM_ODBC
+    public class MssqlOdbcClient(ServerCredential credential) : IDisposable, IDTM_ODBC
     {
         private ServerCredential Credential { get; set; } = credential;
         private OdbcConnection Connection { get; set; } = new OdbcConnection();

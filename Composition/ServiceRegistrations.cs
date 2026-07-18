@@ -24,7 +24,7 @@ internal static class ServiceRegistrations
     public static IServiceCollection AddDtmServices(this IServiceCollection services)
     {
         // --- Daten-/Infrastruktur-Schicht (Singletons) ---
-        services.AddSingleton<ODBC_Factory>();
+        services.AddSingleton<OdbcFactory>();
 
         // Multi-Server: aus jedem ConnectionEntry wird ein DbServer. Mehrere
         // Eintraege mit gleichem Typ (z. B. zwei MSSQL-Hosts) sind erlaubt;
@@ -43,7 +43,7 @@ internal static class ServiceRegistrations
         services.AddSingleton<IDTM_DATA>(sp =>
             new DTM_DATA(
                 sp.GetRequiredService<IReadOnlyList<DbServer>>(),
-                sp.GetRequiredService<ODBC_Factory>()));
+                sp.GetRequiredService<OdbcFactory>()));
 
         // Strukturierte FOC-SQL-Aufrufe ueber eigenen PS-Runspace (komplementaer
         // zum TerminalBus, der Text in den pwsh-Tab schreibt).

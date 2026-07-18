@@ -10,14 +10,14 @@ namespace DTM.Data.Olvm;
 /// Ansible-Playbooks bereit sind — bis dahin sind die entsprechenden
 /// UI-Buttons disabled.
 ///
-/// Klasse besitzt den <see cref="REST"/>-Client und disposed ihn.
+/// Klasse besitzt den <see cref="OracleRestClient"/>-Client und disposed ihn.
 /// </summary>
 public sealed class OlvmSnapshotService : IDisposable
 {
     private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
-    private readonly REST _rest;
+    private readonly OracleRestClient _rest;
 
-    public OlvmSnapshotService(REST rest)
+    public OlvmSnapshotService(OracleRestClient rest)
     {
         _rest = rest;
     }

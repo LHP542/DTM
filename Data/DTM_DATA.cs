@@ -10,11 +10,11 @@ namespace DTM
         // ueber die separate Liste, damit der Tree-Aufbau im UI eine stabile
         // Reihenfolge sieht (wichtig bei vielen Servern in derselben Gruppe).
         private readonly Dictionary<ServerIdentity, DbServer> _byIdentity;
-        private readonly IODBC_Factory _factory;
+        private readonly IOdbcFactory _factory;
 
         public IReadOnlyList<DbServer> Servers { get; }
 
-        public DTM_DATA(IReadOnlyList<DbServer> servers, IODBC_Factory factory)
+        public DTM_DATA(IReadOnlyList<DbServer> servers, IOdbcFactory factory)
         {
             ArgumentNullException.ThrowIfNull(servers);
             Servers = servers;
@@ -75,9 +75,9 @@ namespace DTM
             if (server.Typ != DbServer.ServerTyp.MSSQL)
                 throw new InvalidOperationException(
                     $"OdbcMssqlActionService nur fuer MSSQL verfuegbar (Server '{identity}' ist {server.Typ}).");
-            var odbc = _factory.Get_DATA("MSSQL", server.serverCredential!) as DTM.MSSQL.MSSQL_ODBC
+            var odbc = _factory.Get_DATA("MSSQL", server.serverCredential!) as DTM.MSSQL.MssqlOdbcClient
                        ?? throw new InvalidOperationException(
-                           $"Factory lieferte keine MSSQL_ODBC-Instanz fuer '{identity}'.");
+                           $"Factory lieferte keine MssqlOdbcClient-Instanz fuer '{identity}'.");
             return new DTM.Data.Mssql.OdbcMssqlActionService(odbc);
         }
 
@@ -88,9 +88,9 @@ namespace DTM
                 throw new InvalidOperationException(
                     $"OlvmSnapshotService nur fuer Oracle verfuegbar (Server '{identity}' ist {server.Typ}).");
             // Frischer REST-Client pro Aufruf; der Service disposed ihn.
-            // trustAllCertificates: true — gleiches Verhalten wie ORACLE_ODBC
+            // trustAllCertificates: true — gleiches Verhalten wie OracleOdbcClient
             // (Self-signed OLVM-Zertifikate in typischen Setups).
-            var rest = new DTM.ORACLE.REST(server.serverCredential!, trustAllCertificates: true);
+            var rest = new DTM.ORACLE.OracleRestClient(server.serverCredential!, trustAllCertificates: true);
             return new DTM.Data.Olvm.OlvmSnapshotService(rest);
         }
     }

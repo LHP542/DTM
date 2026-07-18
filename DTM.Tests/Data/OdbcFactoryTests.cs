@@ -11,7 +11,7 @@ public class OdbcFactoryTests
     [Fact]
     public void Get_DATA_TwoDifferentMssqlServers_ReturnsDifferentInstances()
     {
-        var factory = new ODBC_Factory();
+        var factory = new OdbcFactory();
 
         var a = factory.Get_DATA("MSSQL", Cred("FOC-SQL01"));
         var b = factory.Get_DATA("MSSQL", Cred("DEVFOC-SQL01"));
@@ -24,7 +24,7 @@ public class OdbcFactoryTests
     [Fact]
     public void Get_DATA_SameServerTwice_ReturnsSameInstance()
     {
-        var factory = new ODBC_Factory();
+        var factory = new OdbcFactory();
 
         var first  = factory.Get_DATA("MSSQL", Cred("FOC-SQL01"));
         var second = factory.Get_DATA("MSSQL", Cred("FOC-SQL01"));
@@ -35,7 +35,7 @@ public class OdbcFactoryTests
     [Fact]
     public void Get_DATA_ServerHostCaseInsensitive_ReturnsSameInstance()
     {
-        var factory = new ODBC_Factory();
+        var factory = new OdbcFactory();
 
         var upper = factory.Get_DATA("MSSQL", Cred("FOC-SQL01"));
         var lower = factory.Get_DATA("MSSQL", Cred("foc-sql01"));
@@ -46,7 +46,7 @@ public class OdbcFactoryTests
     [Fact]
     public void Get_DATA_TwoDifferentOracleServers_ReturnsDifferentInstances()
     {
-        var factory = new ODBC_Factory();
+        var factory = new OdbcFactory();
 
         var a = factory.Get_DATA("ORACLE", Cred("olvm-mgm.lhp.intern"));
         var b = factory.Get_DATA("ORACLE", Cred("olvm-mgm.devlhp.intern"));
@@ -59,7 +59,7 @@ public class OdbcFactoryTests
     [Fact]
     public void Get_DATA_MssqlAndOracleSameHost_ReturnsDifferentInstances()
     {
-        var factory = new ODBC_Factory();
+        var factory = new OdbcFactory();
 
         var mssql  = factory.Get_DATA("MSSQL",  Cred("host1"));
         var oracle = factory.Get_DATA("ORACLE", Cred("host1"));
@@ -70,7 +70,7 @@ public class OdbcFactoryTests
     [Fact]
     public void Get_DATA_UnknownType_ReturnsNull()
     {
-        var factory = new ODBC_Factory();
+        var factory = new OdbcFactory();
 
         factory.Get_DATA("MARIADB", Cred("host1")).Should().BeNull();
     }
