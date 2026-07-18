@@ -28,7 +28,7 @@ namespace DTM
         public bool IsPercentigGrowth { get; set; }
         public string? PysicalName { get; set; }
     }
-    public record Database_Stats
+    public record DatabaseStats
     {
         public string? Server { get; set; }
         public string? Name { get; set; }
@@ -40,7 +40,7 @@ namespace DTM
 
     }
 
-    public record Database_Stats_MSSQL : Database_Stats
+    public record MssqlDatabaseStats : DatabaseStats
     {
         public string? RecorveryModel { get; set; }
         public int CompatibllityLevel { get; set; }
@@ -60,13 +60,13 @@ namespace DTM
         public List<File>? Files { get; set; }
 
 
-        public Database_Stats_MSSQL() : base()
+        public MssqlDatabaseStats() : base()
         {
 
         }
     }
 
-    public record Database_Stats_ORACLE : Database_Stats
+    public record OracleDatabaseStats : DatabaseStats
     {
         public string? InstanceName { get; set; }
         public string? HostName { get; set; }
@@ -77,7 +77,7 @@ namespace DTM
         public double SGASizeMB { get; set; }
         public double PGAAllocatedMB { get; set; }
         public List<Tablespace>? Tablespaces { get; set; }
-        public Database_Stats_ORACLE() : base()
+        public OracleDatabaseStats() : base()
         {
 
         }

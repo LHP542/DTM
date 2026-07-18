@@ -16,7 +16,7 @@ public sealed class ServerNodeViewModel : NodeViewModelBase
     private bool _childrenLoaded;
 
     public ServerIdentity Identity { get; }
-    public DB_SERVER.ServerTyp ServerTyp => Identity.Typ;
+    public DbServer.ServerTyp ServerTyp => Identity.Typ;
     public string ServerHost => Identity.Server;
 
     public ServerNodeViewModel(ServerIdentity identity, IDTM_DATA data)

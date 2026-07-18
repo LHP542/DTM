@@ -199,12 +199,12 @@ namespace DTM.MSSQL
                 cmd.Parameters.Add(new OdbcParameter($"@p{i}", parameters[i] ?? DBNull.Value));
         }
 
-        public List<Database_Info> get_Datenbank_Names()
+        public List<DatabaseInfo> get_Datenbank_Names()
         {
             return get_Rows(
            "SELECT [name], database_id, state_desc, '' AS [FQDN] FROM sys.databases WHERE database_id > 4")
        .AsEnumerable()
-       .Select(r => new Database_Info
+       .Select(r => new DatabaseInfo
        {
            Name = r.Field<string>("name")!,
            Id = Convert.ToString(r.Field<int>("database_id")),
@@ -213,15 +213,15 @@ namespace DTM.MSSQL
                         r.Field<string>("state_desc"),
                         "ONLINE",
                         StringComparison.OrdinalIgnoreCase)
-                    ? Database_Status.up
-                    : Database_Status.down
+                    ? DatabaseStatus.up
+                    : DatabaseStatus.down
        }).OrderBy(db => db.Name)
        .ToList();
         }
 
-        public Database_Stats GetDatabase_Stats(Database_Info database)
+        public DatabaseStats GetDatabase_Stats(DatabaseInfo database)
         {
-            Database_Stats_MSSQL stats = new()
+            MssqlDatabaseStats stats = new()
             {
                 DatabaseTyp = "MSSQL",
                 Server = Credential.Server

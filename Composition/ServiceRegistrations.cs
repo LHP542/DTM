@@ -26,23 +26,23 @@ internal static class ServiceRegistrations
         // --- Daten-/Infrastruktur-Schicht (Singletons) ---
         services.AddSingleton<ODBC_Factory>();
 
-        // Multi-Server: aus jedem ConnectionEntry wird ein DB_SERVER. Mehrere
+        // Multi-Server: aus jedem ConnectionEntry wird ein DbServer. Mehrere
         // Eintraege mit gleichem Typ (z. B. zwei MSSQL-Hosts) sind erlaubt;
         // die Composite-Identity (Typ, Hostname) macht sie unterscheidbar.
-        services.AddSingleton<IReadOnlyList<DB_SERVER>>(_ =>
+        services.AddSingleton<IReadOnlyList<DbServer>>(_ =>
         {
-            List<DB_SERVER> list = new();
+            List<DbServer> list = new();
             foreach (ConnectionEntry entry in ConnectionStore.Load())
             {
-                if (Enum.TryParse<DB_SERVER.ServerTyp>(entry.Key, ignoreCase: true, out var typ))
-                    list.Add(new DB_SERVER(typ, entry.ToCredential(), entry.Backend));
+                if (Enum.TryParse<DbServer.ServerTyp>(entry.Key, ignoreCase: true, out var typ))
+                    list.Add(new DbServer(typ, entry.ToCredential(), entry.Backend));
             }
             return list;
         });
 
         services.AddSingleton<IDTM_DATA>(sp =>
             new DTM_DATA(
-                sp.GetRequiredService<IReadOnlyList<DB_SERVER>>(),
+                sp.GetRequiredService<IReadOnlyList<DbServer>>(),
                 sp.GetRequiredService<ODBC_Factory>()));
 
         // Strukturierte FOC-SQL-Aufrufe ueber eigenen PS-Runspace (komplementaer
@@ -56,7 +56,7 @@ internal static class ServiceRegistrations
         // loesen. Daher explizite Factory statt Default-Activator.
         services.AddTransient<MainWindowViewModel>(sp => new MainWindowViewModel(
             sp.GetRequiredService<IDTM_DATA>(),
-            sp.GetRequiredService<IReadOnlyList<DB_SERVER>>(),
+            sp.GetRequiredService<IReadOnlyList<DbServer>>(),
             sp));
 
         services.AddTransient<ConnectionManagerViewModel>();

@@ -2,7 +2,7 @@ namespace DTM.ODBC
 {
     public interface IDTM_ODBC
     {
-        public List<Database_Info> get_Datenbank_Names();
-        public Database_Stats GetDatabase_Stats(Database_Info database);
+        public List<DatabaseInfo> get_Datenbank_Names();
+        public DatabaseStats GetDatabase_Stats(DatabaseInfo database);
     }
 }

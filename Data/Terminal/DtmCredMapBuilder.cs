@@ -20,14 +20,14 @@ namespace DTM.Data.Terminal;
 /// </summary>
 public static class DtmCredMapBuilder
 {
-    public static Hashtable Build(IReadOnlyList<DB_SERVER> servers)
+    public static Hashtable Build(IReadOnlyList<DbServer> servers)
     {
         var map = new Hashtable(StringComparer.OrdinalIgnoreCase);
         if (servers is null) return map;
 
         foreach (var s in servers)
         {
-            if (s.Typ != DB_SERVER.ServerTyp.MSSQL) continue;
+            if (s.Typ != DbServer.ServerTyp.MSSQL) continue;
             if (s.serverCredential is null || !s.serverCredential.HasRemoteCredential) continue;
 
             var secure = new SecureString();

@@ -23,7 +23,7 @@ public static class TerminalBus
     // ist beim App-Start bekannt, die Session laeuft aber erst wenn das
     // ConsoleControl attached. Bei ConnectionManager-Save wird SetCredMap
     // erneut aufgerufen und (falls Session aktiv) sofort re-injiziert.
-    private static IReadOnlyList<DB_SERVER>? _servers;
+    private static IReadOnlyList<DbServer>? _servers;
 
     /// <summary>
     /// Wird fuer jede Output-/Error-Zeile gefeuert, die durch die aktuell
@@ -63,7 +63,7 @@ public static class TerminalBus
     /// pwsh-Session bereits laeuft — sonst passiert die Injektion sobald die
     /// Session registriert wird.
     /// </summary>
-    public static void SetCredMap(IReadOnlyList<DB_SERVER> servers)
+    public static void SetCredMap(IReadOnlyList<DbServer> servers)
     {
         lock (_lock) _servers = servers;
         InjectCredMapIfAvailable();
@@ -72,7 +72,7 @@ public static class TerminalBus
     private static void InjectCredMapIfAvailable()
     {
         ITerminalSession? sess;
-        IReadOnlyList<DB_SERVER>? servers;
+        IReadOnlyList<DbServer>? servers;
         lock (_lock)
         {
             sess = _powerShellSession;

@@ -40,7 +40,7 @@ public class DatabaseStatsTests
     [Fact]
     public void Database_Stats_DefaultValues_AreZeroOrNull()
     {
-        var stats = new Database_Stats();
+        var stats = new DatabaseStats();
         stats.Server.Should().BeNull();
         stats.Name.Should().BeNull();
         stats.State.Should().BeNull();
@@ -52,7 +52,7 @@ public class DatabaseStatsTests
     [Fact]
     public void Database_Stats_CanSetAllProperties()
     {
-        var stats = new Database_Stats
+        var stats = new DatabaseStats
         {
             Server = "sql01", Name = "MyDB", DatabaseTyp = "MSSQL",
             State = "ONLINE", DataSizeMB = 256, ActiveConnections = 3,
@@ -65,13 +65,13 @@ public class DatabaseStatsTests
     [Fact]
     public void MssqlStats_IsAssignableToBaseType()
     {
-        new Database_Stats_MSSQL().Should().BeAssignableTo<Database_Stats>();
+        new MssqlDatabaseStats().Should().BeAssignableTo<DatabaseStats>();
     }
 
     [Fact]
     public void MssqlStats_SpecificProperties_AreSettable()
     {
-        var m = new Database_Stats_MSSQL
+        var m = new MssqlDatabaseStats
         {
             RecorveryModel = "FULL", CompatibllityLevel = 160,
             Collation = "Latin1_General_CI_AS", IsReadOnly = false,
@@ -85,19 +85,19 @@ public class DatabaseStatsTests
     [Fact]
     public void MssqlStats_DefaultCompatibilityLevel_IsZero()
     {
-        new Database_Stats_MSSQL().CompatibllityLevel.Should().Be(0);
+        new MssqlDatabaseStats().CompatibllityLevel.Should().Be(0);
     }
 
     [Fact]
     public void OracleStats_IsAssignableToBaseType()
     {
-        new Database_Stats_ORACLE().Should().BeAssignableTo<Database_Stats>();
+        new OracleDatabaseStats().Should().BeAssignableTo<DatabaseStats>();
     }
 
     [Fact]
     public void OracleStats_SpecificProperties_AreSettable()
     {
-        var o = new Database_Stats_ORACLE
+        var o = new OracleDatabaseStats
         {
             InstanceName = "ORCL", OracleVersion = "19.3",
             ArchiveLogMode = "ARCHIVELOG", SGASizeMB = 512, PGAAllocatedMB = 128,

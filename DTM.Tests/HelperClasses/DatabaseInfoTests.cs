@@ -5,17 +5,17 @@ namespace DTM.Tests.HelperClasses;
 
 public class DatabaseInfoTests
 {
-    private static Database_Info Make(string name = "DB", Database_Status status = Database_Status.up,
+    private static DatabaseInfo Make(string name = "DB", DatabaseStatus status = DatabaseStatus.up,
         string? fqdn = "srv.local")
         => new() { Name = name, Id = "1", FQDN = fqdn, Status = status };
 
     [Fact]
     public void DatabaseStatus_HasDownUpTransitional()
     {
-        var values = Enum.GetValues<Database_Status>();
-        values.Should().Contain(Database_Status.down);
-        values.Should().Contain(Database_Status.up);
-        values.Should().Contain(Database_Status.transitional);
+        var values = Enum.GetValues<DatabaseStatus>();
+        values.Should().Contain(DatabaseStatus.down);
+        values.Should().Contain(DatabaseStatus.up);
+        values.Should().Contain(DatabaseStatus.transitional);
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class DatabaseInfoTests
     [Fact]
     public void Record_DifferentStatus_NotEqual()
     {
-        Make(status: Database_Status.up).Should().NotBe(Make(status: Database_Status.down));
+        Make(status: DatabaseStatus.up).Should().NotBe(Make(status: DatabaseStatus.down));
     }
 
     [Fact]

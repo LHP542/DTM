@@ -29,7 +29,7 @@ public class OracleOdbcTests
 
     // ------------------------------------------------------------------ ParseOracleStats
 
-    private static Database_Stats_ORACLE NewStats() => new()
+    private static OracleDatabaseStats NewStats() => new()
     {
         Sessions = new List<Session>(),
         Tablespaces = new List<Tablespace>()

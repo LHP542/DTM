@@ -74,8 +74,8 @@ public sealed partial class ConnectionManagerViewModel : ViewModelBase
         // im Runspace muss synchron ziehen — sonst laufen laufende Sessions
         // gegen die alten Credentials.
         var servers = Connections
-            .Select(e => new DB_SERVER(
-                Enum.TryParse<DB_SERVER.ServerTyp>(e.Key, out var t) ? t : DB_SERVER.ServerTyp.MSSQL,
+            .Select(e => new DbServer(
+                Enum.TryParse<DbServer.ServerTyp>(e.Key, out var t) ? t : DbServer.ServerTyp.MSSQL,
                 e.ToCredential(),
                 e.Backend))
             .ToList();

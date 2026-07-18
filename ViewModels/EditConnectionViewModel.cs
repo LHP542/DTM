@@ -5,15 +5,15 @@ namespace DTM.ViewModels;
 
 public sealed partial class EditConnectionViewModel : ViewModelBase
 {
-    public static IReadOnlyList<DB_SERVER.ServerTyp> ServerTypes { get; } =
-        Enum.GetValues<DB_SERVER.ServerTyp>().ToArray();
+    public static IReadOnlyList<DbServer.ServerTyp> ServerTypes { get; } =
+        Enum.GetValues<DbServer.ServerTyp>().ToArray();
 
     public static IReadOnlyList<ServerBackend> Backends { get; } =
         Enum.GetValues<ServerBackend>().ToArray();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsMssql))]
-    private DB_SERVER.ServerTyp _selectedServerType = DB_SERVER.ServerTyp.MSSQL;
+    private DbServer.ServerTyp _selectedServerType = DbServer.ServerTyp.MSSQL;
 
     [ObservableProperty] private string _server = string.Empty;
     [ObservableProperty] private string _user = string.Empty;
@@ -31,14 +31,14 @@ public sealed partial class EditConnectionViewModel : ViewModelBase
     // fuer DMZ-Server ohne WinRM. Oracle ignoriert das Feld.
     [ObservableProperty] private ServerBackend _selectedBackend = ServerBackend.FocSql;
 
-    public bool IsMssql => SelectedServerType == DB_SERVER.ServerTyp.MSSQL;
+    public bool IsMssql => SelectedServerType == DbServer.ServerTyp.MSSQL;
 
     public EditConnectionViewModel() { }
 
     public EditConnectionViewModel(ConnectionEntry entry)
     {
-        _selectedServerType = Enum.TryParse<DB_SERVER.ServerTyp>(entry.Key, out var t)
-            ? t : DB_SERVER.ServerTyp.MSSQL;
+        _selectedServerType = Enum.TryParse<DbServer.ServerTyp>(entry.Key, out var t)
+            ? t : DbServer.ServerTyp.MSSQL;
         _server = entry.Server;
         _user = entry.User;
         _password = entry.PlainPassword;

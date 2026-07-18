@@ -12,7 +12,7 @@ public class EditConnectionViewModelTests
     {
         var vm = new EditConnectionViewModel
         {
-            SelectedServerType = DB_SERVER.ServerTyp.MSSQL,
+            SelectedServerType = DbServer.ServerTyp.MSSQL,
             Server = "sql01",
             User = "sa",
             Password = "secret",
@@ -74,23 +74,23 @@ public class EditConnectionViewModelTests
     {
         var entry = new ConnectionEntry { Key = "UNKNOWN", Server = "", User = "", Database = "" };
         var vm = new EditConnectionViewModel(entry);
-        vm.SelectedServerType.Should().Be(DB_SERVER.ServerTyp.MSSQL);
+        vm.SelectedServerType.Should().Be(DbServer.ServerTyp.MSSQL);
     }
 
     [Fact]
     public void ServerTypes_ContainsAllEnumValues()
     {
         EditConnectionViewModel.ServerTypes.Should().BeEquivalentTo(
-            Enum.GetValues<DB_SERVER.ServerTyp>());
+            Enum.GetValues<DbServer.ServerTyp>());
     }
 
     [Fact]
     public void IsMssql_TogglesWithSelectedServerType()
     {
-        var vm = new EditConnectionViewModel { SelectedServerType = DB_SERVER.ServerTyp.MSSQL };
+        var vm = new EditConnectionViewModel { SelectedServerType = DbServer.ServerTyp.MSSQL };
         vm.IsMssql.Should().BeTrue();
 
-        vm.SelectedServerType = DB_SERVER.ServerTyp.ORACLE;
+        vm.SelectedServerType = DbServer.ServerTyp.ORACLE;
         vm.IsMssql.Should().BeFalse();
     }
 
@@ -99,7 +99,7 @@ public class EditConnectionViewModelTests
     {
         var vm = new EditConnectionViewModel
         {
-            SelectedServerType = DB_SERVER.ServerTyp.MSSQL,
+            SelectedServerType = DbServer.ServerTyp.MSSQL,
             Server = "dmz-sql01",
             RemoteUser = "DMZ\\svc-dtm",
             RemotePassword = "DmzP@ss!"
@@ -119,7 +119,7 @@ public class EditConnectionViewModelTests
         // nicht "vergessen" persistiert bleiben.
         var vm = new EditConnectionViewModel
         {
-            SelectedServerType = DB_SERVER.ServerTyp.ORACLE,
+            SelectedServerType = DbServer.ServerTyp.ORACLE,
             RemoteUser = "should-be-dropped",
             RemotePassword = "should-be-dropped"
         };
@@ -162,7 +162,7 @@ public class EditConnectionViewModelTests
     {
         var vm = new EditConnectionViewModel
         {
-            SelectedServerType = DB_SERVER.ServerTyp.MSSQL,
+            SelectedServerType = DbServer.ServerTyp.MSSQL,
             SelectedBackend = ServerBackend.OdbcDirect
         };
         vm.ToEntry().Backend.Should().Be(ServerBackend.OdbcDirect);
@@ -177,7 +177,7 @@ public class EditConnectionViewModelTests
         // versehentlich fuer Oracle aktiv wird.
         var vm = new EditConnectionViewModel
         {
-            SelectedServerType = DB_SERVER.ServerTyp.ORACLE,
+            SelectedServerType = DbServer.ServerTyp.ORACLE,
             SelectedBackend = ServerBackend.OdbcDirect
         };
         vm.ToEntry().Backend.Should().Be(ServerBackend.FocSql);

@@ -106,7 +106,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel(
         IDTM_DATA data,
-        IReadOnlyList<DB_SERVER> servers,
+        IReadOnlyList<DbServer> servers,
         IServiceProvider? services = null)
     {
         _data = data;
@@ -134,7 +134,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         Dispatcher.UIThread.Post(() => StatusBar = text);
     }
 
-    private void BuildRootNodes(IReadOnlyList<DB_SERVER> servers)
+    private void BuildRootNodes(IReadOnlyList<DbServer> servers)
     {
         RootNodes.Clear();
         foreach (var group in servers
@@ -193,7 +193,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         StatusBar = $"Lade Stats für {db.Database.Name}…";
         try
         {
-            Database_Stats stats = await Task.Run(() => _data.get_Database_Stats(db.ServerIdentity, db.Database));
+            DatabaseStats stats = await Task.Run(() => _data.get_Database_Stats(db.ServerIdentity, db.Database));
             await Dispatcher.UIThread.InvokeAsync(() => ApplyStats(stats));
             StatusBar = "Bereit";
         }
@@ -204,13 +204,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    internal void ApplyStats(Database_Stats stats)
+    internal void ApplyStats(DatabaseStats stats)
     {
         _currentSessions = stats.Sessions ?? new List<Session>();
         ActiveSessionsCount = _currentSessions.Count.ToString();
         ActiveSessionsLabel = $"Aktive Sessions: {_currentSessions.Count}";
 
-        if (stats is Database_Stats_MSSQL m)
+        if (stats is MssqlDatabaseStats m)
         {
             bool recoveryOn = string.Equals(m.RecorveryModel, "FULL", StringComparison.OrdinalIgnoreCase);
             ArchiveLogOnEnabled  = !recoveryOn;
@@ -240,7 +240,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             // Change-Pfad zu triggern (Suppression-Flag).
             SyncRecoveryModeFromStats(m.RecorveryModel);
         }
-        else if (stats is Database_Stats_ORACLE o)
+        else if (stats is OracleDatabaseStats o)
         {
             bool archiveOn = string.Equals(o.ArchiveLogMode, "ARCHIVELOG", StringComparison.OrdinalIgnoreCase);
             ArchiveLogOnEnabled  = !archiveOn;
@@ -353,7 +353,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         var server = _data.Servers.FirstOrDefault(s => s.Identity == db.ServerIdentity);
         if (server?.Backend != ServerBackend.OdbcDirect) return null;
-        if (server.Typ != DB_SERVER.ServerTyp.MSSQL) return null;
+        if (server.Typ != DbServer.ServerTyp.MSSQL) return null;
         return _data.GetMssqlActions(db.ServerIdentity);
     }
 
@@ -388,7 +388,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// als SSH-Ziel). Fällt bei fehlendem FQDN auf den Namen zurück.
     /// </summary>
     internal static string ModuleDatabaseId(DatabaseNodeViewModel db) =>
-        db.ServerTyp == DB_SERVER.ServerTyp.MSSQL
+        db.ServerTyp == DbServer.ServerTyp.MSSQL
             ? db.Database.Name
             : (string.IsNullOrWhiteSpace(db.Database.FQDN) ? db.Database.Name : db.Database.FQDN!);
 
@@ -399,7 +399,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// das -Server-Argument geht an die DTM-Wrapper, die es bei Oracle ignorieren).
     /// </summary>
     internal static string? ServerParamFor(DatabaseNodeViewModel db) =>
-        db.ServerTyp == DB_SERVER.ServerTyp.MSSQL
+        db.ServerTyp == DbServer.ServerTyp.MSSQL
             ? db.ServerIdentity.Server
             : null;
 
@@ -435,7 +435,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         // Oracle: Vorab Restore-Vorschau-Dialog mit Restore-Points und
         // PDB-Liste + Multi-PDB-Warnung. MSSQL ueberspringt das.
-        if (db.ServerTyp == DB_SERVER.ServerTyp.ORACLE)
+        if (db.ServerTyp == DbServer.ServerTyp.ORACLE)
         {
             Window? owner = GetMainWindow();
             if (owner is null || _services is null) return;
@@ -474,7 +474,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task OlvmSnapshot()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
-        if (db.ServerTyp != DB_SERVER.ServerTyp.ORACLE) return;
+        if (db.ServerTyp != DbServer.ServerTyp.ORACLE) return;
 
         Window? owner = GetMainWindow();
         if (owner is null) return;
@@ -513,7 +513,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task ShowOlvmSnapshotDialogAsync(MssqlSnapshotAction initial)
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
-        if (db.ServerTyp != DB_SERVER.ServerTyp.ORACLE) return;
+        if (db.ServerTyp != DbServer.ServerTyp.ORACLE) return;
 
         Window? owner = GetMainWindow();
         if (owner is null || _services is null) return;
@@ -662,11 +662,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private void ReloadFromStores()
     {
-        List<DB_SERVER> newServers = new();
+        List<DbServer> newServers = new();
         foreach (DTM.Config.ConnectionEntry entry in DTM.Config.ConnectionStore.Load())
         {
-            if (Enum.TryParse<DB_SERVER.ServerTyp>(entry.Key, ignoreCase: true, out var typ))
-                newServers.Add(new DB_SERVER(typ, entry.ToCredential(), entry.Backend));
+            if (Enum.TryParse<DbServer.ServerTyp>(entry.Key, ignoreCase: true, out var typ))
+                newServers.Add(new DbServer(typ, entry.ToCredential(), entry.Backend));
         }
 
         _data = new DTM_DATA(newServers, new ODBC_Factory());
@@ -851,12 +851,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     // DB-Konfiguration: Dialog mit Query-Store-Toggle, Page-Verify-Dropdown
     // und Compatibility-Reset (Phase 5.1/5.3, MSSQL-only). Aktuelle Werte
-    // aus Database_Stats_MSSQL als Vorauswahl.
+    // aus MssqlDatabaseStats als Vorauswahl.
     [RelayCommand]
     private async Task OpenDbConfiguration()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
-        if (db.ServerTyp != DB_SERVER.ServerTyp.MSSQL) return;
+        if (db.ServerTyp != DbServer.ServerTyp.MSSQL) return;
 
         Window? owner = GetMainWindow();
         if (owner is null || _services is null) return;
@@ -885,7 +885,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task OpenBackupBrowser()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
-        if (db.ServerTyp != DB_SERVER.ServerTyp.MSSQL) return;
+        if (db.ServerTyp != DbServer.ServerTyp.MSSQL) return;
 
         Window? owner = GetMainWindow();
         if (owner is null || _services is null) return;

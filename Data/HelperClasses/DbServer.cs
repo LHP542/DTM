@@ -1,6 +1,6 @@
 namespace DTM
 {
-    public class DB_SERVER
+    public class DbServer
     {
         public enum ServerTyp
         {
@@ -28,7 +28,7 @@ namespace DTM
         public ServerIdentity Identity =>
             new(Typ, serverCredential?.Server ?? string.Empty);
 
-        public DB_SERVER(ServerTyp typ, ServerCredential serverCredential,
+        public DbServer(ServerTyp typ, ServerCredential serverCredential,
                          ServerBackend backend = ServerBackend.FocSql)
         {
             this.Typ = typ;

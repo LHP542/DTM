@@ -2,7 +2,7 @@ namespace DTM;
 
 /// <summary>
 /// Eindeutige Identitaet eines Datenbank-Servers in DTM: das Tupel
-/// <see cref="DB_SERVER.ServerTyp"/> + Hostname. Mit der Einfuehrung von
+/// <see cref="DbServer.ServerTyp"/> + Hostname. Mit der Einfuehrung von
 /// Phase 6 (Multi-Server-Support) ist diese Composite-Identitaet noetig,
 /// weil pro Server-Typ mehrere Hosts existieren koennen
 /// (z. B. „FOC-SQL01" und „DEVFOC-SQL01" beides MSSQL).
@@ -11,7 +11,7 @@ namespace DTM;
 /// sind nicht case-sensitive, und die Persistenzschicht (connections.json)
 /// gibt keine Garantie ueber Schreibweise.
 /// </summary>
-public sealed record ServerIdentity(DB_SERVER.ServerTyp Typ, string Server)
+public sealed record ServerIdentity(DbServer.ServerTyp Typ, string Server)
 {
     public bool Equals(ServerIdentity? other)
     {

@@ -8,21 +8,21 @@ namespace DTM.Tests.Terminal;
 
 public class DtmCredMapBuilderTests
 {
-    private static DB_SERVER MssqlWithRemote(string host, string user, string pw) =>
-        new(DB_SERVER.ServerTyp.MSSQL,
+    private static DbServer MssqlWithRemote(string host, string user, string pw) =>
+        new(DbServer.ServerTyp.MSSQL,
             new ServerCredential(host, "sa", "sqlpass", "Master", "", user, pw));
 
-    private static DB_SERVER MssqlNoRemote(string host) =>
-        new(DB_SERVER.ServerTyp.MSSQL, new ServerCredential(host, "sa", "sqlpass"));
+    private static DbServer MssqlNoRemote(string host) =>
+        new(DbServer.ServerTyp.MSSQL, new ServerCredential(host, "sa", "sqlpass"));
 
-    private static DB_SERVER OracleWithRemote(string host) =>
-        new(DB_SERVER.ServerTyp.ORACLE,
+    private static DbServer OracleWithRemote(string host) =>
+        new(DbServer.ServerTyp.ORACLE,
             new ServerCredential(host, "system", "orapass", "ORCL", "", "IGNORED", "IGNORED"));
 
     [Fact]
     public void Build_EmptyList_ReturnsEmptyHashtable()
     {
-        var map = DtmCredMapBuilder.Build(new List<DB_SERVER>());
+        var map = DtmCredMapBuilder.Build(new List<DbServer>());
         map.Should().NotBeNull();
         map.Count.Should().Be(0);
     }
@@ -75,7 +75,7 @@ public class DtmCredMapBuilderTests
     [Fact]
     public void Build_MixedList_OnlyMssqlWithRemoteIncluded()
     {
-        var servers = new List<DB_SERVER>
+        var servers = new List<DbServer>
         {
             MssqlWithRemote("dmz-sql01", "DMZ\\svc", "p1"),
             MssqlNoRemote("FOC-SQL01"),

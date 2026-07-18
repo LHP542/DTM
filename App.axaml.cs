@@ -34,7 +34,7 @@ public partial class App : Application
         // Phase 9.5: Server-Liste an den TerminalBus geben, damit die
         // $global:DtmCredMap (PS-Remoting-Credentials pro Server) in den
         // Runspace injiziert wird, sobald das ConsoleControl attached.
-        var servers = Services.GetRequiredService<IReadOnlyList<DB_SERVER>>();
+        var servers = Services.GetRequiredService<IReadOnlyList<DbServer>>();
         DTM.Data.Terminal.TerminalBus.SetCredMap(servers);
     }
 

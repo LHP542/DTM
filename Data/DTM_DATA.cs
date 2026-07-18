@@ -9,12 +9,12 @@ namespace DTM
         // O(1)-Lookup per ServerIdentity; bewahrt zusaetzlich die Insertion-Order
         // ueber die separate Liste, damit der Tree-Aufbau im UI eine stabile
         // Reihenfolge sieht (wichtig bei vielen Servern in derselben Gruppe).
-        private readonly Dictionary<ServerIdentity, DB_SERVER> _byIdentity;
+        private readonly Dictionary<ServerIdentity, DbServer> _byIdentity;
         private readonly IODBC_Factory _factory;
 
-        public IReadOnlyList<DB_SERVER> Servers { get; }
+        public IReadOnlyList<DbServer> Servers { get; }
 
-        public DTM_DATA(IReadOnlyList<DB_SERVER> servers, IODBC_Factory factory)
+        public DTM_DATA(IReadOnlyList<DbServer> servers, IODBC_Factory factory)
         {
             ArgumentNullException.ThrowIfNull(servers);
             Servers = servers;
@@ -22,12 +22,12 @@ namespace DTM
             _byIdentity = servers.ToDictionary(s => s.Identity);
         }
 
-        public List<Database_Info> get_Database_Names(ServerIdentity identity)
+        public List<DatabaseInfo> get_Database_Names(ServerIdentity identity)
         {
             _logger.Debug("get_Database_Names: {0}", identity);
             try
             {
-                DB_SERVER server = ResolveServer(identity);
+                DbServer server = ResolveServer(identity);
                 var result = _factory
                     .Get_DATA(server.Typ.ToString(), server.serverCredential!)!
                     .get_Datenbank_Names();
@@ -41,12 +41,12 @@ namespace DTM
             }
         }
 
-        public Database_Stats get_Database_Stats(ServerIdentity identity, Database_Info database)
+        public DatabaseStats get_Database_Stats(ServerIdentity identity, DatabaseInfo database)
         {
             _logger.Debug("get_Database_Stats: {0}, Datenbank={1}", identity, database.Name);
             try
             {
-                DB_SERVER server = ResolveServer(identity);
+                DbServer server = ResolveServer(identity);
                 var result = _factory
                     .Get_DATA(server.Typ.ToString(), server.serverCredential!)!
                     .GetDatabase_Stats(database);
@@ -60,9 +60,9 @@ namespace DTM
             }
         }
 
-        private DB_SERVER ResolveServer(ServerIdentity identity)
+        private DbServer ResolveServer(ServerIdentity identity)
         {
-            if (_byIdentity.TryGetValue(identity, out DB_SERVER? server))
+            if (_byIdentity.TryGetValue(identity, out DbServer? server))
                 return server;
             throw new KeyNotFoundException(
                 $"Kein registrierter Server mit Identitaet '{identity}'. "
@@ -71,8 +71,8 @@ namespace DTM
 
         public DTM.Data.Mssql.OdbcMssqlActionService GetMssqlActions(ServerIdentity identity)
         {
-            DB_SERVER server = ResolveServer(identity);
-            if (server.Typ != DB_SERVER.ServerTyp.MSSQL)
+            DbServer server = ResolveServer(identity);
+            if (server.Typ != DbServer.ServerTyp.MSSQL)
                 throw new InvalidOperationException(
                     $"OdbcMssqlActionService nur fuer MSSQL verfuegbar (Server '{identity}' ist {server.Typ}).");
             var odbc = _factory.Get_DATA("MSSQL", server.serverCredential!) as DTM.MSSQL.MSSQL_ODBC
@@ -83,8 +83,8 @@ namespace DTM
 
         public DTM.Data.Olvm.OlvmSnapshotService GetOlvmSnapshotService(ServerIdentity identity)
         {
-            DB_SERVER server = ResolveServer(identity);
-            if (server.Typ != DB_SERVER.ServerTyp.ORACLE)
+            DbServer server = ResolveServer(identity);
+            if (server.Typ != DbServer.ServerTyp.ORACLE)
                 throw new InvalidOperationException(
                     $"OlvmSnapshotService nur fuer Oracle verfuegbar (Server '{identity}' ist {server.Typ}).");
             // Frischer REST-Client pro Aufruf; der Service disposed ihn.

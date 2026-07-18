@@ -19,7 +19,7 @@ namespace DTM.ORACLE
             _rest?.Dispose();
         }
 
-        public List<Database_Info> get_Datenbank_Names()
+        public List<DatabaseInfo> get_Datenbank_Names()
         {
             try
             {
@@ -30,24 +30,24 @@ namespace DTM.ORACLE
                     _logger.Debug($"{v.Name,-30} | {v.Status,-10} | {v.Fqdn ?? "(kein FQDN gemeldet)"} | {v.Id,-4}");
                 }
 
-                return _data.Select(x => new Database_Info
+                return _data.Select(x => new DatabaseInfo
                 {
                     Name = x.Name,
                     FQDN = x.Fqdn,
-                    Status = string.Equals(x.Status, "up", StringComparison.OrdinalIgnoreCase) ? Database_Status.up : Database_Status.down,
+                    Status = string.Equals(x.Status, "up", StringComparison.OrdinalIgnoreCase) ? DatabaseStatus.up : DatabaseStatus.down,
                     Id = x.Id
                 }).Where(x => !x.Name.StartsWith("TPL") && !x.Name.Contains("DBMANAGER")).OrderBy(x => x.FQDN).ToList();
             }
             catch (Exception ex)
             {
                 _logger.Warn(ex.StackTrace!);
-                return new List<Database_Info>(0);
+                return new List<DatabaseInfo>(0);
             }
         }
 
-        public Database_Stats GetDatabase_Stats(Database_Info database)
+        public DatabaseStats GetDatabase_Stats(DatabaseInfo database)
         {
-            var stats = new Database_Stats_ORACLE
+            var stats = new OracleDatabaseStats
             {
                 DatabaseTyp = "ORACLE",
                 Server = database.FQDN,
@@ -196,7 +196,7 @@ namespace DTM.ORACLE
             }
         }
 
-        internal static void ParseOracleStats(string[] lines, Database_Stats_ORACLE stats)
+        internal static void ParseOracleStats(string[] lines, OracleDatabaseStats stats)
         {
             foreach (var raw in lines)
             {
