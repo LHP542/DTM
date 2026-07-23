@@ -1,5 +1,9 @@
 # DTM — Datenbank-Manager
 
+[![CI](https://github.com/Kroste/DTM/actions/workflows/ci.yml/badge.svg)](https://github.com/Kroste/DTM/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/Kroste/DTM)](https://github.com/Kroste/DTM/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Avalonia-Desktop-App (.NET 10) zur Verwaltung von MSSQL- und Oracle-Datenbanken
 (Backup, Clone, Snapshot, Archive-Log, Samba-Copy). Alle Datenbank-Aktionen
 laufen über das PowerShell-Modul **FOC-SQL.psm1**; DTM baut kein eigenes
@@ -12,11 +16,29 @@ Entwickelt von **Lars Oste** · Landeshauptstadt Potsdam · Fachbereich 54.2
 
 ---
 
-## Voraussetzungen
+## Installation
 
-- .NET 10 SDK / Runtime
-- Windows (für die Modul-Aktionen; die App selbst läuft auch unter Linux,
-  aber die FOC-SQL-Funktionen benötigen die Windows-/Domänen-Umgebung)
+Fertige Pakete gibt es auf der [Releases-Seite](https://github.com/Kroste/DTM/releases):
+
+**Windows:** `DTM-vX.Y.Z-windows.zip` herunterladen, entpacken, `DTM.exe`
+starten. Keine Installation nötig (self-contained, .NET-Runtime ist enthalten).
+
+**Linux (AppImage, empfohlen):** `DTM-vX.Y.Z-x86_64.AppImage` herunterladen,
+ausführbar machen und starten:
+
+```bash
+chmod +x DTM-*-x86_64.AppImage
+./DTM-*-x86_64.AppImage
+```
+
+**Linux (tar.gz):** `DTM-vX.Y.Z-linux.tar.gz` entpacken und `./DTM` starten.
+
+### Voraussetzungen
+
+- **Windows** für die Modul-Aktionen (Backup/Snapshot etc.): die FOC-SQL-
+  Funktionen brauchen die Windows-/Domänen-Umgebung. Die App selbst läuft auch
+  unter Linux — dort ist das Feature-Set aber auf reine Read-Operationen
+  begrenzt.
 - Eine `credential.xml` im Benutzerprofil:
   ```powershell
   Get-Credential | Export-Clixml "$env:USERPROFILE\credential.xml"
@@ -25,26 +47,10 @@ Entwickelt von **Lars Oste** · Landeshauptstadt Potsdam · Fachbereich 54.2
 
 ---
 
-## Einrichtung
+## Erste Schritte
 
-1. Repo klonen — bei Bedarf inklusive Dev-Submodul (`external/FOC-SQL/`,
-   reine Code-Referenz, nicht zur Laufzeit nötig):
-   ```
-   git clone --recurse-submodules https://github.com/Kroste/DTM.git
-   # oder, falls schon geklont:
-   git submodule update --init external/FOC-SQL
-   ```
-   Das Submodul unter `external/FOC-SQL/` ist eine reine Entwicklungs-Referenz
-   auf den FOC-SQL-Quellcode. Die App lädt FOC-SQL zur Laufzeit weiterhin über
-   die in den Einstellungen konfigurierte Samba-Quelle bzw. den Modulpfad-Override.
-
-2. Bauen und starten:
-   ```
-   dotnet build DTM.csproj -c Release
-   dotnet run --project DTM.csproj -c Release
-   ```
-3. Verbindungen über das ⚙-Symbol neben „Datenbanken" einrichten.
-4. Im selben Dialog Samba-Quelle, optionalen Modul-Pfad und Update-Quelle
+1. App starten, Verbindungen über das ⚙-Symbol neben „Datenbanken" einrichten.
+2. Im selben Dialog Samba-Quelle für FOC-SQL und optional den Modulpfad-Override
    eintragen und **Speichern** klicken.
 
 ---
@@ -65,6 +71,19 @@ Das ⚙-Symbol neben der „Datenbanken"-Überschrift öffnet den Dialog
 | Datenbank | Standard-Datenbankname |
 | ConnectionString | Optionaler ODBC-ConnectionString; überschreibt Server/User/Passwort |
 
+Bei MSSQL zusätzlich (**PS-Remoting-Credentials**, wenn abweichend von der
+Default-`credential.xml`):
+
+| Feld | Bedeutung |
+|------|-----------|
+| RemoteUser | Windows-User für WinRM-Aufrufe (leer = Fallback auf `credential.xml`) |
+| RemotePassword | DPAPI-verschlüsselt in `connections.json` |
+
+Und **Backend** (nur MSSQL): `FocSql` (Default, WinRM-Aufruf ans FOC-SQL-Modul)
+oder `OdbcDirect` (direkte SQL-Ausführung via ODBC — für DMZ-Server ohne WinRM,
+15 der 17 Aktionen verfügbar; Copy-to-Samba und Sync-to-Test sind File-System-
+Operationen und deaktiviert).
+
 Aktionen: **Neu**, **Bearbeiten** (Doppelklick oder Schaltfläche), **Löschen**.
 Änderungen werden sofort in `%APPDATA%\DTM\connections.json` persistiert.
 
@@ -74,51 +93,44 @@ Unter **FOC-SQL Modul** im gleichen Dialog:
 |------|-----------|
 | Samba-Quelle | UNC-Pfad mit `FOC-SQL.psm1` (z. B. `\\server\share\Modules\FOC`) |
 | Modulpfad (Override) | Absoluter lokaler Pfad; leer = Samba-Logik aktiv |
-| Update-Quelle | UNC-Pfad zum DTM-Rollout-Verzeichnis (s. u.) |
 
 ---
 
 ## Auto-Update
 
-DTM prüft beim Start automatisch, ob unter der konfigurierten **Update-Quelle**
-eine neuere Version bereitsteht. Ein manueller Check ist jederzeit über
-**ℹ → Update prüfen** in der About-Box möglich.
+DTM prüft beim Start (einmalig pro App-Start, im Hintergrund) gegen die
+[GitHub-Releases-Seite](https://github.com/Kroste/DTM/releases), ob eine neuere
+Version verfügbar ist. Ein manueller Check ist jederzeit über **ℹ → Auf Updates
+prüfen** in der About-Box möglich (umgeht den Cache).
 
 ### Ablauf
 
-1. DTM liest `<Update-Quelle>\version.txt` und vergleicht den Inhalt mit der
-   laufenden `AssemblyInformationalVersion`.
-2. Ist eine neuere Version verfügbar, erscheint ein Dialog:
+1. DTM ruft `api.github.com/repos/Kroste/DTM/releases/latest` auf (proxy-fähig
+   via `WebRequest.DefaultWebProxy` + `CredentialCache.DefaultCredentials`).
+2. Ist die veröffentlichte Version größer als die laufende (`Assembly­Informational­Version`),
+   erscheint der Update-Dialog mit den Release Notes zwischen aktueller und
+   Zielversion (aus `raw.githubusercontent.com/Kroste/DTM/main/release-notes.json`):
 
    | Option | Verhalten |
    |--------|-----------|
-   | **Jetzt aktualisieren** | Kopiert das Rollout-Verzeichnis in ein Temp-Verzeichnis, startet ein PowerShell-Skript (`dtm_update.ps1`), das nach dem Beenden von DTM die Dateien überschreibt und die App neu startet, dann beendet sich DTM sofort. |
-   | **Später (30 min)** | Erinnerung nach 30 Minuten. |
+   | **Jetzt aktualisieren** | Lädt das passende Plattform-Asset (Windows-ZIP / Linux-tar.gz / AppImage), zeigt einen Fortschrittsbalken und startet ein Skript, das nach dem Beenden von DTM die Dateien austauscht und die App neu startet. |
+   | **Später** | Erinnerung beim nächsten App-Start. |
    | **Überspringen** | Kein weiterer Hinweis in dieser Sitzung. |
 
-### Rollout-Verzeichnis vorbereiten
+Ist die `release-notes.json` mit einem `"modulesChanged"`-Eintrag markiert
+(`"MSSQL"` bzw. `"FOC-SQL"`), zeigt der Dialog einen roten Banner
+(„MSSQL-Modul wurde geändert — jeder Server braucht einmal eine
+PowerShell-Sitzung") bzw. einen grünen Hinweis (FOC-SQL sync't automatisch
+beim nächsten Start).
 
-```
-\\server\share\DTM-Rollout\
-  ├── DTM.exe
-  ├── DTM.dll
-  ├── … (alle Publish-Dateien)
-  └── version.txt          ← Inhalt: 1.0.3  (nur die Versionsnummer, keine Leerzeichen)
-```
+### GitHub Actions
 
-`version.txt` muss eine gültige .NET-`Version`-Zeichenkette enthalten
-(z. B. `1.0.3`). DTM vergleicht per `Version.Parse`; ist die Datei-Version
-größer als die laufende, wird der Update-Dialog angezeigt.
+Bei einem Git-Tag (`v*`) läuft `.github/workflows/release.yml`:
 
-### GitHub Actions / CI-Builds
-
-Bei einem Git-Tag (`v*`) läuft die Workflow-Datei `.github/workflows/release.yml`:
 - Tests auf Ubuntu
-- Self-contained Builds für `win-x64` (`.zip`) und `linux-x64` (`.tar.gz`)
-- GitHub Release mit automatischen Release-Notes
-
-Die Build-Artefakte können anschließend manuell ins Rollout-Verzeichnis
-entpackt werden; `version.txt` wird während des Builds aus dem Tag erzeugt.
+- Self-contained Builds für `win-x64` (`.zip`), `linux-x64` (`.tar.gz`) und
+  `linux-x64` **AppImage**
+- GitHub Release mit automatischen Release-Notes und allen drei Assets
 
 ---
 
@@ -135,6 +147,7 @@ entpackt werden; `version.txt` wird während des Builds aus dem Tag erzeugt.
 | ArchiveLog An    | `Set-Archive-Log`         | –   | – |
 | ArchiveLog Aus   | `Set-Archive-Log -Off`    | –   | – |
 | Cluster-Health   | `Get-ClusterHealthStatus` | –   | – (MSSQL-only, read-only Status im Info-Card) |
+| VM-Snapshot / VM-Restore / VM-Remove | Ansible/OLVM-REST | – | Oracle-only, VM-Snapshot via Ansible-Playbook, Restore/Remove aktuell disabled bis Playbooks fertig |
 
 Zeitplanung: Im Zeit-Dialog „Sofort" oder „Geplant" (Datum/Uhrzeit) wählen.
 Interaktive Aktionen (Restore/Remove) zeigen Prompts im pwsh-Tab;
@@ -162,7 +175,8 @@ gesamte CDB herunter und setzt sie auf den gewählten Restore Point zurück
 ## Benutzeroberfläche
 
 - **Titelleiste** — eigene Titelleiste ohne nativen OS-Rahmen
-  (`SystemDecorations="BorderOnly"`).
+  (`ChromeWindow`-Basisklasse: `WindowDecorations.BorderOnly`,
+  `ExtendClientAreaToDecorationsHint = true`, `CanResize = true`).
   - **ℹ** öffnet die About-Box (Version, Entwickler, Update-Check).
   - **−** minimiert, **⊡/❐** maximiert/restauriert, **✕** schließt.
 - Alle Dialoge verwenden denselben Style (draggable Titelleiste, nur Schließen-Button).
@@ -173,14 +187,14 @@ gesamte CDB herunter und setzt sie auf den gewählten Restore Point zurück
 
 | Datei | Inhalt |
 |-------|--------|
-| `%APPDATA%\DTM\connections.json` | Verbindungsliste (Passwörter verschlüsselt) |
-| `%APPDATA%\DTM\settings.json` | FocSql-Einstellungen (SambaSource, ModulePath, UpdateSource) |
+| `%APPDATA%\DTM\connections.json` | Verbindungsliste (Passwörter und optionale PS-Remoting-Credentials DPAPI-verschlüsselt) |
+| `%APPDATA%\DTM\settings.json` | FocSql-Einstellungen (SambaSource, ModulePath) |
 
 Beide Dateien werden beim ersten Speichern automatisch angelegt.
 
 ---
 
-## Logging
+## Logs & Fehlersuche
 
 DTM verwendet **NLog**. Die Log-Dateien liegen neben der Anwendung unter `logs/`:
 
@@ -190,20 +204,50 @@ DTM verwendet **NLog**. Die Log-Dateien liegen neben der Anwendung unter `logs/`
 | `logs/error.log` | Warnungen und Fehler |
 | `logs/powershell.log` | Gesamte PS-Terminal-Ausgabe (Ein-/Ausgaben, Fehler, Job-Header); tägliche Archivierung, 7 Tage Aufbewahrung |
 
-Passwörter und Credentials werden **nicht** geloggt.
-Connection-Strings werden maskiert (`PWD=***`, `Password=***`).
+**Passwörter, Tokens und Credentials werden automatisch maskiert** — der
+`${masked}`-Layout-Renderer greift auf `Password=`/`PWD=` in ConnectionStrings,
+URL-Query-Params (`password=`/`token=`/`api_key=`), `Bearer`-Tokens und
+`Authorization`-Header. Ergebnis im Log: `Password=***` statt Klartext.
+
+Bei einem Problem bitte ein Issue mit der aktuellen Logdatei eröffnen.
 
 ---
 
-## Architektur (Kurzüberblick)
+## Entwicklung
 
-- **Views/** — Avalonia-UI (alle Fenster mit eigenem Titelleisten-Style).
+```bash
+# Klone (inkl. Dev-Submodul FOC-SQL unter external/):
+git clone --recurse-submodules https://github.com/Kroste/DTM.git
+# oder, falls schon geklont:
+git submodule update --init external/FOC-SQL
+
+# Bauen und Tests (VSCode-Task "build" / "test" ruft dasselbe):
+dotnet build DTM.slnx -c Debug
+dotnet test  DTM.Tests/DTM.Tests.csproj
+
+# Starten (VSCode-Task "DTM ausfuehren" umgeht das coreclr-Problem
+# auf Code-OSS/Codium):
+dotnet run --project DTM.csproj
+```
+
+Release: VSCode-Task **„release (tag + push)"** — prüft den Git-Zustand, setzt
+den `vX.Y.Z`-Tag und stößt die GitHub-Action an, die alle Pakete baut.
+
+Das Submodul unter `external/FOC-SQL/` ist eine reine **Entwicklungs-Referenz**
+auf den FOC-SQL-Quellcode. Die App lädt FOC-SQL zur Laufzeit weiterhin über die
+in den Einstellungen konfigurierte Samba-Quelle bzw. den Modulpfad-Override.
+
+### Architektur (Kurzüberblick)
+
+- **Views/** — Avalonia-UI (alle Fenster über `ChromeWindow`-Basisklasse).
   - `MainWindow` — DB-Baum, Info-Anzeige, Aktions-Buttons, PowerShell-Konsole.
   - `ConnectionManagerWindow` / `EditConnectionWindow` — Verbindungsverwaltung.
   - `TimePickerWindow` — Zeitplanung für Backup/Clone/Snapshot.
   - `SessionsWindow` — Anzeige aktiver DB-Sessions.
   - `UpdatePromptWindow` — Update-Dialog (Jetzt / Später / Überspringen).
   - `AboutWindow` — Versionsinfo, Entwickler, manueller Update-Check.
+  - `OracleRestoreSelectWindow`, `MssqlSnapshotSelectWindow`, `OlvmSnapshotSelectWindow`
+    — Auswahl-Dialoge für destruktive Aktionen mit Bestätigung.
 - **ViewModels/** — MVVM (CommunityToolkit.Mvvm).
   - `MainWindowViewModel` — Aktionen, Statistik-Anzeige, Baum-Aufbau, Auto-Update.
   - `ConnectionManagerViewModel` — Verbindungsliste, FocSql-Einstellungen.
@@ -213,32 +257,51 @@ Connection-Strings werden maskiert (`PWD=***`, `Password=***`).
   - `AppSettingsStore` — `settings.json`.
   - `FocSqlRuntime` — Laufzeit-Zustand der FocSql-Konfiguration.
 - **Data/Updater/**
-  - `UpdateService` — Versions-Check gegen `version.txt` auf der Update-Quelle;
-    kopiert Rollout-Verzeichnis und startet `dtm_update.ps1`.
+  - `UpdateService` — Klemmbrett-Pattern: `HttpClient` gegen GitHub-Releases-API,
+    Cache pro App-Start, `forceRefresh` für manuellen Check, Cross-Platform-
+    Self-Update via `.bat` (Windows) / `.sh` (Linux, inkl. AppImage inplace-cp).
 - **Data/Terminal/**
   - `PowerShellTerminalSession` — in-process Runspace mit `DtmPSHost`/`DtmPSHostUI`.
   - `TerminalBus` — Mediator zwischen ViewModel-Aktionen und Session.
   - `AnsiParser` / `AnsiPalette` / `AnsiConsole` — farbige Ausgabe.
 - **Data/HelperClasses/**
   - ODBC-Zugriff für DB-Liste und Statistik (MSSQL/Oracle).
-  - `LogMask` — maskiert Passwörter in Connection-Strings vor dem Logging.
-  - `ORACLE_REST` — oVirt/OLVM REST-API für VM-FQDNs.
+  - `LogMask` — maskiert Passwörter in Connection-Strings vor dem Logging
+    (ergänzt den globalen `${masked}`-Renderer als Ad-hoc-Schutz).
+  - `ORACLE_REST` — oVirt/OLVM REST-API für VM-FQDNs und -Snapshots.
+  - `OdbcMssqlActionService` — direkte ODBC-Ausführung für DMZ-Server ohne WinRM
+    (Backend `OdbcDirect`).
+- **Diagnostics/**
+  - `MaskingLayoutRenderer` — `${masked}`-LayoutRenderer für NLog (Regex-basiert,
+    per `[ModuleInitializer]` registriert).
+  - `FatalErrorHandler` — globaler Handler für UnhandledException,
+    UnobservedTaskException und Dispatcher-Fehler.
 
----
+### Tests
 
-## Tests
-
-```
+```bash
 dotnet test DTM.Tests/DTM.Tests.csproj
 ```
 
-Die Test-Suite (~269 Tests, xUnit + FluentAssertions) deckt ab:
+Die Test-Suite (~361 Tests, xUnit.v3 + FluentAssertions 7.x) deckt ab:
 
 - `Data/Config/` — ConnectionStore, AppSettingsStore, ConnectionEntry
 - `Data/Terminal/` — AnsiParser, AnsiPalette, FocSqlRuntime, TerminalBus, DtmPSHostUI
 - `Data/HelperClasses/` — ServerCredential, DB_SERVER, Database_Info, Database_Stats-Varianten
-- `Data/` — DTM_DATA (Routing via FakeFactory), AsyncUtil
+- `Data/` — DTM_DATA (Routing via FakeFactory), AsyncUtil, OdbcMssqlActionService-Validierung
+- `Data/Updater/` — UpdateService (Version-Parser)
+- `Diagnostics/` — MaskingLayoutRenderer (Secret-Regex)
 - `ViewModels/` — MainWindowViewModel, ConnectionManagerViewModel, EditConnectionViewModel,
   SessionsViewModel, TimePickerViewModel, TreeNode-ViewModels
 
 Keine Abhängigkeit auf DB-Server, Avalonia-UI-Thread oder PowerShell-Runspace.
+
+---
+
+## Lizenz
+
+MIT — siehe [LICENSE](LICENSE).
+
+---
+
+☕ Gefällt dir das Tool? [Buy me a coffee](https://buymeacoffee.com/kroste)
