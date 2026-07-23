@@ -37,7 +37,7 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Build DTM (Release)
-        run: dotnet build DTM.csproj -c Release
+        run: dotnet build DTM.slnx -c Release
 
       - name: Tests ausfuehren
-        run: dotnet test DTM.Tests/DTM.Tests.csproj --logger "console;verbosity=normal"
+        run: dotnet test DTM.Tests/DTM.Tests.csproj --no-build -c Release --logger "console;verbosity=normal"

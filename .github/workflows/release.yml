@@ -28,8 +28,10 @@ jobs:
           # Directory.Packages.props, wird ein neuer Cache aufgebaut.
           key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
+      - name: Build (Release, ganze Solution)
+        run: dotnet build DTM.slnx -c Release
       - name: Tests ausführen
-        run: dotnet test DTM.Tests/DTM.Tests.csproj --logger "console;verbosity=normal"
+        run: dotnet test DTM.Tests/DTM.Tests.csproj --no-build -c Release --logger "console;verbosity=normal"
 
   build-windows:
     name: Build Windows (win-x64)
