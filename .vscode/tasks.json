@@ -7,52 +7,103 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/DTM.csproj",
+                "${workspaceFolder}/DTM.slnx",
+                "-c", "Debug",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "group": { "kind": "build", "isDefault": true }
         },
         {
-            "label": "build (Release)",
+            "label": "build-release",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/DTM.csproj",
-                "-c",
-                "Release",
+                "${workspaceFolder}/DTM.slnx",
+                "-c", "Release",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "publish",
+            "label": "test",
             "command": "dotnet",
             "type": "process",
             "args": [
-                "publish",
-                "${workspaceFolder}/DTM.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+                "test",
+                "${workspaceFolder}/DTM.Tests/DTM.Tests.csproj",
+                "-c", "Release"
             ],
-            "problemMatcher": "$msCompile"
+            "problemMatcher": "$msCompile",
+            "group": { "kind": "test", "isDefault": true }
         },
         {
             "label": "watch",
             "command": "dotnet",
             "type": "process",
             "args": [
-                "watch",
-                "run",
-                "--project",
-                "${workspaceFolder}/DTM.csproj"
+                "watch", "run",
+                "--project", "${workspaceFolder}/DTM.csproj"
+            ],
+            "isBackground": true,
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "clean",
+            "command": "dotnet",
+            "type": "process",
+            "args": ["clean", "${workspaceFolder}/DTM.slnx"],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish-win-x64",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish", "${workspaceFolder}/DTM.csproj",
+                "-c", "Release", "-r", "win-x64",
+                "--self-contained", "true",
+                "-o", "${workspaceFolder}/publish/win-x64"
             ],
             "problemMatcher": "$msCompile"
         },
         {
-            // App ohne Debugger starten — funktioniert auch ohne installierte
+            "label": "publish-linux-x64",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish", "${workspaceFolder}/DTM.csproj",
+                "-c", "Release", "-r", "linux-x64",
+                "--self-contained", "true",
+                "-o", "${workspaceFolder}/publish/linux-x64"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "release (tag + push)",
+            "type": "shell",
+            "problemMatcher": [],
+            "linux":   { "command": "bash '${workspaceFolder}/scripts/release.sh'" },
+            "osx":     { "command": "bash '${workspaceFolder}/scripts/release.sh'" },
+            "windows": { "command": "pwsh -NoProfile -File '${workspaceFolder}/scripts/release.ps1'" },
+            "options": { "cwd": "${workspaceFolder}" }
+        },
+        {
+            "label": "clean-hard",
+            "type": "shell",
+            "problemMatcher": [],
+            "linux":   { "command": "find '${workspaceFolder}' -type d \\( -name bin -o -name obj \\) -prune -exec rm -rf '{}' +" },
+            "osx":     { "command": "find '${workspaceFolder}' -type d \\( -name bin -o -name obj \\) -prune -exec rm -rf '{}' +" },
+            "windows": {
+                "command": "Get-ChildItem -Path '${workspaceFolder}' -Recurse -Directory -Include bin,obj | Remove-Item -Recurse -Force",
+                "options": { "shell": { "executable": "powershell.exe", "args": ["-NoProfile", "-Command"] } }
+            }
+        },
+        {
+            // App ohne Debugger starten - funktioniert auch ohne installierte
             // C#-Extension (umgeht das "coreclr"-Problem auf Code-OSS/Codium).
             // Aufruf: Ctrl+Shift+P -> "Tasks: Run Task" -> "DTM ausfuehren".
             "label": "DTM ausfuehren",
@@ -60,8 +111,7 @@
             "type": "process",
             "args": [
                 "run",
-                "--project",
-                "${workspaceFolder}/DTM.csproj"
+                "--project", "${workspaceFolder}/DTM.csproj"
             ],
             "options": {
                 "env": {
@@ -77,44 +127,15 @@
             "problemMatcher": "$msCompile"
         },
         {
-            // Loescht bin/ und obj/ in DTM und DTM.Tests rekursiv.
-            // Cross-Platform: rm auf Linux/macOS, Remove-Item via PowerShell auf Windows.
-            "label": "hard clean (bin + obj)",
-            "type": "shell",
-            "linux": {
-                "command": "rm -rf bin obj DTM.Tests/bin DTM.Tests/obj"
-            },
-            "osx": {
-                "command": "rm -rf bin obj DTM.Tests/bin DTM.Tests/obj"
-            },
-            "windows": {
-                "command": "powershell",
-                "args": [
-                    "-NoProfile",
-                    "-Command",
-                    "Remove-Item -Recurse -Force bin,obj,DTM.Tests\\bin,DTM.Tests\\obj -ErrorAction SilentlyContinue"
-                ]
-            },
-            "problemMatcher": []
-        },
-        {
             // Oeffnet das aktuelle Info-Logfile mit dem Default-Programm.
             // Pfad orientiert sich am NLog-${basedir}/logs unter bin/Debug/net10.0.
             "label": "Logfile info oeffnen",
             "type": "shell",
-            "linux": {
-                "command": "xdg-open bin/Debug/net10.0/logs/info.log"
-            },
-            "osx": {
-                "command": "open bin/Debug/net10.0/logs/info.log"
-            },
+            "linux":   { "command": "xdg-open bin/Debug/net10.0/logs/info.log" },
+            "osx":     { "command": "open bin/Debug/net10.0/logs/info.log" },
             "windows": {
                 "command": "powershell",
-                "args": [
-                    "-NoProfile",
-                    "-Command",
-                    "Start-Process bin\\Debug\\net10.0\\logs\\info.log"
-                ]
+                "args": ["-NoProfile", "-Command", "Start-Process bin\\Debug\\net10.0\\logs\\info.log"]
             },
             "problemMatcher": []
         },
@@ -122,19 +143,11 @@
             // Oeffnet das aktuelle Error-Logfile mit dem Default-Programm.
             "label": "Logfile error oeffnen",
             "type": "shell",
-            "linux": {
-                "command": "xdg-open bin/Debug/net10.0/logs/error.log"
-            },
-            "osx": {
-                "command": "open bin/Debug/net10.0/logs/error.log"
-            },
+            "linux":   { "command": "xdg-open bin/Debug/net10.0/logs/error.log" },
+            "osx":     { "command": "open bin/Debug/net10.0/logs/error.log" },
             "windows": {
                 "command": "powershell",
-                "args": [
-                    "-NoProfile",
-                    "-Command",
-                    "Start-Process bin\\Debug\\net10.0\\logs\\error.log"
-                ]
+                "args": ["-NoProfile", "-Command", "Start-Process bin\\Debug\\net10.0\\logs\\error.log"]
             },
             "problemMatcher": []
         }
