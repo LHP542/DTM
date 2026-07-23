@@ -50,6 +50,11 @@ internal static class ServiceRegistrations
         services.AddSingleton<OracleRestoreService>();
         services.AddSingleton<BackupBrowserService>();
 
+        // Update-Check gegen GitHub Releases (v2.3.0-prep). Singleton, weil
+        // der Service intern einen Cache pro App-Start haelt — 2. Check nach
+        // dem 1. gibt sonst noch einen GitHub-API-Call.
+        services.AddSingleton<DTM.Updater.UpdateService>();
+
         // --- ViewModels (Transient — neue Instanz pro Aufloesung) ---
         // MainWindowViewModel braucht den IServiceProvider, um untergeordnete
         // VMs (ConnectionManager, Sessions, TimePicker) zur Laufzeit aufzu-

@@ -923,46 +923,56 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         return await dlg.ShowDialog<TimePickResult>(owner);
     }
 
+    // Update-Check gegen GitHub Releases (Klemmbrett-Muster, seit v2.3.0).
+    // Wird beim App-Start aufgerufen — der UpdateService cached das Ergebnis,
+    // damit der spaetere "Auf Updates pruefen"-Klick im AboutWindow keinen
+    // zweiten API-Call macht (dort wird via forceRefresh=true umgangen).
     public async Task CheckForUpdateAsync()
     {
+        if (_services is null) return;
         try
         {
-            string src = DTM.Data.Terminal.FocSqlRuntime.Current.UpdateSource;
-            var newVersion = await DTM.Updater.UpdateService.CheckForUpdateAsync(src);
-            if (newVersion is not null)
-                await ShowUpdateDialogAsync(newVersion, src);
+            var updater = _services.GetRequiredService<DTM.Updater.UpdateService>();
+            var result = await updater.CheckForUpdateAsync();
+            if (result is { UpdateAvailable: true })
+                await ShowUpdateDialogAsync(updater, result);
         }
         catch (Exception ex) { _logger.Warn(ex, "Update-Prüfung fehlgeschlagen."); }
     }
 
-    private async Task ShowUpdateDialogAsync(Version newVersion, string updateSource)
+    private async Task ShowUpdateDialogAsync(DTM.Updater.UpdateService updater, DTM.Updater.UpdateCheckResult update)
     {
         Window? owner = GetMainWindow();
         if (owner is null) return;
 
-        var current = DTM.Updater.UpdateService.CurrentVersion();
-        var notes = await DTM.Updater.UpdateService.LoadReleaseNotesAsync(updateSource, current, newVersion);
+        // release-notes.json wird vom UpdateService selbst aus dem Repo-Raw
+        // geladen (kein Samba mehr). Der Bereich (current, latest] filtert
+        // Eintraege — release-notes-Redaktion ist deshalb unabhaengig vom
+        // Release-Bundle.
+        var notes = await updater.LoadReleaseNotesAsync(update.Current, update.Latest);
 
-        var dlg = new UpdatePromptWindow(newVersion.ToString(), current.ToString(3), notes);
+        var dlg = new UpdatePromptWindow(update.Latest.ToString(), update.Current.ToString(3), notes);
         await dlg.ShowDialog(owner);
 
         switch (dlg.Result)
         {
             case UpdateDialogResult.ApplyNow:
-                _logger.Info("Update wird jetzt angewendet: {0}", newVersion);
-                var applyProgress = new Progress<(int Done, int Total, string File)>(p =>
-                    StatusBar = $"Update: {p.Done}/{p.Total} — {p.File}");
-                await DTM.Updater.UpdateService.ApplyUpdateAsync(updateSource, applyProgress);
+                _logger.Info("Update wird jetzt angewendet: {0}", update.Latest);
+                var applyProgress = new Progress<double>(pct =>
+                    StatusBar = $"Update laedt: {pct:P0}");
+                bool ok = await updater.DownloadAndApplyAsync(update, applyProgress);
+                if (!ok)
+                    StatusBar = "Self-Update nicht moeglich — bitte Release-Seite im Browser oeffnen.";
                 break;
             case UpdateDialogResult.Later:
-                _logger.Info("Update auf {0} auf später verschoben (30 min).", newVersion);
+                _logger.Info("Update auf {0} auf später verschoben (30 min).", update.Latest);
                 _ = Task.Delay(TimeSpan.FromMinutes(30))
                         .ContinueWith(_ =>
                             Dispatcher.UIThread.InvokeAsync(() =>
-                                ShowUpdateDialogAsync(newVersion, updateSource)));
+                                ShowUpdateDialogAsync(updater, update)));
                 break;
             case UpdateDialogResult.Skip:
-                _logger.Info("Update auf {0} für diese Sitzung übersprungen.", newVersion);
+                _logger.Info("Update auf {0} für diese Sitzung übersprungen.", update.Latest);
                 break;
         }
     }

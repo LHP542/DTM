@@ -19,8 +19,11 @@ public sealed class FocSqlConfig
     public string SambaSource { get; set; } = string.Empty;
 
     /// <summary>
-    /// UNC-Pfad zum Update-Verzeichnis. Leer = kein automatischer Update-Check.
-    /// Muss version.txt und alle App-Dateien enthalten.
+    /// Legacy (bis v2.2.0): UNC-Pfad zum Samba-Update-Verzeichnis.
+    /// Seit v2.3.0 wird ueber GitHub Releases geupdatet (siehe
+    /// <see cref="DTM.Updater.UpdateService"/>) — das Feld bleibt nur,
+    /// damit bestehende settings.json weiter round-trippen; wird
+    /// nirgends mehr gelesen.
     /// </summary>
     public string UpdateSource { get; set; } = string.Empty;
 }

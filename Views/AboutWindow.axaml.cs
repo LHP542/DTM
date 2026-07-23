@@ -3,8 +3,8 @@ using System.Reflection;
 using Avalonia.Interactivity;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using DTM.Data.Terminal;
 using DTM.Updater;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DTM.Views;
 
@@ -53,49 +53,58 @@ public partial class AboutWindow : ChromeWindow
         }
     }
 
+    // Manueller "Auf Updates pruefen"-Button (Klemmbrett-Muster): forceRefresh=true
+    // umgeht den Cache und macht einen frischen GitHub-API-Call. Der App-Start
+    // hat schon einen Check gemacht — dieser hier ist fuer "ich moechte JETZT
+    // nochmal nachschauen ob was Neues da ist".
     private async void OnCheckUpdate(object? _, RoutedEventArgs e)
     {
         UpdateCheckButton.IsEnabled = false;
         UpdateStatusText.Text = "Prüfe auf Updates …";
 
-        string src = FocSqlRuntime.Current.UpdateSource;
-        if (string.IsNullOrWhiteSpace(src))
-        {
-            UpdateStatusText.Text = "Update-Quelle nicht konfiguriert.";
-            UpdateCheckButton.IsEnabled = true;
-            return;
-        }
-
         try
         {
-            Version? newVersion = await UpdateService.CheckForUpdateAsync(src);
-            if (newVersion is null)
+            var updater = App.Services.GetRequiredService<UpdateService>();
+            var result = await updater.CheckForUpdateAsync(forceRefresh: true);
+
+            if (result is null)
             {
-                UpdateStatusText.Text = "Aktuell — keine neue Version verfügbar.";
+                UpdateStatusText.Text = "Update-Check fehlgeschlagen (offline/Proxy?).";
                 UpdateCheckButton.IsEnabled = true;
                 return;
             }
 
-            // Update gefunden → UpdatePromptWindow öffnen
-            var dlg = new UpdatePromptWindow(newVersion.ToString(), UpdateService.CurrentVersion().ToString(3));
+            if (!result.UpdateAvailable)
+            {
+                UpdateStatusText.Text = $"Aktuell — Version {result.Current} ist die neueste.";
+                UpdateCheckButton.IsEnabled = true;
+                return;
+            }
+
+            // Update gefunden → UpdatePromptWindow oeffnen (mit release-notes.json
+            // aus dem Repo-Raw).
+            var notes = await updater.LoadReleaseNotesAsync(result.Current, result.Latest);
+            var dlg = new UpdatePromptWindow(result.Latest.ToString(), result.Current.ToString(3), notes);
             await dlg.ShowDialog(this);
 
             if (dlg.Result == UpdateDialogResult.ApplyNow)
             {
                 UpdateCheckButton.IsEnabled = false;
-                UpdateStatusText.Text = "Update wird kopiert …";
-                var applyProgress = new Progress<(int Done, int Total, string File)>(p =>
-                    UpdateStatusText.Text = $"Kopiere {p.Done}/{p.Total}: {p.File}");
-                await UpdateService.ApplyUpdateAsync(src, applyProgress);
+                UpdateStatusText.Text = "Update laedt …";
+                var progress = new Progress<double>(pct =>
+                    UpdateStatusText.Text = $"Update laedt: {pct:P0}");
+                bool ok = await updater.DownloadAndApplyAsync(result, progress);
+                if (!ok)
+                    UpdateStatusText.Text = "Self-Update nicht moeglich — Release-Seite oeffnen.";
             }
             else if (dlg.Result == UpdateDialogResult.Later)
             {
-                UpdateStatusText.Text = $"Update auf {newVersion} wird später erinnert.";
+                UpdateStatusText.Text = $"Update auf {result.Latest} wird später erinnert.";
                 UpdateCheckButton.IsEnabled = true;
             }
             else
             {
-                UpdateStatusText.Text = $"Update auf {newVersion} übersprungen.";
+                UpdateStatusText.Text = $"Update auf {result.Latest} übersprungen.";
                 UpdateCheckButton.IsEnabled = true;
             }
         }
