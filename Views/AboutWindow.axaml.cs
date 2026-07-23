@@ -31,8 +31,6 @@ public partial class AboutWindow : ChromeWindow
             LogoImage.IsVisible = false;
     }
 
-    private void OnTitleClose(object? _, RoutedEventArgs e) => Close();
-
     private void OnOpenGitHub(object? _, RoutedEventArgs e) => OpenUrl(GitHubUrl);
     private void OnOpenBuyMeCoffee(object? _, RoutedEventArgs e) => OpenUrl(BuyMeCoffeeUrl);
 

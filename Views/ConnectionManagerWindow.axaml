@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:DTM.ViewModels"
         xmlns:cfg="using:DTM.Config"
+        xmlns:c="using:DTM.Views.Controls"
         mc:Ignorable="d"
         x:Class="DTM.Views.ConnectionManagerWindow"
         x:DataType="vm:ConnectionManagerViewModel"
@@ -14,20 +15,7 @@
 
     <Grid RowDefinitions="Auto,*">
 
-        <!-- Titelleiste -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
-                PointerPressed="OnTitleBarPointerPressed">
-            <Grid ColumnDefinitions="*,Auto" Height="36">
-                <TextBlock Grid.Column="0"
-                           Text="Verbindungen verwalten" FontSize="12" FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextMutedBrush}"
-                           VerticalAlignment="Center" Margin="14,0"
-                           IsHitTestVisible="False" />
-                <Button Grid.Column="1" Classes="titleBtn close"
-                        Click="OnTitleClose" Content="&#x2715;" />
-            </Grid>
-        </Border>
+        <c:TitleBar Grid.Row="0" Title="Verbindungen verwalten" />
 
         <!-- Inhalt -->
         <Grid Grid.Row="1" RowDefinitions="*,Auto,Auto,Auto,Auto" Margin="16">

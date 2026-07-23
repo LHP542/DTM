@@ -313,6 +313,40 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
    - Build + 269 Tests grün auf Linux. **Smoke-Test der UI auf Windows + Linux
      steht noch aus** (Drag/Resize/Min/Max in jedem Fenster prüfen).
 
+2. **Kroste-Skill-Compliance-Pass (`v2.4.0`-Vorlauf)** — erledigt
+   - GitHub-Actions-Majors auf Node-24-Runtime: `checkout@v7`, `upload-artifact@v7`,
+     `download-artifact@v8`.
+   - NLog Secret-Masking: `Diagnostics/MaskingLayoutRenderer.cs` (Wrapper-
+     LayoutRenderer `${masked}`), per `[ModuleInitializer]` +
+     `LogManager.Setup().SetupExtensions()` registriert. `Nlog.config` rendert
+     Message und Exception durch den Renderer — greift auch, wenn eine
+     `SqlException` einen ConnectionString mit Passwort enthaelt. Regex-Patterns:
+     `Password=`/`PWD=` (ConnectionString), `password=`/`token=`/`api_key=`
+     (URL/JSON), `Bearer <token>`, `Authorization:`.
+   - Avalonia 12.0.5 → 12.1.0 (Skill-Mindest wegen nativem Wayland-Backend).
+     `Avalonia.Controls.DataGrid` + `Avalonia.Fonts.Inter` von 12.0.1 auf 12.1.0
+     mitgezogen. `CentralPackageTransitivePinningEnabled=true` aktiviert, um
+     transitive Deps ueber `PackageVersion` pinnen zu koennen —
+     `System.Security.Cryptography.Xml` auf 10.0.10 hochgezogen wegen mehrerer
+     hoch-Sev CVEs.
+   - xUnit 2.9.3 → `xunit.v3` 3.2.2 (v2 deprecated). API-kompatibel, kein
+     Quellcode-Change noetig.
+   - CI + Release-YAML bauen jetzt `DTM.slnx` statt `DTM.csproj` einzeln;
+     `--no-build` im Test-Step vermeidet doppelten Compile in CI.
+   - `.vscode/tasks.json` um Skill-Standard-Tasks ergaenzt: `test`, `clean`,
+     `publish-win-x64`, `publish-linux-x64`, `release (tag + push)`.
+     `scripts/release.sh` + `scripts/release.ps1` als Trigger fuer letzteren.
+   - `Views/Controls/TitleBar.axaml(+.cs)` als wiederverwendbare Titelleiste
+     angelegt (StyledProperties `Title`, `ShowMinimize`, `ShowMaximize`,
+     `CloseResult`). **Rollout aktuell nur AboutWindow + ConnectionManagerWindow**
+     — die restlichen 12 Dialoge behalten ihre eigene Titelleiste, weil:
+     (a) 6 haben ein Icon-Header-StackPanel statt reinem Text (TitleBar braeuchte
+     Content-Slot-API), (b) 6 haben spezielle Dialog-Result-Semantik
+     (`TimePickResult.Cancel()`, EditConnection `Close(false)`, …) und die
+     lassen sich nicht mit `CloseResult=".."` per XAML setzen — nur ueber
+     `x:Name` + Code-Behind. Follow-up-Ticket unten.
+   - Tests: 361/361 gruen (350 vorher + 11 neue MaskingLayoutRenderer-Tests).
+
 ### Offene Roadmap (Phasen, in dieser Reihenfolge)
 
 > **Legende:** `S` = klein (1–3 h, 1 Commit) · `M` = mittel (halber Tag, 2–4 Commits) ·
@@ -823,6 +857,36 @@ Sub-Items:
 **Sicherheit:** SSH-Login als `oracle@DBMANAGER01` per Key-Auth
 (gleiches Setup wie andere Oracle-Ziele — Pageant / OpenSSH
 IdentityAgent). Kein Passwort in Klartext.
+
+#### Phase 12 — TitleBar-Rollout-Fortsetzung (Skill-Compliance-Follow-up)
+
+Der `TitleBar`-UserControl unter `Views/Controls/TitleBar.axaml` wird
+aktuell nur von `AboutWindow` und `ConnectionManagerWindow` genutzt
+(reine Text-Titel, ohne Dialog-Result-Semantik). Die 12 restlichen
+Dialoge behalten ihre eigene Titelleiste. Um sie auch umzuziehen:
+
+- [ ] **12.1** TitleBar um Content-Slot fuer Titel-Bereich erweitern
+      (`TitleContent`-DependencyProperty oder inner `ContentPresenter`
+      mit angesteuertem Slot), damit die 6 Icon-Titelleisten mit
+      StackPanel + Glyph + Text auf `<c:TitleBar>` umgestellt werden
+      koennen: `ConfirmWindow`, `BackupBrowserWindow`,
+      `OracleRestoreSelectWindow`, `MssqlSnapshotSelectWindow`,
+      `DbConfigurationWindow`, `FatalErrorWindow`. — `S`
+- [ ] **12.2** Fuer die 6 Fenster mit Dialog-Result-Semantik
+      (`EditConnectionWindow` → bool, `TimePickerWindow` →
+      `TimePickResult`, `SessionsWindow`, `UpdatePromptWindow`,
+      `OlvmSnapshotSelectWindow`, `MssqlSnapshotSelectWindow`):
+      `<c:TitleBar x:Name="TitleBar" Title="..."/>` deklarieren,
+      im Code-Behind-Konstruktor `TitleBar.CloseResult = ...` setzen.
+      Fuer `TimePickerWindow` heisst das: `TitleBar.CloseResult =
+      TimePickResult.Cancel();`. — `S`
+- [ ] **12.3** `ChromeWindow`-Basisklasse aufraeumen: sobald ALLE Fenster
+      auf `<c:TitleBar>` umgestellt sind, sind die geerbten
+      `OnTitleBarPointerPressed`/`OnTitleBarDoubleTapped`-Handler
+      unbenutzt und koennen entfernt werden. — `S`
+
+Kein funktionaler Gewinn — reines Konsolidierungs-Refactor. Sinnvoll
+gebuendelt mit einer anderen UI-Arbeit; kein eigener Release-Anlass.
 
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 

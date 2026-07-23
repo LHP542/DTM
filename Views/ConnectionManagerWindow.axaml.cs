@@ -12,8 +12,6 @@ public partial class ConnectionManagerWindow : ChromeWindow
 
     private ConnectionManagerViewModel Vm => (ConnectionManagerViewModel)DataContext!;
 
-    private void OnTitleClose(object? _, RoutedEventArgs e) => Close();
-
     private async void OnAdd(object? sender, RoutedEventArgs e)
     {
         EditConnectionViewModel editVm = new();

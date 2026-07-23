@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:DTM.Views.Controls"
         x:Class="DTM.Views.AboutWindow"
         Title="Über Datenbank-Manager"
         Width="420" Height="430"
@@ -9,20 +10,7 @@
 
     <Grid RowDefinitions="Auto,*">
 
-        <!-- Titelleiste -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
-                PointerPressed="OnTitleBarPointerPressed">
-            <Grid ColumnDefinitions="*,Auto" Height="36">
-                <TextBlock Grid.Column="0"
-                           Text="Über Datenbank-Manager" FontSize="12" FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextMutedBrush}"
-                           VerticalAlignment="Center" Margin="14,0"
-                           IsHitTestVisible="False" />
-                <Button Grid.Column="1" Classes="titleBtn close"
-                        Click="OnTitleClose" Content="&#x2715;" />
-            </Grid>
-        </Border>
+        <c:TitleBar Grid.Row="0" Title="Über Datenbank-Manager" />
 
         <!-- Inhalt -->
         <StackPanel Grid.Row="1" Margin="28,20,28,20" Spacing="0">
