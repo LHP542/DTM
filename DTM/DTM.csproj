@@ -9,7 +9,6 @@
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <DefaultItemExcludes>$(DefaultItemExcludes);DTM.Tests\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

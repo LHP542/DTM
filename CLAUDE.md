@@ -346,6 +346,19 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
      lassen sich nicht mit `CloseResult=".."` per XAML setzen — nur ueber
      `x:Name` + Code-Behind. Follow-up-Ticket unten.
    - Tests: 361/361 gruen (350 vorher + 11 neue MaskingLayoutRenderer-Tests).
+   - **Repo-Umzug (`v2.4.0`-Vorlauf, Skill-Struktur):** App-Sourcen aus dem
+     Repo-Root in den Unterordner `DTM/` verschoben (App.axaml, Program.cs,
+     Assets/, Composition/, Data/, Diagnostics/, ViewModels/, Views/,
+     Nlog.config, release-notes.json, app.manifest, DTM.csproj). Nachgezogen:
+     `DTM.slnx` (jetzt beide Projekte explizit), `DTM.Tests/DTM.Tests.csproj`
+     (ProjectReference auf `../DTM/DTM.csproj`), `DTM.csproj`
+     (`DefaultItemExcludes` fuer `DTM.Tests\**` entfaellt, nicht mehr noetig),
+     `.vscode/tasks.json` und `.vscode/launch.json` (Pfade `DTM/DTM.csproj`
+     und `DTM/bin/...`), `.github/workflows/release.yml` (publish-Befehle
+     und AppImage-Icon-Pfad `DTM/Assets/lhp_logo.png`), README (dotnet-run-
+     Beispiele). Publish nach `linux-x64` liefert `DTM/bin/Release/...`,
+     Binary laeuft. Skill-konforme Struktur: `DTM/` und `DTM.Tests/` parallel
+     im Root.
 
 ### Offene Roadmap (Phasen, in dieser Reihenfolge)
 

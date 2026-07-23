@@ -8,9 +8,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/bin/Debug/net10.0/DTM.dll",
+            "program": "${workspaceFolder}/DTM/bin/Debug/net10.0/DTM.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/bin/Debug/net10.0",
+            "cwd": "${workspaceFolder}/DTM/bin/Debug/net10.0",
             "console": "integratedTerminal",
             "stopAtEntry": false,
             "env": {
@@ -23,9 +23,9 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build (Release)",
-            "program": "${workspaceFolder}/bin/Release/net10.0/DTM.dll",
+            "program": "${workspaceFolder}/DTM/bin/Release/net10.0/DTM.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/bin/Release/net10.0",
+            "cwd": "${workspaceFolder}/DTM/bin/Release/net10.0",
             "console": "integratedTerminal",
             "stopAtEntry": false,
             "env": {

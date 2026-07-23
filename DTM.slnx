@@ -1,4 +1,4 @@
 <Solution>
-  <Project Path="DTM.csproj" />
+  <Project Path="DTM/DTM.csproj" />
   <Project Path="DTM.Tests/DTM.Tests.csproj" />
 </Solution>

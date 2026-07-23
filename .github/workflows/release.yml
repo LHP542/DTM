@@ -54,7 +54,7 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
       - name: Publish win-x64
-        run: dotnet publish DTM.csproj -c Release -r win-x64 --self-contained true -o ./publish
+        run: dotnet publish DTM/DTM.csproj -c Release -r win-x64 --self-contained true -o ./publish
       - name: version.txt erstellen
         shell: pwsh
         run: |
@@ -88,7 +88,7 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
       - name: Publish linux-x64
-        run: dotnet publish DTM.csproj -c Release -r linux-x64 --self-contained true -o ./publish
+        run: dotnet publish DTM/DTM.csproj -c Release -r linux-x64 --self-contained true -o ./publish
       - name: version.txt erstellen
         run: |
           v="${GITHUB_REF_NAME#v}"
@@ -122,7 +122,7 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
 
       - name: Publish linux-x64
-        run: dotnet publish DTM.csproj -c Release -r linux-x64 --self-contained true -o ./publish
+        run: dotnet publish DTM/DTM.csproj -c Release -r linux-x64 --self-contained true -o ./publish
 
       - name: AppDir-Struktur vorbereiten
         run: |
@@ -144,7 +144,7 @@ jobs:
           # Icon auf 256x256 padden (Logo ist 272x145, AppImage will quadratisch)
           sudo apt-get update -qq
           sudo apt-get install -qq -y imagemagick
-          convert Assets/lhp_logo.png \
+          convert DTM/Assets/lhp_logo.png \
             -resize 256x256 \
             -background none -gravity center -extent 256x256 \
             AppDir/usr/share/icons/hicolor/256x256/apps/dtm.png

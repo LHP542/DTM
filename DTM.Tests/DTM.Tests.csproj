@@ -11,6 +11,6 @@
     <PackageReference Include="FluentAssertions" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../DTM.csproj" />
+    <ProjectReference Include="../DTM/DTM.csproj" />
   </ItemGroup>
 </Project>

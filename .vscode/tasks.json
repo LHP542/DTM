@@ -46,7 +46,7 @@
             "type": "process",
             "args": [
                 "watch", "run",
-                "--project", "${workspaceFolder}/DTM.csproj"
+                "--project", "${workspaceFolder}/DTM/DTM.csproj"
             ],
             "isBackground": true,
             "problemMatcher": "$msCompile"
@@ -63,7 +63,7 @@
             "command": "dotnet",
             "type": "process",
             "args": [
-                "publish", "${workspaceFolder}/DTM.csproj",
+                "publish", "${workspaceFolder}/DTM/DTM.csproj",
                 "-c", "Release", "-r", "win-x64",
                 "--self-contained", "true",
                 "-o", "${workspaceFolder}/publish/win-x64"
@@ -75,7 +75,7 @@
             "command": "dotnet",
             "type": "process",
             "args": [
-                "publish", "${workspaceFolder}/DTM.csproj",
+                "publish", "${workspaceFolder}/DTM/DTM.csproj",
                 "-c", "Release", "-r", "linux-x64",
                 "--self-contained", "true",
                 "-o", "${workspaceFolder}/publish/linux-x64"
@@ -111,7 +111,7 @@
             "type": "process",
             "args": [
                 "run",
-                "--project", "${workspaceFolder}/DTM.csproj"
+                "--project", "${workspaceFolder}/DTM/DTM.csproj"
             ],
             "options": {
                 "env": {
@@ -131,11 +131,11 @@
             // Pfad orientiert sich am NLog-${basedir}/logs unter bin/Debug/net10.0.
             "label": "Logfile info oeffnen",
             "type": "shell",
-            "linux":   { "command": "xdg-open bin/Debug/net10.0/logs/info.log" },
-            "osx":     { "command": "open bin/Debug/net10.0/logs/info.log" },
+            "linux":   { "command": "xdg-open DTM/bin/Debug/net10.0/logs/info.log" },
+            "osx":     { "command": "open DTM/bin/Debug/net10.0/logs/info.log" },
             "windows": {
                 "command": "powershell",
-                "args": ["-NoProfile", "-Command", "Start-Process bin\\Debug\\net10.0\\logs\\info.log"]
+                "args": ["-NoProfile", "-Command", "Start-Process DTM\\bin\\Debug\\net10.0\\logs\\info.log"]
             },
             "problemMatcher": []
         },
@@ -143,11 +143,11 @@
             // Oeffnet das aktuelle Error-Logfile mit dem Default-Programm.
             "label": "Logfile error oeffnen",
             "type": "shell",
-            "linux":   { "command": "xdg-open bin/Debug/net10.0/logs/error.log" },
-            "osx":     { "command": "open bin/Debug/net10.0/logs/error.log" },
+            "linux":   { "command": "xdg-open DTM/bin/Debug/net10.0/logs/error.log" },
+            "osx":     { "command": "open DTM/bin/Debug/net10.0/logs/error.log" },
             "windows": {
                 "command": "powershell",
-                "args": ["-NoProfile", "-Command", "Start-Process bin\\Debug\\net10.0\\logs\\error.log"]
+                "args": ["-NoProfile", "-Command", "Start-Process DTM\\bin\\Debug\\net10.0\\logs\\error.log"]
             },
             "problemMatcher": []
         }
