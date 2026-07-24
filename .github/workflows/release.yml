@@ -141,13 +141,8 @@ jobs:
           cp -r publish/* AppDir/usr/bin/
           chmod +x AppDir/usr/bin/DTM
 
-          # Icon auf 256x256 padden (Logo ist 272x145, AppImage will quadratisch)
-          sudo apt-get update -qq
-          sudo apt-get install -qq -y imagemagick
-          convert DTM/Assets/lhp_logo.png \
-            -resize 256x256 \
-            -background none -gravity center -extent 256x256 \
-            AppDir/usr/share/icons/hicolor/256x256/apps/dtm.png
+          # App-Icon direkt aus Assets/dtm.png (schon 256x256, transparenter Grund)
+          cp DTM/Assets/dtm.png AppDir/usr/share/icons/hicolor/256x256/apps/dtm.png
 
           # Desktop-Entry + AppRun aus dem Repo uebernehmen
           cp packaging/appimage/dtm.desktop AppDir/usr/share/applications/dtm.desktop

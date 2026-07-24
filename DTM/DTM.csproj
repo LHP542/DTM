@@ -9,6 +9,9 @@
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- App-Icon fuer die Windows-Exe (Explorer/Taskbar). Fenster-Icon
+         zieht ChromeWindow zur Laufzeit aus Assets/dtm.png. -->
+    <ApplicationIcon>Assets\dtm.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,6 +44,7 @@
   <ItemGroup>
     <None Update="Nlog.config" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Assets\lhp_logo.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Assets\dtm.png" CopyToOutputDirectory="PreserveNewest" />
     <None Update="release-notes.json" CopyToOutputDirectory="PreserveNewest" />
     <!--<None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('appsettings.json')" />
     <None Update="appsettings.example.json" CopyToOutputDirectory="PreserveNewest" />-->

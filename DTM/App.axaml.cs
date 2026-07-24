@@ -19,6 +19,10 @@ public partial class App : Application
     /// </summary>
     public static IServiceProvider Services { get; private set; } = default!;
 
+    // GC-Referenz: OHNE Feld verschwindet das Tray-Icon nach einiger Laufzeit
+    // (Skill-Standard, siehe TrayController-Klassenkommentar).
+    private TrayController? _tray;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -45,10 +49,16 @@ public partial class App : Application
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
+            var main = new MainWindow
             {
                 DataContext = Services.GetRequiredService<MainWindowViewModel>()
             };
+            desktop.MainWindow = main;
+
+            // System-Tray: Minimieren → Tray, Schliessen → beendet regulaer.
+            // Kein ShutdownMode-Umbau noetig (Hide statt Close beim Minimize).
+            _tray = new TrayController(this, main);
+            _tray.Install();
         }
 
         base.OnFrameworkInitializationCompleted();
