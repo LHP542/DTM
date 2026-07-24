@@ -53,14 +53,20 @@ jobs:
           # Directory.Packages.props, wird ein neuer Cache aufgebaut.
           key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
-      - name: Publish win-x64
-        run: dotnet publish DTM/DTM.csproj -c Release -r win-x64 --self-contained true -o ./publish
-      - name: version.txt erstellen
+      - name: Publish win-x64 (SingleFile self-contained)
+        run: >
+          dotnet publish DTM/DTM.csproj
+          -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=embedded
+          -o ./publish
+      - name: Bereinigung (fremde pdb-Files aus native-Packages)
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}" -replace '^v', ''
-          if (-not $version -or $version -notmatch '^[0-9]') { $version = 'dev' }
-          $version | Set-Content ./publish/version.txt -NoNewline
+          # SkiaSharp/HarfBuzzSharp bringen .pdb-Files mit — im Release nicht
+          # gebraucht. DebugType=embedded gilt nur fuer unsere eigene Exe.
+          Remove-Item -Path ./publish/*.pdb -Force -ErrorAction SilentlyContinue
       - uses: actions/upload-artifact@v7
         with:
           name: DTM-windows
@@ -87,13 +93,16 @@ jobs:
           # Directory.Packages.props, wird ein neuer Cache aufgebaut.
           key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
-      - name: Publish linux-x64
-        run: dotnet publish DTM/DTM.csproj -c Release -r linux-x64 --self-contained true -o ./publish
-      - name: version.txt erstellen
-        run: |
-          v="${GITHUB_REF_NAME#v}"
-          case "$v" in [0-9]*) ;; *) v=dev ;; esac
-          echo -n "$v" > ./publish/version.txt
+      - name: Publish linux-x64 (SingleFile self-contained)
+        run: >
+          dotnet publish DTM/DTM.csproj
+          -c Release -r linux-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=embedded
+          -o ./publish
+      - name: Bereinigung (fremde pdb-Files aus native-Packages)
+        run: rm -f ./publish/*.pdb
       - uses: actions/upload-artifact@v7
         with:
           name: DTM-linux
@@ -121,16 +130,21 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('Directory.Packages.props') }}
           restore-keys: nuget-${{ runner.os }}-
 
-      - name: Publish linux-x64
-        run: dotnet publish DTM/DTM.csproj -c Release -r linux-x64 --self-contained true -o ./publish
+      - name: Publish linux-x64 (SingleFile self-contained)
+        run: >
+          dotnet publish DTM/DTM.csproj
+          -c Release -r linux-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:DebugType=embedded
+          -o ./publish
 
       - name: AppDir-Struktur vorbereiten
         run: |
           set -e
-          # Version fuer interne Files
-          v="${GITHUB_REF_NAME#v}"
-          case "$v" in [0-9]*) ;; *) v=dev ;; esac
-          echo -n "$v" > ./publish/version.txt
+          # Fremde pdb-Files aus native-Packages (SkiaSharp/HarfBuzzSharp)
+          # raus — im Release nicht gebraucht.
+          rm -f ./publish/*.pdb
 
           # Verzeichnis-Skelett
           mkdir -p AppDir/usr/bin

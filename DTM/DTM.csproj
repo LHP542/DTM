@@ -42,12 +42,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Nlog.config muss neben der Exe liegen (NLog liest ${basedir}/Nlog.config).
+         Assets/*.png werden ueber <AvaloniaResource> in die DLL eingebettet
+         (avares://DTM/Assets/*), kein zusaetzliches CopyToOutputDirectory noetig.
+         release-notes.json wird zur Laufzeit aus dem GitHub-Raw geladen
+         (Klemmbrett-Muster), keine lokale Kopie noetig. -->
     <None Update="Nlog.config" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="Assets\lhp_logo.png" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="Assets\dtm.png" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="release-notes.json" CopyToOutputDirectory="PreserveNewest" />
-    <!--<None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('appsettings.json')" />
-    <None Update="appsettings.example.json" CopyToOutputDirectory="PreserveNewest" />-->
   </ItemGroup>
 
 </Project>
