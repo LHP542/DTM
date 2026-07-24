@@ -1,26 +1,33 @@
 """
-DTM App-Icon-Generator.
+DTM App-Icon-Generator (Checkmk-Familien-Look).
 
-Design: klassischer Datenbank-Zylinder in DTM's Teal (#2DD4BF) auf
-abgerundetem dunklem Grund (#161C23), thematisch DB-Manager, ohne
-Text (funktioniert auch als 16x16-Favicon).
+Design-Prinzipien (siehe Kroste/Checkmk/Assets/app.png):
+- Gesaettigter dunkelblauer Grund (#1E3A5F) mit abgerundetem Quadrat —
+  identisch zu Checkmk, damit die Kroste-Familie visuell zusammenhaengt.
+- Motiv in Weiss (#FFFFFF), klar gezeichnet, ~60% Iconflaeche mit Luft am Rand.
+- Kleiner Akzent-Kreis oben rechts in DTM-Teal (#2DD4BF), analog zu
+  Checkmks gruenem "OK"-Punkt — kennzeichnet die App via Farbe.
+
+Motiv: klassischer Datenbank-Zylinder (drei Scheiben, saubere Rundungen).
 
 Erzeugt:
-- /home/OsteL/Entwicklung/DTM/DTM/Assets/dtm.png   (256x256, master)
-- /home/OsteL/Entwicklung/DTM/DTM/Assets/dtm.ico   (Windows-Multi-Res)
+- DTM/Assets/dtm.png   (256x256, master fuer Fenster/Tray/AppImage)
+- DTM/Assets/dtm.ico   (multi-res 16..256 fuer <ApplicationIcon>)
 """
 
 from PIL import Image, ImageDraw
 
-# DTM-Farben (aus App.axaml)
-ACCENT   = (45, 212, 191, 255)     # #2DD4BF
-ACCENT_D = (30, 150, 135, 255)     # dunkler fuer Ellipsen-Unterkante
-SURFACE  = (22, 28, 35, 255)       # #161C23 (fast schwarz)
-BORDER   = (42, 51, 61, 255)       # #2A333D
-TRANSP   = (0, 0, 0, 0)
+# Checkmk-Familien-Palette
+BG        = (30, 58, 95, 255)      # #1E3A5F — dunkles Blau (wie Checkmk)
+FG        = (255, 255, 255, 255)   # #FFFFFF — Motiv
+FG_SHADOW = (220, 228, 240, 255)   # leicht abgesetzter Zylinder-Boden
+ACCENT    = (45, 212, 191, 255)    # #2DD4BF — DTM-Teal-Akzentpunkt
+ACCENT_R  = (24, 148, 132, 255)    # dunkler Akzent-Rand
+TRANSP    = (0, 0, 0, 0)
 
-SIZE = 256
-CORNER = 48  # abgerundete Ecke des Grunds
+SIZE   = 256
+CORNER = 48    # Rundung des Grunds
+
 
 def make_icon(size: int) -> Image.Image:
     """Baut das Icon in der angegebenen Kantenlaenge."""
@@ -28,51 +35,58 @@ def make_icon(size: int) -> Image.Image:
     img = Image.new("RGBA", (size, size), TRANSP)
     d = ImageDraw.Draw(img)
 
-    # Grund: abgerundetes Quadrat (App-Icon-Stil, plattformneutral)
-    corner = int(CORNER * scale)
+    # Grund: abgerundetes Quadrat, plattformneutral
     d.rounded_rectangle([(0, 0), (size - 1, size - 1)],
-                        radius=corner, fill=SURFACE, outline=BORDER,
-                        width=max(1, int(2 * scale)))
+                        radius=int(CORNER * scale),
+                        fill=BG)
 
-    # Datenbank-Zylinder: drei Scheiben, oben nach unten mit
-    # abnehmender Sichtbarkeit (Perspektive)
+    # === Datenbank-Zylinder (weiss, zentriert, mit Luft am Rand) ===
     cx = size / 2
-    r_x = int(72 * scale)   # Ellipsen-Halbachse X
-    r_y = int(14 * scale)   # Ellipsen-Halbachse Y (flach)
-    top = int(72 * scale)    # y der oberen Ellipse
-    gap = int(46 * scale)    # Abstand zwischen den Scheiben
-    stroke = max(2, int(4 * scale))
+    r_x = int(64 * scale)     # Halbachse X — schmaler als vorher, mehr Luft
+    r_y = int(13 * scale)     # Halbachse Y — flache Ellipse
+    top = int(78 * scale)     # y der obersten Ellipse
+    gap = int(42 * scale)     # Abstand der Scheiben
+    stroke = max(2, int(3 * scale))
 
-    # Zylinder-Body zwischen oberer und unterster Ellipse (Rechteck-Seiten)
+    # Zylinder-Body (Rechteck zwischen oberer und unterster Ellipse)
     body_top = top
     body_bot = top + 3 * gap
-    d.rectangle([(cx - r_x, body_top), (cx + r_x, body_bot)],
-                fill=ACCENT)
+    d.rectangle([(cx - r_x, body_top), (cx + r_x, body_bot)], fill=FG)
 
-    # Untere Rundung (Boden), damit der Zylinder unten geschlossen ist
+    # Zylinder-Boden (dezent schattiert, damit Rundung erkennbar bleibt)
     d.ellipse([(cx - r_x, body_bot - r_y), (cx + r_x, body_bot + r_y)],
-              fill=ACCENT_D, outline=None)
+              fill=FG_SHADOW)
 
-    # Drei "Deckel" (Ellipsen) — obere ist voll, mittlere nur Umriss (Rille)
+    # Vier Scheibendeckel: oberste voll, die anderen als "Rille"
     for i in range(4):
         y = top + i * gap
         if i == 0:
-            # Oberste: voll ausgefuellt
+            # Oberste Scheibe voll ausgefuellt (Deckel)
             d.ellipse([(cx - r_x, y - r_y), (cx + r_x, y + r_y)],
-                      fill=ACCENT, outline=SURFACE, width=stroke)
+                      fill=FG, outline=BG, width=stroke)
         else:
-            # Rille: nur die Frontlinie (untere Haelfte) sichtbar,
-            # obere Haelfte deckt der darueberliegende Zylinder ab.
-            # Trick: schwarzen Umriss zeichnen, dann die obere Haelfte
-            # mit Zylinder-Farbe uebermalen.
+            # Rille: Umriss in Grund-Farbe zeichnen, obere Haelfte durch
+            # Zylinder-Fuellfarbe uebermalen (nur die "vordere Bogen"-Linie
+            # bleibt sichtbar).
             d.ellipse([(cx - r_x, y - r_y), (cx + r_x, y + r_y)],
-                      fill=None, outline=SURFACE, width=stroke)
-            # Obere Haelfte uebermalen, damit nur die "vordere Rille" bleibt
+                      outline=BG, width=stroke)
             d.rectangle([(cx - r_x - 2, y - r_y - 2),
-                         (cx + r_x + 2, y)],
-                        fill=ACCENT)
+                         (cx + r_x + 2, y)], fill=FG)
+
+    # === Akzent-Punkt oben rechts (analog Checkmk-Status-Kreis) ===
+    # Sitzt komplett neben dem Motiv, damit kein Halo noetig ist —
+    # sauberer Kontrast Teal auf dunkelblau.
+    # Nur bei groesseren Groessen — bei 16x16 wuerde der Punkt matschen.
+    if size >= 48:
+        dot_r  = int(20 * scale)
+        dot_cx = int(206 * scale)
+        dot_cy = int(50 * scale)
+        d.ellipse([(dot_cx - dot_r, dot_cy - dot_r),
+                   (dot_cx + dot_r, dot_cy + dot_r)],
+                  fill=ACCENT, outline=ACCENT_R, width=max(1, int(1.5 * scale)))
 
     return img
+
 
 # 1) Master-PNG 256x256
 master = make_icon(256)
