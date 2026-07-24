@@ -360,6 +360,40 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
      Binary laeuft. Skill-konforme Struktur: `DTM/` und `DTM.Tests/` parallel
      im Root.
 
+3. **App-Icon + System-Tray (Skill-Standards Post-v2.3.0)** — erledigt
+   - **App-Icon:** `DTM/Assets/dtm.png` (256x256, transparenter Grund,
+     abgerundetes Quadrat mit klassischem Datenbank-Zylinder in Teal
+     `#2DD4BF` — passt zu DTMs Akzentfarbe, ohne Text erkennbar auch als
+     16x16-Favicon). Multi-Res `DTM/Assets/dtm.ico` (16/24/32/48/64/128/256)
+     als `<ApplicationIcon>` in der csproj → Windows-Exe hat jetzt im
+     Explorer/Taskbar ein Icon. `ChromeWindow`-Basisklasse laedt die PNG
+     im ctor als `Window.Icon` (try/catch — ohne Icon lauffaehig). AppImage-
+     Release-Job zieht die PNG direkt (kein ImageMagick-Convert vom
+     lhp_logo mehr). `scripts/build_icon.py` als Pillow-Generator im Repo,
+     um das Icon reproduzierbar zu rebuilden (Design-Iterationen als
+     Python-Diff statt Binary). Das Institutionslogo `lhp_logo.png` bleibt
+     im AboutWindow als „Absender-Info" — kein App-Icon.
+   - **System-Tray:** `DTM/Views/TrayController.cs` nach Skill-Muster
+     (Referenz Checkmk Cockpit). Verhalten: Minimieren → `window.Hide()`
+     (Fenster in den Tray, Prozess laeuft weiter — PowerShell-Runspace und
+     DB-Verbindungen bleiben bestehen), Schliessen ✕ → beendet regulaer
+     (kein `ShutdownMode`-Umbau noetig). Tray-Menue „Anzeigen" + Separator
+     + „Beenden"; Linksklick aufs Tray-Icon = Anzeigen. Vier Pflicht-
+     Absicherungen umgesetzt: GC-Referenz (App._tray-Feld), Restore-Guard
+     (`_restoreInProgress`-Flag + `Dispatcher.UIThread.Post`), try/catch
+     mit Fallback auf Standard-Minimieren bei fehlendem Tray-Support
+     (headless-Server / kaputtes DBus), Linux zieht `Tmds.DBus.Protocol`
+     transitive ueber Avalonia. Instanziierung in
+     `App.OnFrameworkInitializationCompleted` nach MainWindow-Erzeugung.
+
+   Skill-Update parallel (siehe `~/.claude/skills/kroste-avalonia/`):
+   `SKILL.md` verankert beides als Pflicht (nicht mehr optional/situativ),
+   `references/design.md` bekommt einen eigenen „App-Icon"-Abschnitt mit
+   Design-Vorgaben, `assets/TrayController.cs.example` +
+   `assets/scripts/build_icon.py.example` als generische Kopiervorlagen
+   fuer neue Projekte. Neue Projekte kriegen jetzt die Rollout-Schritte
+   3a (Icon) und 3b (Tray) in „Neues Projekt aufsetzen".
+
 ### Offene Roadmap (Phasen, in dieser Reihenfolge)
 
 > **Legende:** `S` = klein (1–3 h, 1 Commit) · `M` = mittel (halber Tag, 2–4 Commits) ·
