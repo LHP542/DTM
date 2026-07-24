@@ -5,7 +5,11 @@
          RepositoryUrl, TreatWarningsAsErrors kommen aus Directory.Build.props.
          Version/AssemblyVersion/AssemblyInformationalVersion werden von MinVer
          aus dem juengsten Git-Tag mit Prefix "v" berechnet (z.B. v1.1.0). -->
-    <OutputType>Exe</OutputType>
+    <!-- WinExe = GUI-App: Windows oeffnet KEIN Konsolenfenster. Bei Exe
+         (Console-App) haengt ein leeres Console-Window an der Exe und
+         zeigt NLog-coloredConsole-Ausgaben — bei einer Desktop-App
+         unerwuenscht. Unter Linux hat das keinen Effekt. -->
+    <OutputType>WinExe</OutputType>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
