@@ -93,8 +93,9 @@ public class MainWindowViewModelTests
     public void ApplyStats_Mssql_SetsDbSize_WithMbSuffix()
     {
         var vm = MakeVm();
-        vm.ApplyStats(new Database_Stats_MSSQL { DataSizeMB = 512.5 });
-        vm.DbSize.Should().Be("512.5 MB");
+        // Header "Größe" = Gesamtgröße (Daten + Log) => TotalSizeMB, nicht DataSizeMB.
+        vm.ApplyStats(new Database_Stats_MSSQL { DataSizeMB = 512.5, TotalSizeMB = 768.25 });
+        vm.DbSize.Should().Be("768.25 MB");
     }
 
     [Fact]

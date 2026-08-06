@@ -232,7 +232,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             DbHost = m.Server ?? "—";
             DbStatus = m.State ?? "—";
             DbVersion = m.CompatibllityLevel.ToString();
-            DbSize = $"{m.DataSizeMB.ToString(System.Globalization.CultureInfo.InvariantCulture)} MB";
+            // "Größe" = Gesamtgröße der DB (Daten + Log), damit der Wert mit der
+            // SSMS-Datenbankeigenschaft "Größe" übereinstimmt. DataSizeMB wäre nur
+            // die Summe der Datendateien (type=0) und ließe das Transaktionslog außen
+            // vor — bei FULL-Recovery ohne Log-Backup weicht das massiv ab.
+            DbSize = $"{m.TotalSizeMB.ToString(System.Globalization.CultureInfo.InvariantCulture)} MB";
             RecoveryLabel = "Recovery";
             RecoveryOrArchiveMode = m.RecorveryModel ?? "—";
 

@@ -313,6 +313,21 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
    - Build + 269 Tests grün auf Linux. **Smoke-Test der UI auf Windows + Linux
      steht noch aus** (Drag/Resize/Min/Max in jedem Fenster prüfen).
 
+3. **Bugfix Größenberechnung MSSQL + Oracle** — erledigt
+   - **MSSQL:** Header-Feld „Größe" zeigte nur `DataSizeMB` (Summe der Datendateien,
+     `mf.type = 0`) und ließ das Transaktionslog außen vor. Bei FULL-Recovery ohne
+     Log-Backup wich das massiv von SSMS ab (Beispiel `db_ApexCentral2025`:
+     DTM 14088 MB vs. SSMS 36120,69 MB — die ~22 GB Differenz war das aufgeblähte
+     Log). Fix: Header nutzt jetzt `TotalSizeMB` (Daten + Log) →
+     `MainWindowViewModel.cs` `ApplyStats(Database_Stats_MSSQL)`. `TotalSizeMB`/
+     `LogSizeMB` wurden bereits korrekt in `MSSQL_ODBC` berechnet, nur nicht angezeigt.
+   - **Oracle:** `DBSIZE` summierte nur `dba_data_files` und ließ TEMP-Tablespaces
+     (`dba_temp_files`) weg. Fix: `OracleStatsSql` summiert jetzt Datafiles +
+     Tempfiles (`NVL(SUM(bytes),0)` je Quelle) → `stats.DataSizeMB` enthält die
+     vollständige allokierte Größe.
+   - Tests: `MainWindowViewModelTests.ApplyStats_Mssql_SetsDbSize_WithMbSuffix` auf
+     `TotalSizeMB` umgestellt; alle 361 Tests grün.
+
 2. **Kroste-Skill-Compliance-Pass (`v2.4.0`-Vorlauf)** — erledigt
    - GitHub-Actions-Majors auf Node-24-Runtime: `checkout@v7`, `upload-artifact@v7`,
      `download-artifact@v8`.

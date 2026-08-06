@@ -134,6 +134,23 @@ Bei einem Git-Tag (`v*`) läuft `.github/workflows/release.yml`:
 
 ---
 
+## Datenbank-Übersicht (Info-Card)
+
+Nach Auswahl einer Datenbank zeigt die Info-Card oben Host, Status, Compatibility-
+Level bzw. Oracle-Version, den Recovery-/ArchiveLog-Modus und die **Größe**.
+
+Die **Größe** ist die allokierte Gesamtgröße der Datenbank – passend zur Anzeige
+in SQL Server Management Studio bzw. den Oracle-Dictionary-Views:
+
+- **MSSQL:** Datendateien **+** Transaktionslog (entspricht der SSMS-Eigenschaft
+  „Größe"). Weicht der Wert stark vom reinen Datenbestand ab, ist meist ein
+  aufgeblähtes Log die Ursache (FULL-Recovery ohne Log-Backup) – dann hilft
+  „Log Aus" bzw. „Shrink Log".
+- **Oracle:** Summe aus `dba_data_files` **+** `dba_temp_files` (inkl. TEMP-
+  Tablespaces).
+
+---
+
 ## Aktionen
 
 | Button | Modulfunktion | Zeitplanung | Interaktiv |

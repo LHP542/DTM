@@ -78,8 +78,14 @@ namespace DTM.ORACLE
 
             ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,';
 
-            SELECT 'DBSIZE|' || ROUND(SUM(bytes)/1024/1024, 2)
-            FROM dba_data_files;
+            -- Groesse = allokierte Gesamtgroesse: Datendateien + Temp-Dateien.
+            -- dba_data_files enthaelt KEINE Tempfiles (die liegen in dba_temp_files);
+            -- ohne den zweiten Summanden fehlt der TEMP-Tablespace in der Anzeige.
+            SELECT 'DBSIZE|' || ROUND((
+                     (SELECT NVL(SUM(bytes), 0) FROM dba_data_files)
+                   + (SELECT NVL(SUM(bytes), 0) FROM dba_temp_files)
+                   ) / 1024 / 1024, 2)
+            FROM dual;
 
             SELECT 'SESSIONS|' || COUNT(*)
             FROM v$session
