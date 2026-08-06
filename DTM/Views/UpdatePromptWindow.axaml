@@ -31,24 +31,24 @@
 
                 <!-- Banner: MSSQL-Modul geaendert (manueller Server-Eingriff noetig). -->
                 <Border x:Name="MssqlBanner" IsVisible="False"
-                        Background="#3A1F1F" BorderBrush="#B33A3A" BorderThickness="1"
+                        Background="{DynamicResource DangerSurfaceBrush}" BorderBrush="{DynamicResource DangerBorderBrush}" BorderThickness="1"
                         CornerRadius="4" Padding="10">
                     <StackPanel Spacing="4">
                         <TextBlock Text="⚠ MSSQL-Modul wurde geändert"
-                                   FontWeight="SemiBold" Foreground="#FF8A8A" />
-                        <TextBlock TextWrapping="Wrap" Foreground="#E5D2D2" FontSize="12"
+                                   FontWeight="SemiBold" Foreground="{DynamicResource DangerTextBrush}" />
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource DangerTextSoftBrush}" FontSize="12"
                                    Text="Das MSSQL-Modul liegt auf jedem SQL-Server in einem User-Profil. Damit der Update wirksam wird, muss auf jedem Server einmalig eine PowerShell-Sitzung geöffnet werden — das Profil-Skript zieht das neue Modul dann automatisch nach. Bis dahin verweigert FOC-SQL die MSSQL-Aufrufe mit einer VERSION_MISMATCH-Meldung." />
                     </StackPanel>
                 </Border>
 
                 <!-- Banner: FOC-SQL geaendert (DTM zieht es automatisch). -->
                 <Border x:Name="FocSqlBanner" IsVisible="False"
-                        Background="#1F3A26" BorderBrush="#3AB36C" BorderThickness="1"
+                        Background="{DynamicResource OkSurfaceBrush}" BorderBrush="{DynamicResource OkBorderBrush}" BorderThickness="1"
                         CornerRadius="4" Padding="10">
                     <StackPanel Spacing="4">
                         <TextBlock Text="ℹ FOC-SQL-Modul wurde aktualisiert"
-                                   FontWeight="SemiBold" Foreground="#8AFFA9" />
-                        <TextBlock TextWrapping="Wrap" Foreground="#D2E5D6" FontSize="12"
+                                   FontWeight="SemiBold" Foreground="{DynamicResource OkTextBrush}" />
+                        <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource OkTextSoftBrush}" FontSize="12"
                                    Text="DTM zieht das neue FOC-SQL-Modul beim nächsten Start automatisch von der Samba-Quelle. Kein manueller Eingriff nötig." />
                     </StackPanel>
                 </Border>

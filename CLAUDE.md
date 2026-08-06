@@ -26,6 +26,7 @@
 - **Repository:** `https://github.com/Kroste/DTM`
 - **Lokaler Pfad:** `~/Entwicklung/DTM` (Linux) bzw. `D:\Entwicklung\DTM` (Windows)
 - **Projektspezifische Besonderheiten:** Embedded PowerShell-Runspace via `Microsoft.PowerShell.SDK`; externes Update-Skript `dtm_update.ps1`; keine KI-Integration; Logo der Landeshauptstadt Potsdam (`Assets/lhp_logo.png`).
+- **Bewusste Ausnahme — Localization (EN+DE):** Der Kroste-Skill führt UI-Localization (mindestens Englisch + Deutsch) als Pflicht. DTM ist davon **bewusst ausgenommen** und bleibt **rein deutsch**: Es ist ein internes Admin-Werkzeug für einen deutschsprachigen DBA-Kreis, die Fachbegriffe (Backup, Snapshot, Archive-Log, VERSION_MISMATCH-Banner) sind deutsch etabliert, und ein zweiter Sprachstrang würde nur Pflegeaufwand ohne Nutzer bringen. Diese Ausnahme gilt damit dokumentiert (analog zur Cross-Platform-Ausnahme-Klausel des Skills) und ist **nicht** als Abweichung zu „reparieren". Sollte DTM je extern/mehrsprachig genutzt werden, wird das Localization-Gerüst nach Skill-Template nachgezogen.
 
 ---
 

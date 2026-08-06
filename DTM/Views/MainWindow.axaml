@@ -318,7 +318,7 @@
                 <!-- Konsole -->
                 <Border Grid.Row="2" Margin="0,16,0,0" CornerRadius="12" ClipToBounds="True"
                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
-                        Background="#0A0E12">
+                        Background="{DynamicResource ConsoleBgBrush}">
                     <DockPanel>
                         <Border DockPanel.Dock="Top" Background="{DynamicResource SurfaceBrush}"
                                 BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"

@@ -83,7 +83,7 @@
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}" />
         </Style>
         <Style Selector="Button.titleBtn.close:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#C42B1C" />
+            <Setter Property="Background" Value="{DynamicResource CloseButtonHoverBrush}" />
         </Style>
         <Style Selector="Button.titleBtn.close:pointerover">
             <Setter Property="Foreground" Value="White" />
@@ -127,6 +127,24 @@
             <Color x:Key="DangerColor">#F87171</Color>
             <Color x:Key="OkColor">#34D399</Color>
 
+            <!-- Konsole / Terminal (dunkler als die Fensterflaeche) -->
+            <Color x:Key="ConsoleBgColor">#0A0E12</Color>
+            <Color x:Key="ConsoleBorderColor">#1E2730</Color>
+            <!-- Semantische Status-Flaechen fuer Info-Boxen (Fehler/OK/Warnung).
+                 Flaeche + Rahmen + kraeftiger Titeltext + weicher Fliesstext. -->
+            <Color x:Key="DangerSurfaceColor">#3A1F1F</Color>
+            <Color x:Key="DangerBorderColor">#B33A3A</Color>
+            <Color x:Key="DangerTextColor">#FF8A8A</Color>
+            <Color x:Key="DangerTextSoftColor">#E5D2D2</Color>
+            <Color x:Key="OkSurfaceColor">#1F3A26</Color>
+            <Color x:Key="OkBorderColor">#3AB36C</Color>
+            <Color x:Key="OkTextColor">#8AFFA9</Color>
+            <Color x:Key="OkTextSoftColor">#D2E5D6</Color>
+            <Color x:Key="WarnSurfaceColor">#3A2F1F</Color>
+            <Color x:Key="WarnBorderColor">#B39A3A</Color>
+            <!-- Schliessen-Button-Hover (Windows-Konvention Rot) -->
+            <Color x:Key="CloseButtonHoverColor">#C42B1C</Color>
+
             <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
             <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" />
             <SolidColorBrush x:Key="AccentDimBrush" Color="{StaticResource AccentDimColor}" />
@@ -140,6 +158,20 @@
             <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
             <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
             <SolidColorBrush x:Key="OkBrush" Color="{StaticResource OkColor}" />
+
+            <SolidColorBrush x:Key="ConsoleBgBrush" Color="{StaticResource ConsoleBgColor}" />
+            <SolidColorBrush x:Key="ConsoleBorderBrush" Color="{StaticResource ConsoleBorderColor}" />
+            <SolidColorBrush x:Key="DangerSurfaceBrush" Color="{StaticResource DangerSurfaceColor}" />
+            <SolidColorBrush x:Key="DangerBorderBrush" Color="{StaticResource DangerBorderColor}" />
+            <SolidColorBrush x:Key="DangerTextBrush" Color="{StaticResource DangerTextColor}" />
+            <SolidColorBrush x:Key="DangerTextSoftBrush" Color="{StaticResource DangerTextSoftColor}" />
+            <SolidColorBrush x:Key="OkSurfaceBrush" Color="{StaticResource OkSurfaceColor}" />
+            <SolidColorBrush x:Key="OkBorderBrush" Color="{StaticResource OkBorderColor}" />
+            <SolidColorBrush x:Key="OkTextBrush" Color="{StaticResource OkTextColor}" />
+            <SolidColorBrush x:Key="OkTextSoftBrush" Color="{StaticResource OkTextSoftColor}" />
+            <SolidColorBrush x:Key="WarnSurfaceBrush" Color="{StaticResource WarnSurfaceColor}" />
+            <SolidColorBrush x:Key="WarnBorderBrush" Color="{StaticResource WarnBorderColor}" />
+            <SolidColorBrush x:Key="CloseButtonHoverBrush" Color="{StaticResource CloseButtonHoverColor}" />
 
             <!-- Fluent-Akzent überschreiben, damit Selektionen etc. ins Teal passen.
                  WICHTIG: SystemAccentColor ist ein Color-Schlüssel (KEIN Brush!) –

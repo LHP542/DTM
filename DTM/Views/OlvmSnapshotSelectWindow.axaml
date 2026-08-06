@@ -39,8 +39,8 @@
             <!-- Hinweis: Restore/Delete kommen -->
             <Border Grid.Row="1" Margin="0,12,0,0" Padding="12,8"
                     CornerRadius="6"
-                    Background="#3A2F1F"
-                    BorderBrush="#B39A3A" BorderThickness="1">
+                    Background="{DynamicResource WarnSurfaceBrush}"
+                    BorderBrush="{DynamicResource WarnBorderBrush}" BorderThickness="1">
                 <TextBlock TextWrapping="Wrap" FontSize="12"
                            Foreground="{DynamicResource TextPrimaryBrush}"
                            Text="Restore und Löschen sind noch nicht implementiert — die zugehörigen Ansible-Playbooks werden noch gebaut (Phase 11.4 / 11.5). Der Dialog dient bis dahin als reine Snapshot-Übersicht." />
