@@ -8,6 +8,7 @@ using DTM.ViewModels.TreeNodes;
 using DTM.Config;
 using DTM.Views;
 using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
 using NLog;
 
 namespace DTM.ViewModels;
@@ -236,7 +237,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             // SSMS-Datenbankeigenschaft "Größe" übereinstimmt. DataSizeMB wäre nur
             // die Summe der Datendateien (type=0) und ließe das Transaktionslog außen
             // vor — bei FULL-Recovery ohne Log-Backup weicht das massiv ab.
-            DbSize = $"{m.TotalSizeMB.ToString(System.Globalization.CultureInfo.InvariantCulture)} MB";
+            DbSize = $"{m.TotalSizeMB.ToString("N2", new CultureInfo("de-DE"))} MB";//System.Globalization.CultureInfo.InvariantCulture)} MB";
             RecoveryLabel = "Recovery";
             RecoveryOrArchiveMode = m.RecorveryModel ?? "—";
 
