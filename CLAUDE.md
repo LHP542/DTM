@@ -33,7 +33,7 @@
 ## Tech-Stack (Baseline)
 
 - **.NET 10** / **C#** (LangVersion `latest`, `ImplicitUsings`, `Nullable enable`)
-- Desktop-UI: **Avalonia ≥ 12.0.4** (Mindestversion, niemals darunter)
+- Desktop-UI: **Avalonia ≥ 12.1.0** (Mindestversion, niemals darunter; ab 12.1 nativer Wayland-Backend)
 - MVVM: **CommunityToolkit.Mvvm**
 - DI/Hosting: **Microsoft.Extensions.DependencyInjection** + Hosting
 - Logging: **NLog**
