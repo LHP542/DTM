@@ -255,6 +255,36 @@ public sealed class UpdateService : IDisposable
         }
     }
 
+    /// <summary>
+    /// Beendet den laufenden Prozess, nachdem <see cref="DownloadAndApplyAsync"/>
+    /// das Austausch-Skript gestartet hat. Der Installer (Windows:
+    /// <c>Wait-Process</c>, Linux: <c>kill -0</c>) wartet genau auf dieses
+    /// Prozessende, um die Dateien zu ersetzen und neu zu starten — OHNE diesen
+    /// Aufruf laeuft die App weiter und bleibt bei „Update laedt: 100 %" haengen.
+    ///
+    /// Bewusst <see cref="Process"/>.<c>Kill()</c> statt
+    /// <see cref="Environment"/>.<c>Exit(0)</c>: Exit ruft die Finalizer des
+    /// eingebetteten PowerShell-SDK-Runspace auf und blockiert damit unbegrenzt.
+    /// Kill schickt direkt TerminateProcess/SIGKILL — keine Finalizer, kein Hang.
+    /// Der Austausch muss nicht sauber beendet werden; der Installer wartet nur
+    /// auf das Verschwinden der PID. Environment.Exit nur als letzter Fallback,
+    /// falls Kill wider Erwarten wirft.
+    /// </summary>
+    public static void TerminateForUpdate()
+    {
+        try
+        {
+            _logger.Info("Update vorbereitet — Prozess wird fuer den Austausch beendet (Kill).");
+            using var self = Process.GetCurrentProcess();
+            self.Kill();
+        }
+        catch (Exception ex)
+        {
+            _logger.Warn(ex, "Process.Kill fuer Self-Update fehlgeschlagen — Fallback Environment.Exit(0).");
+            Environment.Exit(0);
+        }
+    }
+
     private async Task DownloadWithProgressAsync(string url, string dest,
         IProgress<double>? progress, CancellationToken ct)
     {

@@ -92,7 +92,14 @@ public partial class AboutWindow : ChromeWindow
                 var progress = new Progress<double>(pct =>
                     UpdateStatusText.Text = $"Update laedt: {pct:P0}");
                 bool ok = await updater.DownloadAndApplyAsync(result, progress);
-                if (!ok)
+                if (ok)
+                {
+                    // Austausch-Skript laeuft und wartet auf das Prozessende —
+                    // App jetzt beenden, sonst haengt es bei „Update laedt: 100 %".
+                    UpdateStatusText.Text = "Update wird installiert — Anwendung startet neu …";
+                    UpdateService.TerminateForUpdate();
+                }
+                else
                     UpdateStatusText.Text = "Self-Update nicht moeglich — Release-Seite oeffnen.";
             }
             else if (dlg.Result == UpdateDialogResult.Later)

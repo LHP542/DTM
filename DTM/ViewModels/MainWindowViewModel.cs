@@ -966,7 +966,15 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 var applyProgress = new Progress<double>(pct =>
                     StatusBar = $"Update laedt: {pct:P0}");
                 bool ok = await updater.DownloadAndApplyAsync(update, applyProgress);
-                if (!ok)
+                if (ok)
+                {
+                    // Austausch-Skript laeuft und wartet auf das Prozessende —
+                    // App jetzt beenden, sonst haengt es bei „Update laedt: 100 %".
+                    StatusBar = "Update wird installiert — Anwendung startet neu …";
+                    _logger.Info("Update {0} vorbereitet — App wird beendet, der Installer uebernimmt.", update.Latest);
+                    DTM.Updater.UpdateService.TerminateForUpdate();
+                }
+                else
                     StatusBar = "Self-Update nicht moeglich — bitte Release-Seite im Browser oeffnen.";
                 break;
             case UpdateDialogResult.Later:
