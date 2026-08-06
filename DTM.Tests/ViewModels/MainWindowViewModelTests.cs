@@ -95,7 +95,7 @@ public class MainWindowViewModelTests
         var vm = MakeVm();
         // Header "Größe" = Gesamtgröße (Daten + Log) => TotalSizeMB, nicht DataSizeMB.
         vm.ApplyStats(new Database_Stats_MSSQL { DataSizeMB = 512.5, TotalSizeMB = 768.25 });
-        vm.DbSize.Should().Be("768.25 MB");
+        vm.DbSize.Should().Be("768,25 MB");
     }
 
     [Fact]
