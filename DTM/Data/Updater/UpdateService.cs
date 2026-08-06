@@ -113,7 +113,8 @@ public sealed class UpdateService : IDisposable
 
             string releaseUrl = root.TryGetProperty("html_url", out var urlEl)
                 ? urlEl.GetString() ?? string.Empty : string.Empty;
-            var (assetName, assetUrl) = SelectAsset(root);
+            var (assetName, assetUrl) = SelectAsset(
+                root, RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
 
             var current = CurrentVersion();
             _cached = new UpdateCheckResult(current, latest, latest > current,
@@ -159,15 +160,27 @@ public sealed class UpdateService : IDisposable
 
     /// <summary>
     /// Waehlt aus den Release-Assets das plattformpassende:
-    /// win-x64.zip unter Windows, x86_64.AppImage bzw. linux-x64.tar.gz
-    /// unter Linux. Order: AppImage bevorzugt (inplace-Update), sonst tar.gz.
+    /// .zip unter Windows, .AppImage bzw. .tar.gz unter Linux. Order:
+    /// AppImage bevorzugt (inplace-Update), sonst tar.gz.
+    ///
+    /// Toleriert bewusst BEIDE Namensschemata: den Kroste-Standard
+    /// (<c>…-win-x64.zip</c> / <c>…-linux-x64.tar.gz</c>) UND die tatsaechlich
+    /// von DTMs release.yml erzeugten Namen (<c>…-windows.zip</c> /
+    /// <c>…-linux.tar.gz</c>). Frueher matchte der Selector nur die harten
+    /// Strings „win-x64"/„linux-x64" — dadurch fand er das real hochgeladene
+    /// „DTM-vX.Y.Z-windows.zip" NICHT, <see cref="DownloadAndApplyAsync"/>
+    /// bekam kein Asset und Self-Update war unter Windows generell unmoeglich
+    /// (Statusleiste „Self-Update nicht moeglich"). AppImage matchte weiter,
+    /// weshalb es unter Linux nie auffiel.
+    ///
+    /// <paramref name="isWindows"/> wird injiziert (statt hier via
+    /// <see cref="RuntimeInformation"/> ermittelt), damit beide
+    /// Plattform-Zweige deterministisch und OS-unabhaengig testbar sind.
     /// </summary>
-    private static (string? name, string? url) SelectAsset(JsonElement release)
+    internal static (string? name, string? url) SelectAsset(JsonElement release, bool isWindows)
     {
         if (!release.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array)
             return (null, null);
-
-        bool isWin = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         // Erst nach dem "besten" Match suchen (AppImage bei Linux), dann nach Fallback.
         (string? name, string? url) best = (null, null);
@@ -182,10 +195,13 @@ public sealed class UpdateService : IDisposable
             var url = urlEl.GetString();
             if (url is null) continue;
 
-            if (isWin)
+            if (isWindows)
             {
-                if (name.Contains("win-x64", StringComparison.OrdinalIgnoreCase) &&
-                    name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                // Windows-Build ist immer ein .zip; im Namen entweder „win-x64"
+                // (Standard) oder „windows" (DTM-release.yml).
+                if (name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) &&
+                    (name.Contains("win-x64", StringComparison.OrdinalIgnoreCase) ||
+                     name.Contains("windows", StringComparison.OrdinalIgnoreCase)))
                 {
                     best = (name, url);
                     break;
@@ -195,8 +211,8 @@ public sealed class UpdateService : IDisposable
             {
                 if (name.EndsWith(".AppImage", StringComparison.OrdinalIgnoreCase))
                     best = (name, url);
-                else if (name.Contains("linux-x64", StringComparison.OrdinalIgnoreCase) &&
-                         name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+                else if (name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) &&
+                         name.Contains("linux", StringComparison.OrdinalIgnoreCase))
                     fallback = (name, url);
             }
         }

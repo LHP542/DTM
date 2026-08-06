@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DTM.Updater;
 using FluentAssertions;
 using Xunit;
@@ -42,5 +43,69 @@ public class UpdateServiceTests
     {
         var v = UpdateService.ParseInformationalVersion(input);
         v.Should().Be(new Version(1, 0, 0));
+    }
+
+    // --- SelectAsset ---------------------------------------------------------
+    // Regressionsschutz fuer den Windows-Self-Update-Bug: release.yml liefert
+    // „DTM-vX.Y.Z-windows.zip" / „-linux.tar.gz", der Selector erwartete frueher
+    // hart „win-x64"/„linux-x64" → unter Windows kein Asset → Self-Update
+    // unmoeglich (AppImage matchte weiter, daher unter Linux nie aufgefallen).
+    // Diese Tests decken BEIDE Namensschemata ab und laufen OS-unabhaengig,
+    // weil die Plattform als Parameter injiziert wird.
+
+    private static JsonElement Release(params string[] assetNames)
+    {
+        var items = assetNames.Select(n =>
+            "{\"name\":\"" + n + "\",\"browser_download_url\":\"https://example.invalid/" + n + "\"}");
+        var json = "{\"assets\":[" + string.Join(",", items) + "]}";
+        using var doc = JsonDocument.Parse(json);
+        return doc.RootElement.Clone(); // Clone: ueberlebt das Dispose des Documents
+    }
+
+    [Theory]
+    [InlineData("DTM-v2.3.5-windows.zip")]  // DTM-release.yml (der reale Fehlerfall)
+    [InlineData("DTM-v2.3.5-win-x64.zip")]  // Kroste-Standard-Schema
+    public void SelectAsset_Windows_PicksZip_BothNamingSchemes(string zipName)
+    {
+        var release = Release(zipName, "DTM-v2.3.5-linux.tar.gz", "DTM-v2.3.5-x86_64.AppImage");
+        var (name, url) = UpdateService.SelectAsset(release, isWindows: true);
+        name.Should().Be(zipName);
+        url.Should().Be("https://example.invalid/" + zipName);
+    }
+
+    [Theory]
+    [InlineData("DTM-v2.3.5-linux.tar.gz")]     // DTM-release.yml
+    [InlineData("DTM-v2.3.5-linux-x64.tar.gz")] // Kroste-Standard-Schema
+    public void SelectAsset_Linux_FallsBackToTarGz_BothNamingSchemes(string tarName)
+    {
+        var release = Release("DTM-v2.3.5-windows.zip", tarName);
+        var (name, url) = UpdateService.SelectAsset(release, isWindows: false);
+        name.Should().Be(tarName);
+        url.Should().Be("https://example.invalid/" + tarName);
+    }
+
+    [Fact]
+    public void SelectAsset_Linux_PrefersAppImageOverTarGz()
+    {
+        var release = Release("DTM-v2.3.5-linux.tar.gz", "DTM-v2.3.5-x86_64.AppImage");
+        var (name, _) = UpdateService.SelectAsset(release, isWindows: false);
+        name.Should().Be("DTM-v2.3.5-x86_64.AppImage");
+    }
+
+    [Fact]
+    public void SelectAsset_Windows_NoMatchingZip_ReturnsNull()
+    {
+        var release = Release("DTM-v2.3.5-linux.tar.gz", "DTM-v2.3.5-x86_64.AppImage");
+        var (name, url) = UpdateService.SelectAsset(release, isWindows: true);
+        name.Should().BeNull();
+        url.Should().BeNull();
+    }
+
+    [Fact]
+    public void SelectAsset_EmptyAssets_ReturnsNull()
+    {
+        var (name, url) = UpdateService.SelectAsset(Release(), isWindows: true);
+        name.Should().BeNull();
+        url.Should().BeNull();
     }
 }
