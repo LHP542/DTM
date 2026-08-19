@@ -14,16 +14,16 @@
     <Grid RowDefinitions="Auto,*">
 
         <!-- Titelleiste -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+        <Border Grid.Row="0" Background="{DynamicResource KrosteTitleBarBrush}"
+                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
                 PointerPressed="OnTitleBarPointerPressed">
             <Grid ColumnDefinitions="*,Auto" Height="36">
                 <TextBlock Grid.Column="0"
                            Text="Verbindung bearbeiten" FontSize="12" FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextMutedBrush}"
+                           Foreground="{DynamicResource KrosteMutedTextBrush}"
                            VerticalAlignment="Center" Margin="14,0"
                            IsHitTestVisible="False" />
-                <Button Grid.Column="1" Classes="titleBtn close"
+                <Button Grid.Column="1" Classes="chrome close"
                         Click="OnTitleClose" Content="&#x2715;" />
             </Grid>
         </Border>
@@ -62,13 +62,13 @@
                     </Grid>
 
                     <!-- Phase 10.2: Backend-Wahl (nur MSSQL, Oracle nutzt weiter FOC-SQL/SSH) -->
-                    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    <Border BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1"
                             CornerRadius="4" Padding="12"
                             IsVisible="{Binding IsMssql}">
                         <StackPanel Spacing="8">
                             <TextBlock Text="Backend" FontWeight="SemiBold" />
                             <TextBlock Text="FocSql = Standard-Setup: Actions laufen über das FOC-SQL-Modul via WinRM zum Server (inkl. Mail-Versand, Cluster-Health, Samba-Copy). OdbcDirect = Actions gehen direkt über die ODBC/1433-Verbindung (Backup, Restore, Snapshot, Wartung). Nutzen: DMZ-Server ohne WinRM. Copy-Database-ToSamba und Sync-Database-ToTest sind bei OdbcDirect nicht verfügbar."
-                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       Foreground="{DynamicResource KrosteMutedTextBrush}"
                                        FontSize="12" TextWrapping="Wrap" />
 
                             <Grid RowDefinitions="Auto" ColumnDefinitions="140,*">
@@ -83,14 +83,14 @@
                     </Border>
 
                     <!-- Phase 9.3: PS-Remoting-Credentials (nur MSSQL) -->
-                    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    <Border BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1"
                             CornerRadius="4" Padding="12"
                             IsVisible="{Binding IsMssql}">
                         <StackPanel Spacing="8">
                             <TextBlock Text="PowerShell-Remoting-Credentials (optional)"
                                        FontWeight="SemiBold" />
                             <TextBlock Text="Leer lassen = FOC-SQL nimmt seine globale credential.xml aus dem User-Profil. Nur ausfüllen, wenn dieser Server abweichende Windows-Credentials braucht (z. B. DMZ mit lokaler Domain). Bei Backend = OdbcDirect wird das Feld ignoriert."
-                                       Foreground="{DynamicResource TextMutedBrush}"
+                                       Foreground="{DynamicResource KrosteMutedTextBrush}"
                                        FontSize="12" TextWrapping="Wrap" />
 
                             <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="140,*">
@@ -113,7 +113,7 @@
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right"
                         Spacing="8" Margin="0,16,0,0">
                 <Button Content="Abbrechen" Click="OnCancel" Width="100" />
-                <Button Content="Speichern" Click="OnSave" Width="100" IsDefault="True" />
+                <Button Content="Speichern" Click="OnSave" Width="100" IsDefault="True" Classes="accent" />
             </StackPanel>
         </Grid>
     </Grid>

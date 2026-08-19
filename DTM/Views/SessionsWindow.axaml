@@ -14,16 +14,16 @@
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- Titelleiste -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+        <Border Grid.Row="0" Background="{DynamicResource KrosteTitleBarBrush}"
+                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
                 PointerPressed="OnTitleBarPointerPressed">
             <Grid ColumnDefinitions="*,Auto" Height="36">
                 <TextBlock Grid.Column="0"
                            Text="Sessions" FontSize="12" FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextMutedBrush}"
+                           Foreground="{DynamicResource KrosteMutedTextBrush}"
                            VerticalAlignment="Center" Margin="14,0"
                            IsHitTestVisible="False" />
-                <Button Grid.Column="1" Classes="titleBtn close"
+                <Button Grid.Column="1" Classes="chrome close"
                         Click="OnTitleClose" Content="&#x2715;" />
             </Grid>
         </Border>
@@ -42,15 +42,15 @@
         </DataGrid>
 
         <!-- Footer: Aktionen -->
-        <Border Grid.Row="2" Background="{DynamicResource SurfaceBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+        <Border Grid.Row="2" Background="{DynamicResource KrosteCardBrush}"
+                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,1,0,0"
                 Padding="14,10">
             <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Grid.Column="0" VerticalAlignment="Center"
-                           Foreground="{DynamicResource TextMutedBrush}" FontSize="12">
+                           Foreground="{DynamicResource KrosteMutedTextBrush}" FontSize="12">
                     <Run Text="Datenbank: " />
                     <Run Text="{Binding DatabaseDisplayName}" FontWeight="SemiBold"
-                         Foreground="{DynamicResource TextPrimaryBrush}" />
+                         Foreground="{DynamicResource KrosteTextBrush}" />
                 </TextBlock>
                 <Button Grid.Column="1" Click="OnCloseAllSessions"
                         IsEnabled="{Binding CanCloseSessions}"

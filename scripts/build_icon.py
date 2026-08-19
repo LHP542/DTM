@@ -2,10 +2,10 @@
 DTM App-Icon-Generator (Checkmk-Familien-Look).
 
 Design-Prinzipien (siehe Kroste/Checkmk/Assets/app.png):
-- Gesaettigter dunkelblauer Grund (#1E3A5F) mit abgerundetem Quadrat —
-  identisch zu Checkmk, damit die Kroste-Familie visuell zusammenhaengt.
+- Grund in der Kroste-Akzentfarbe (#123E6B) mit abgerundetem Quadrat —
+  gleiche Familie wie Checkmk, damit die Kroste-Apps visuell zusammenhaengen.
 - Motiv in Weiss (#FFFFFF), klar gezeichnet, ~60% Iconflaeche mit Luft am Rand.
-- Kleiner Akzent-Kreis oben rechts in DTM-Teal (#2DD4BF), analog zu
+- Kleiner Akzent-Kreis oben rechts in Kroste-Gold (#E0B14C), analog zu
   Checkmks gruenem "OK"-Punkt — kennzeichnet die App via Farbe.
 
 Motiv: klassischer Datenbank-Zylinder (drei Scheiben, saubere Rundungen).
@@ -13,17 +13,26 @@ Motiv: klassischer Datenbank-Zylinder (drei Scheiben, saubere Rundungen).
 Erzeugt:
 - DTM/Assets/dtm.png   (256x256, master fuer Fenster/Tray/AppImage)
 - DTM/Assets/dtm.ico   (multi-res 16..256 fuer <ApplicationIcon>)
+
+Auf Rechnern ohne Python/Pillow leistet scripts/build_icon.ps1 dasselbe
+(gleiche Geometrie und Farben) — beide Varianten muessen bei Aenderungen
+konsistent gehalten werden.
 """
+
+from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-# Checkmk-Familien-Palette
-BG        = (30, 58, 95, 255)      # #1E3A5F — dunkles Blau (wie Checkmk)
+# Kroste-Palette (siehe DTM/App.axaml und kroste-avalonia/references/design.md)
+BG        = (18, 62, 107, 255)     # #123E6B — Kroste-Akzent als Grund
 FG        = (255, 255, 255, 255)   # #FFFFFF — Motiv
 FG_SHADOW = (220, 228, 240, 255)   # leicht abgesetzter Zylinder-Boden
-ACCENT    = (45, 212, 191, 255)    # #2DD4BF — DTM-Teal-Akzentpunkt
-ACCENT_R  = (24, 148, 132, 255)    # dunkler Akzent-Rand
+ACCENT    = (224, 177, 76, 255)    # #E0B14C — Kroste-Gold-Akzentpunkt
+ACCENT_R  = (168, 128, 45, 255)    # #A8802D — dunkler Akzent-Rand
 TRANSP    = (0, 0, 0, 0)
+
+# Repo-relativ statt absolut, damit das Skript unter Linux UND Windows laeuft.
+ASSETS = Path(__file__).resolve().parent.parent / "DTM" / "Assets"
 
 SIZE   = 256
 CORNER = 48    # Rundung des Grunds
@@ -142,16 +151,16 @@ def make_icon(size: int) -> Image.Image:
 
 # 1) Master-PNG 256x256
 master = make_icon(256)
-master.save("/home/OsteL/Entwicklung/DTM/DTM/Assets/dtm.png", "PNG")
-print("Wrote dtm.png (256x256)")
+master.save(ASSETS / "dtm.png", "PNG")
+print(f"Wrote {ASSETS / 'dtm.png'} (256x256)")
 
 # 2) Multi-Res ICO fuer Windows-Exe (16/32/48/64/128/256)
 sizes = [16, 24, 32, 48, 64, 128, 256]
 icons = [make_icon(s) for s in sizes]
 icons[0].save(
-    "/home/OsteL/Entwicklung/DTM/DTM/Assets/dtm.ico",
+    ASSETS / "dtm.ico",
     format="ICO",
     sizes=[(s, s) for s in sizes],
     append_images=icons[1:],
 )
-print(f"Wrote dtm.ico (multi-res: {sizes})")
+print(f"Wrote {ASSETS / 'dtm.ico'} (multi-res: {sizes})")

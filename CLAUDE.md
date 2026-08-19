@@ -989,18 +989,44 @@ Benutzerhandbuch). Diese Phase schliesst die verbliebenen Luecken.
       Socket-Datei liegen und wuerde jeden weiteren Start blockieren —
       deshalb wird bei belegter Pipe erst geprueft, ob sich wirklich
       jemand verbinden laesst. 8 neue Tests, 388 gesamt gruen.)_
-- [ ] **13.3** Kroste-Palette + fehlende Style-Klassen. DTM faehrt eine
-      eigene Teal-Palette und ein Mini-Style-System (`Button.action`,
-      `.titleBtn`, `TextBlock.groupLabel/.infoLabel/.infoValue`).
-      Entscheidung Lars: **auf die Kroste-Palette umstellen** (Blau
-      `#123E6B` / Gold `#E0B14C` / Grund `#1A1D21`) und die fehlenden
-      Kanon-Klassen ergaenzen (`.accent`, `.ghost`, `.danger`,
+- [x] **13.3** Kroste-Palette + fehlende Style-Klassen. — `M`
+      _(erledigt: dieser Commit. `App.axaml` komplett neu — Kroste-Palette
+      (Blau `#123E6B`, Gold `#E0B14C`, Grund `#1A1D21`, Titelleiste
+      `#14161A`) plus die vollstaendige Kanon-Style-Bibliothek:
+      Button-Default, `.accent`, `.ghost`, `.danger`, `.chrome`,
       `Border.card`/`.card-flat`, `TextBlock.h1/.h2/.section-label/
       .muted/.secondary`, Gold-Fokus-Ring auf TextBox/ComboBox,
-      DataGrid-Row-Hover/Selection, duenne ProgressBar,
-      `Rectangle.divider-*`). App-Icon muss mit `scripts/build_icon.py`
-      auf die neue Akzentfarbe neu erzeugt werden. Ausserdem: 35 nackte
-      Fluent-Buttons in den Dialogen bekommen Klassen. — `M`
+      DataGrid mit Row-Hover + Akzent-Selection, duenne Gold-ProgressBar,
+      `Rectangle.divider-v/-h`. DTM-eigene Klassen bleiben, laufen aber
+      auf denselben Rollen: `Button.action(.primary/.danger)` fuer die
+      Aktions-Kacheln (eigene Geometrie + Glyph-Slot), `TextBlock.glyph`,
+      `.infoLabel`/`.infoValue`. Umbenannt: `titleBtn` → `chrome`,
+      `groupLabel` → `section-label`, alle Resource-Keys auf `Kroste*`.
+
+      **Zwei Fallen, die dabei aufgefallen sind:**
+      (a) Accent war vorher helles Teal und wurde an 12 Stellen als
+      `Foreground` fuer Glyphen/Akzenttexte benutzt. Kroste-Accent ist
+      dunkles Blau — auf dunklem Grund unlesbar. Alle 12 auf
+      `KrosteGoldBrush` umgestellt; Gold ist im Kroste-Look der
+      Highlight-Ton (h1/h2 sind ebenfalls Gold).
+      (b) `UpdatePromptWindow` hatte laengst `Classes="accent"` stehen —
+      der Style existierte aber gar nicht, der Button sah aus wie ein
+      Fluent-Default. Solche toten Klassenverweise meldet Avalonia nicht.
+
+      Verifikation: ein Skript prueft, dass jeder referenzierte
+      Resource-Key auch definiert ist (Avalonia meldet fehlende
+      `DynamicResource`-Keys NICHT, sondern rendert still falsch) — 63
+      referenziert, alle definiert. Ausserdem App gestartet und per
+      `PrintWindow` gescreenshottet; Log ohne neue Warnungen. Im XAML
+      ausserhalb `App.axaml` gibt es jetzt **null** `#`-Farbliterale.
+
+      App-Icon neu erzeugt: Grund auf `#123E6B`, Akzentpunkt von Teal auf
+      Kroste-Gold. `scripts/build_icon.py` nutzt jetzt repo-relative
+      Pfade statt hartkodierter `/home/OsteL/...`-Pfade (lief unter
+      Windows gar nicht). Neu dazu `scripts/build_icon.ps1` als Port fuer
+      den Arbeitslaptop, der kein Python/Pillow hat — analog zum
+      bestehenden `release.sh`/`release.ps1`-Paar. Beide Skripte muessen
+      bei Design-Aenderungen konsistent gehalten werden.)_
 - [ ] **13.4** `MainWindowViewModel` aufteilen. 995 Zeilen — der Skill
       nennt DTM namentlich als abschreckendes Beispiel, damals mit 885.
       Schnitt entlang der Backend-Dispatch-Helfer und der

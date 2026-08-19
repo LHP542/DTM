@@ -38,14 +38,14 @@
             <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,10,0,6">
                 <Button Content="Neu"        Click="OnAdd"    Width="90" />
                 <Button Content="Bearbeiten" Click="OnEdit"   Width="90" />
-                <Button Content="Löschen"    Click="OnDelete" Width="90" />
+                <Button Content="Löschen"    Click="OnDelete" Width="90" Classes="danger" />
             </StackPanel>
 
             <TextBlock Grid.Row="2" FontSize="11" Opacity="0.6"
                        Text="Verbindungen werden in %APPDATA%\DTM\connections.json verschlüsselt gespeichert. Änderungen werden beim nächsten Start übernommen." />
 
             <!-- Separator -->
-            <Border Grid.Row="3" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+            <Border Grid.Row="3" BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,1,0,0"
                     Margin="0,12,0,0" Padding="0,12,0,0">
                 <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="130,*">
                     <TextBlock Grid.Row="0" Grid.ColumnSpan="2" FontSize="12" FontWeight="SemiBold"
@@ -69,7 +69,7 @@
                                 HorizontalAlignment="Right" Spacing="10" Margin="0,10,0,0">
                         <TextBlock FontSize="11" Opacity="0.6" VerticalAlignment="Center"
                                    Text="Gespeichert in %APPDATA%\DTM\settings.json — beim nächsten Start aktiv." />
-                        <Button Content="Speichern" Click="OnSaveFocSql" Width="100" />
+                        <Button Content="Speichern" Click="OnSaveFocSql" Width="100" Classes="accent" />
                     </StackPanel>
                 </Grid>
             </Border>

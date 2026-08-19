@@ -11,30 +11,30 @@
         Title="Datenbank-Manager"
         Width="1280" Height="780"
         MinWidth="980" MinHeight="620"
-        Background="{DynamicResource WindowBgBrush}"
+        Background="{DynamicResource KrosteBackgroundBrush}"
         WindowStartupLocation="CenterScreen">
 
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- ===== Titelleiste ===== -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+        <Border Grid.Row="0" Background="{DynamicResource KrosteTitleBarBrush}"
+                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
                 PointerPressed="OnTitleBarPointerPressed"
                 DoubleTapped="OnTitleBarDoubleTapped">
             <Grid ColumnDefinitions="*,Auto" Height="36">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
                             VerticalAlignment="Center" Margin="14,0" IsHitTestVisible="False">
                     <TextBlock Text="&#x25A0;" FontSize="11"
-                               Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+                               Foreground="{DynamicResource KrosteGoldBrush}" VerticalAlignment="Center" />
                     <TextBlock Text="Datenbank-Manager" FontSize="12" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                               Foreground="{DynamicResource KrosteMutedTextBrush}" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Stretch">
-                    <Button Classes="titleBtn" Click="OnAbout"
+                    <Button Classes="chrome" Click="OnAbout"
                             Content="&#x2139;" ToolTip.Tip="Über Datenbank-Manager" />
-                    <Button Classes="titleBtn" Click="OnMinimize" Content="&#x2212;" />
-                    <Button Classes="titleBtn" x:Name="MaximizeButton" Click="OnMaximize" Content="&#x2610;" />
-                    <Button Classes="titleBtn close" Click="OnClose" Content="&#x2715;" />
+                    <Button Classes="chrome" Click="OnMinimize" Content="&#x2212;" />
+                    <Button Classes="chrome" x:Name="MaximizeButton" Click="OnMaximize" Content="&#x2610;" />
+                    <Button Classes="chrome close" Click="OnClose" Content="&#x2715;" />
                 </StackPanel>
             </Grid>
         </Border>
@@ -42,17 +42,17 @@
         <Grid Grid.Row="1" ColumnDefinitions="280,*">
 
             <!-- ===== Seitenleiste: DB-Baum ===== -->
-            <Border Grid.Column="0" Background="{DynamicResource SurfaceBrush}"
-                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,1,0">
+            <Border Grid.Column="0" Background="{DynamicResource KrosteCardBrush}"
+                    BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,1,0">
                 <DockPanel>
                     <Border DockPanel.Dock="Top" Padding="18,16,18,10">
                         <Grid ColumnDefinitions="*,Auto">
                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10">
                                 <TextBlock Text="&#x25A0;" FontSize="16"
-                                           Foreground="{DynamicResource AccentBrush}"
+                                           Foreground="{DynamicResource KrosteGoldBrush}"
                                            VerticalAlignment="Center" />
                                 <TextBlock Text="Datenbanken" FontSize="14" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           Foreground="{DynamicResource KrosteTextBrush}"
                                            VerticalAlignment="Center" />
                             </StackPanel>
                             <Button Grid.Column="1" Classes="action"
@@ -82,18 +82,18 @@
             <Grid Grid.Column="1" Margin="20,18,20,12" RowDefinitions="Auto,Auto,*">
 
                 <!-- Info-Karte -->
-                <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                <Border Grid.Row="0" Background="{DynamicResource KrosteCardBrush}"
+                        BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1"
                         CornerRadius="12" Padding="22,18">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="9">
                             <StackPanel Orientation="Horizontal" Spacing="12">
                                 <TextBlock Text="{Binding DbName}" FontSize="20" FontWeight="Bold"
-                                           Foreground="{DynamicResource TextPrimaryBrush}" />
+                                           Foreground="{DynamicResource KrosteTextBrush}" />
                                 <Border VerticalAlignment="Center" CornerRadius="6"
-                                        Background="{DynamicResource AccentDimBrush}" Padding="9,3">
+                                        Background="{DynamicResource KrosteAccentSoftBrush}" Padding="9,3">
                                     <TextBlock Text="{Binding DbStatus}" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="{DynamicResource AccentBrush}" />
+                                               Foreground="{DynamicResource KrosteGoldBrush}" />
                                 </Border>
                                 <!-- Cluster-Health: MSSQL-only, read-only.
                                      Ruft Get-ClusterHealthStatus im pwsh-Tab auf
@@ -103,15 +103,11 @@
                                         IsVisible="{Binding ClusterHealthVisible}"
                                         ToolTip.Tip="Cluster-Health prüfen (Get-ClusterHealthStatus)"
                                         Padding="10,4" Height="26" MinWidth="0"
-                                        Background="{DynamicResource SurfaceRaisedBrush}"
-                                        Foreground="{DynamicResource TextMutedBrush}"
-                                        BorderBrush="{DynamicResource BorderBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="6">
+                                        Foreground="{DynamicResource KrosteMutedTextBrush}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <TextBlock Text="&#x29C8;" FontSize="12"
                                                    VerticalAlignment="Center"
-                                                   Foreground="{DynamicResource AccentBrush}" />
+                                                   Foreground="{DynamicResource KrosteGoldBrush}" />
                                         <TextBlock Text="Cluster-Health" FontSize="11"
                                                    FontWeight="SemiBold"
                                                    VerticalAlignment="Center" />
@@ -143,17 +139,17 @@
 
                         <!-- Aktive Sessions als kleine Kachel -->
                         <Border Grid.Column="1" VerticalAlignment="Top" CornerRadius="10"
-                                Background="{DynamicResource SurfaceRaisedBrush}"
-                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                Background="{DynamicResource KrosteSurfaceBrush}"
+                                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1"
                                 Padding="16,12">
-                            <Button Command="{Binding ShowSessionsCommand}"
-                                    Background="Transparent" BorderThickness="0" Padding="0"
+                            <Button Command="{Binding ShowSessionsCommand}" Classes="ghost"
+                                    Padding="0"
                                     Cursor="Hand">
                                 <StackPanel Spacing="2">
                                     <TextBlock Text="Aktive Sessions" FontSize="11"
-                                               Foreground="{DynamicResource TextMutedBrush}" />
+                                               Foreground="{DynamicResource KrosteMutedTextBrush}" />
                                     <TextBlock Text="{Binding ActiveSessionsCount}" FontSize="22" FontWeight="Bold"
-                                               Foreground="{DynamicResource AccentBrush}" />
+                                               Foreground="{DynamicResource KrosteGoldBrush}" />
                                 </StackPanel>
                             </Button>
                         </Border>
@@ -165,7 +161,7 @@
                     <StackPanel Spacing="14">
                         <!-- Gruppe: Sicherung -->
                         <StackPanel>
-                            <TextBlock Classes="groupLabel" Text="SICHERUNG" />
+                            <TextBlock Classes="section-label" Text="SICHERUNG" />
                             <StackPanel Orientation="Horizontal">
                                 <Button Classes="action primary" Command="{Binding BackupCommand}">
                                     <StackPanel Orientation="Horizontal">
@@ -192,7 +188,7 @@
 
                         <!-- Gruppe: Snapshots -->
                         <StackPanel>
-                            <TextBlock Classes="groupLabel" Text="SNAPSHOTS" />
+                            <TextBlock Classes="section-label" Text="SNAPSHOTS" />
                             <StackPanel Orientation="Horizontal">
                                 <Button Classes="action" Command="{Binding SnapshotCommand}">
                                     <StackPanel Orientation="Horizontal">
@@ -217,7 +213,7 @@
 
                         <!-- Gruppe: OLVM (Oracle-only, Phase 11) -->
                         <StackPanel IsVisible="{Binding OlvmVisible}">
-                            <TextBlock Classes="groupLabel" Text="OLVM" />
+                            <TextBlock Classes="section-label" Text="OLVM" />
                             <StackPanel Orientation="Horizontal">
                                 <Button Classes="action danger" Command="{Binding OlvmSnapshotCommand}"
                                         ToolTip.Tip="VM-Snapshot per Ansible auf DBMANAGER01 — DB + VM werden heruntergefahren, Dauer mehrere Minuten">
@@ -245,7 +241,7 @@
 
                         <!-- Gruppe: Backups (MSSQL-only) -->
                         <StackPanel IsVisible="{Binding BackupBrowserVisible}">
-                            <TextBlock Classes="groupLabel" Text="BACKUPS" />
+                            <TextBlock Classes="section-label" Text="BACKUPS" />
                             <StackPanel Orientation="Horizontal">
                                 <Button Classes="action" Command="{Binding OpenBackupBrowserCommand}"
                                         ToolTip.Tip="Vorhandene .bak-Dateien anzeigen und Restore ausfuehren">
@@ -259,7 +255,7 @@
 
                         <!-- Gruppe: Wartung (MSSQL-only) -->
                         <StackPanel IsVisible="{Binding MaintenanceVisible}">
-                            <TextBlock Classes="groupLabel" Text="WARTUNG" />
+                            <TextBlock Classes="section-label" Text="WARTUNG" />
                             <StackPanel Orientation="Horizontal">
                                 <Button Classes="action" Command="{Binding RunCheckDbCommand}"
                                         ToolTip.Tip="DBCC CHECKDB — Integritaetspruefung der Datenbank">
@@ -294,7 +290,7 @@
 
                         <!-- Gruppe: Archive-Log -->
                         <StackPanel>
-                            <TextBlock Classes="groupLabel" Text="ARCHIVE-LOG" />
+                            <TextBlock Classes="section-label" Text="ARCHIVE-LOG" />
                             <StackPanel Orientation="Horizontal">
                                 <Button Classes="action" Command="{Binding ArchiveLogOnCommand}"
                                         IsEnabled="{Binding ArchiveLogOnEnabled}">
@@ -317,17 +313,17 @@
 
                 <!-- Konsole -->
                 <Border Grid.Row="2" Margin="0,16,0,0" CornerRadius="12" ClipToBounds="True"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                        BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1"
                         Background="{DynamicResource ConsoleBgBrush}">
                     <DockPanel>
-                        <Border DockPanel.Dock="Top" Background="{DynamicResource SurfaceBrush}"
-                                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                        <Border DockPanel.Dock="Top" Background="{DynamicResource KrosteCardBrush}"
+                                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
                                 Padding="14,8">
                             <StackPanel Orientation="Horizontal" Spacing="9">
                                 <TextBlock Text="&#x2328;" FontSize="14"
-                                           Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+                                           Foreground="{DynamicResource KrosteGoldBrush}" VerticalAlignment="Center" />
                                 <TextBlock Text="PowerShell" FontSize="12" FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                                           Foreground="{DynamicResource KrosteMutedTextBrush}" VerticalAlignment="Center" />
                             </StackPanel>
                         </Border>
                         <ctrl:ConsoleControl InitialScript="{Binding ShellInitialCommand}" />
@@ -337,12 +333,12 @@
         </Grid>
 
         <!-- ===== Statusleiste ===== -->
-        <Border Grid.Row="2" Padding="20,7" Background="{DynamicResource SurfaceBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0">
+        <Border Grid.Row="2" Padding="20,7" Background="{DynamicResource KrosteCardBrush}"
+                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,1,0,0">
             <StackPanel Orientation="Horizontal" Spacing="9">
-                <Ellipse Width="8" Height="8" Fill="{DynamicResource OkBrush}" VerticalAlignment="Center" />
+                <Ellipse Width="8" Height="8" Fill="{DynamicResource KrosteSuccessBrush}" VerticalAlignment="Center" />
                 <TextBlock Text="{Binding StatusBar}" FontSize="12"
-                           Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                           Foreground="{DynamicResource KrosteMutedTextBrush}" VerticalAlignment="Center" />
             </StackPanel>
         </Border>
     </Grid>

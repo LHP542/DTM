@@ -5,24 +5,24 @@
         Width="460" Height="240"
         MinWidth="400" MinHeight="200"
         WindowStartupLocation="CenterOwner"
-        Background="{DynamicResource WindowBgBrush}">
+        Background="{DynamicResource KrosteBackgroundBrush}">
 
     <Grid RowDefinitions="Auto,*">
 
         <!-- Titelleiste -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+        <Border Grid.Row="0" Background="{DynamicResource KrosteTitleBarBrush}"
+                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
                 PointerPressed="OnTitleBarPointerPressed">
             <Grid ColumnDefinitions="*,Auto" Height="36">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
                             VerticalAlignment="Center" Margin="14,0"
                             IsHitTestVisible="False">
                     <TextBlock x:Name="TitleGlyph" Text="&#x26A0;" FontSize="13"
-                               Foreground="{DynamicResource DangerBrush}" VerticalAlignment="Center" />
+                               Foreground="{DynamicResource KrosteDangerBrush}" VerticalAlignment="Center" />
                     <TextBlock x:Name="TitleText" Text="Bestätigen" FontSize="12" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                               Foreground="{DynamicResource KrosteMutedTextBrush}" VerticalAlignment="Center" />
                 </StackPanel>
-                <Button Grid.Column="1" Classes="titleBtn close"
+                <Button Grid.Column="1" Classes="chrome close"
                         Click="OnTitleClose" Content="&#x2715;" />
             </Grid>
         </Border>
@@ -32,7 +32,7 @@
             <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Disabled"
                           VerticalScrollBarVisibility="Auto">
                 <TextBlock x:Name="MessageText" TextWrapping="Wrap"
-                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           Foreground="{DynamicResource KrosteTextBrush}"
                            FontSize="13" />
             </ScrollViewer>
 

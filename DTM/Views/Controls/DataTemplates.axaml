@@ -10,7 +10,7 @@
             <TextBlock Text="(lädt…)"
                        FontStyle="Italic"
                        FontSize="11"
-                       Foreground="{DynamicResource TextMutedBrush}"
+                       Foreground="{DynamicResource KrosteMutedTextBrush}"
                        VerticalAlignment="Center"
                        IsVisible="{Binding IsLoading}" />
         </StackPanel>

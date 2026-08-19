@@ -2,30 +2,30 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="DTM.Views.Controls.TitleBar"
              Height="36"
-             Background="{DynamicResource SurfaceBrush}">
+             Background="{DynamicResource KrosteTitleBarBrush}">
     <!-- Wiederverwendbare Standard-Titelleiste fuer DTM-Dialoge:
          Title-Text links, optional Min/Max, immer Close rechts. Pointer-
          Handling laeuft ueber Code-Behind (nicht ueber Avalonia-12-
          ElementRole), weil DTM den etablierten IsHitTestVisible-Weg
          nutzt und der cross-plattform stabil ist. MainWindow behaelt
          seine eigene Titelleiste (Sonder-Header-Buttons wie Settings/About). -->
-    <Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+    <Border BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
             PointerPressed="OnBarPointerPressed"
             DoubleTapped="OnBarDoubleTapped">
         <Grid ColumnDefinitions="*,Auto">
             <TextBlock x:Name="TitleText" Grid.Column="0"
                        FontSize="12" FontWeight="SemiBold"
-                       Foreground="{DynamicResource TextMutedBrush}"
+                       Foreground="{DynamicResource KrosteMutedTextBrush}"
                        VerticalAlignment="Center" Margin="14,0"
                        IsHitTestVisible="False" />
             <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button x:Name="MinButton" Classes="titleBtn"
+                <Button x:Name="MinButton" Classes="chrome"
                         Click="OnMinClick" Content="&#x2013;"
                         IsVisible="False" />
-                <Button x:Name="MaxButton" Classes="titleBtn"
+                <Button x:Name="MaxButton" Classes="chrome"
                         Click="OnMaxClick" Content="&#x2750;"
                         IsVisible="False" />
-                <Button x:Name="CloseButton" Classes="titleBtn close"
+                <Button x:Name="CloseButton" Classes="chrome close"
                         Click="OnCloseClick" Content="&#x2715;" />
             </StackPanel>
         </Grid>

@@ -7,21 +7,21 @@
         Width="760" Height="540"
         MinWidth="600" MinHeight="400"
         WindowStartupLocation="CenterOwner"
-        Background="{DynamicResource WindowBgBrush}">
+        Background="{DynamicResource KrosteBackgroundBrush}">
 
     <Grid RowDefinitions="Auto,*">
 
         <!-- Titelleiste -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+        <Border Grid.Row="0" Background="{DynamicResource KrosteTitleBarBrush}"
+                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
                 PointerPressed="OnTitleBarPointerPressed">
             <Grid ColumnDefinitions="*,Auto" Height="36">
                 <TextBlock Grid.Column="0"
                            Text="OLVM-Snapshot auswählen" FontSize="12" FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextMutedBrush}"
+                           Foreground="{DynamicResource KrosteMutedTextBrush}"
                            VerticalAlignment="Center" Margin="14,0"
                            IsHitTestVisible="False" />
-                <Button Grid.Column="1" Classes="titleBtn close"
+                <Button Grid.Column="1" Classes="chrome close"
                         Click="OnTitleClose" Content="&#x2715;" />
             </Grid>
         </Border>
@@ -42,18 +42,18 @@
                     Background="{DynamicResource WarnSurfaceBrush}"
                     BorderBrush="{DynamicResource WarnBorderBrush}" BorderThickness="1">
                 <TextBlock TextWrapping="Wrap" FontSize="12"
-                           Foreground="{DynamicResource TextPrimaryBrush}"
+                           Foreground="{DynamicResource KrosteTextBrush}"
                            Text="Restore und Löschen sind noch nicht implementiert — die zugehörigen Ansible-Playbooks werden noch gebaut (Phase 11.4 / 11.5). Der Dialog dient bis dahin als reine Snapshot-Übersicht." />
             </Border>
 
             <!-- Fehler-Zeile -->
             <Border Grid.Row="2" Margin="0,12,0,0" Padding="12,8"
                     CornerRadius="6"
-                    Background="{DynamicResource SurfaceBrush}"
-                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                    Background="{DynamicResource KrosteCardBrush}"
+                    BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1"
                     IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
                 <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap"
-                           Foreground="{DynamicResource DangerBrush}" FontSize="12" />
+                           Foreground="{DynamicResource KrosteDangerBrush}" FontSize="12" />
             </Border>
 
             <!-- Snapshots -->
@@ -61,13 +61,13 @@
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                             Spacing="10" IsVisible="{Binding IsLoading}">
                     <TextBlock Text="Lade Snapshots via OLVM-REST …"
-                               Foreground="{DynamicResource TextMutedBrush}"
+                               Foreground="{DynamicResource KrosteMutedTextBrush}"
                                FontSize="13" HorizontalAlignment="Center" />
                 </StackPanel>
 
                 <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
                            Text="Keine Snapshots für diese VM vorhanden."
-                           Foreground="{DynamicResource TextMutedBrush}"
+                           Foreground="{DynamicResource KrosteMutedTextBrush}"
                            FontSize="13">
                     <TextBlock.IsVisible>
                         <MultiBinding Converter="{x:Static BoolConverters.And}">
@@ -78,8 +78,8 @@
                     </TextBlock.IsVisible>
                 </TextBlock>
 
-                <Border Background="{DynamicResource SurfaceBrush}"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                <Border Background="{DynamicResource KrosteCardBrush}"
+                        BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1"
                         CornerRadius="8" ClipToBounds="True"
                         IsVisible="{Binding HasSnapshots}">
                     <DataGrid ItemsSource="{Binding Snapshots}"

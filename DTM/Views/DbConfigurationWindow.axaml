@@ -7,24 +7,24 @@
         Width="540" Height="500"
         MinWidth="460" MinHeight="440"
         WindowStartupLocation="CenterOwner"
-        Background="{DynamicResource WindowBgBrush}">
+        Background="{DynamicResource KrosteBackgroundBrush}">
 
     <Grid RowDefinitions="Auto,*">
 
         <!-- Titelleiste -->
-        <Border Grid.Row="0" Background="{DynamicResource SurfaceBrush}"
-                BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+        <Border Grid.Row="0" Background="{DynamicResource KrosteTitleBarBrush}"
+                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
                 PointerPressed="OnTitleBarPointerPressed">
             <Grid ColumnDefinitions="*,Auto" Height="36">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
                             VerticalAlignment="Center" Margin="14,0"
                             IsHitTestVisible="False">
                     <TextBlock Text="&#x2699;" FontSize="13"
-                               Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+                               Foreground="{DynamicResource KrosteGoldBrush}" VerticalAlignment="Center" />
                     <TextBlock Text="DB-Konfiguration" FontSize="12" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" />
+                               Foreground="{DynamicResource KrosteMutedTextBrush}" VerticalAlignment="Center" />
                 </StackPanel>
-                <Button Grid.Column="1" Classes="titleBtn close"
+                <Button Grid.Column="1" Classes="chrome close"
                         Click="OnTitleClose" Content="&#x2715;" />
             </Grid>
         </Border>
@@ -41,12 +41,12 @@
                 </Grid>
 
                 <!-- Query-Store -->
-                <Border Background="{DynamicResource SurfaceBrush}"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                <Border Background="{DynamicResource KrosteCardBrush}"
+                        BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1"
                         CornerRadius="8" Padding="14,12">
                     <StackPanel Spacing="10">
-                        <TextBlock Classes="groupLabel" Text="QUERY-STORE" Margin="0" />
-                        <TextBlock FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
+                        <TextBlock Classes="section-label" Text="QUERY-STORE" Margin="0" />
+                        <TextBlock FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"
                                    TextWrapping="Wrap"
                                    Text="Sammelt Query-Plaene und Laufzeit-Statistiken in der DB selbst (sys.query_store_*). Nuetzlich fuer Performance-Analysen." />
                         <Grid ColumnDefinitions="*,Auto">
@@ -59,12 +59,12 @@
                 </Border>
 
                 <!-- Page-Verify -->
-                <Border Background="{DynamicResource SurfaceBrush}"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                <Border Background="{DynamicResource KrosteCardBrush}"
+                        BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1"
                         CornerRadius="8" Padding="14,12">
                     <StackPanel Spacing="10">
-                        <TextBlock Classes="groupLabel" Text="PAGE-VERIFY" Margin="0" />
-                        <TextBlock FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
+                        <TextBlock Classes="section-label" Text="PAGE-VERIFY" Margin="0" />
+                        <TextBlock FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"
                                    TextWrapping="Wrap"
                                    Text="Pruefmechanismus fuer Datenseiten. CHECKSUM ist Standard und empfohlen; NONE deaktiviert die Pruefung komplett (nur fuer alte DBs)." />
                         <Grid ColumnDefinitions="*,Auto">
@@ -79,18 +79,18 @@
                 </Border>
 
                 <!-- Compatibility -->
-                <Border Background="{DynamicResource SurfaceBrush}"
-                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                <Border Background="{DynamicResource KrosteCardBrush}"
+                        BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1"
                         CornerRadius="8" Padding="14,12">
                     <StackPanel Spacing="10">
-                        <TextBlock Classes="groupLabel" Text="COMPATIBILITY-LEVEL" Margin="0" />
-                        <TextBlock FontSize="11" Foreground="{DynamicResource TextMutedBrush}"
+                        <TextBlock Classes="section-label" Text="COMPATIBILITY-LEVEL" Margin="0" />
+                        <TextBlock FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"
                                    TextWrapping="Wrap"
                                    Text="Reset auf den MASTER-DB-Default des SQL-Servers (z. B. 150 = SQL 2019, 160 = SQL 2022). Aenderung kann das Query-Verhalten beeinflussen." />
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Grid.Column="0" VerticalAlignment="Center"
-                                       FontSize="13" Foreground="{DynamicResource TextPrimaryBrush}">
-                                <Run Text="Aktuell:" Foreground="{DynamicResource TextMutedBrush}" />
+                                       FontSize="13" Foreground="{DynamicResource KrosteTextBrush}">
+                                <Run Text="Aktuell:" Foreground="{DynamicResource KrosteMutedTextBrush}" />
                                 <Run Text="{Binding CompatibilityLevel}" FontWeight="SemiBold" />
                             </TextBlock>
                             <Button Grid.Column="1" Content="Auf MASTER zuruecksetzen"
