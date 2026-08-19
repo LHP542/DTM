@@ -1027,14 +1027,33 @@ Benutzerhandbuch). Diese Phase schliesst die verbliebenen Luecken.
       den Arbeitslaptop, der kein Python/Pillow hat — analog zum
       bestehenden `release.sh`/`release.ps1`-Paar. Beide Skripte muessen
       bei Design-Aenderungen konsistent gehalten werden.)_
-- [ ] **13.4** `MainWindowViewModel` aufteilen. 995 Zeilen — der Skill
-      nennt DTM namentlich als abschreckendes Beispiel, damals mit 885.
-      Schnitt entlang der Backend-Dispatch-Helfer und der
-      Snapshot-/Backup-Command-Bloecke in partial classes. — `M`
-- [ ] **13.5** Kleinigkeiten: `scripts/__pycache__/*.pyc` aus der
-      Versionskontrolle nehmen + `.gitignore` ergaenzen; die drei
-      hardcodeten BMC-Markenfarben in `AboutWindow.axaml` als
-      Resource-Keys fuehren. — `S`
+- [x] **13.4** `MainWindowViewModel` aufgeteilt. Vorher 995 Zeilen — der
+      Skill nennt DTM namentlich als abschreckendes Beispiel, damals mit
+      885, es war seitdem weiter gewachsen. — `M`
+      _(erledigt: dieser Commit. Sechs partial classes entlang der
+      fachlichen Gruppen:
+      `MainWindowViewModel.cs` (314) — Zustand, Server-Baum, `ApplyStats`,
+      `ReloadFromStores`;
+      `.Dispatch.cs` (133) — Backend-Wahl FOC-SQL vs. OdbcDirect plus die
+      gemeinsamen Ausfuehrungspfade `RunDbActionAsync` /
+      `RunOdbcActionAsync` / `RunSimpleAction`;
+      `.Backup.cs` (97) — Gruppe SICHERUNG;
+      `.Snapshots.cs` (205) — Gruppen SNAPSHOTS und OLVM;
+      `.Maintenance.cs` (258) — ARCHIVE-LOG, WARTUNG, Recovery-Mode,
+      Cluster-Health;
+      `.Dialogs.cs` (101) — Verbindungen, Sessions, Update-Ablauf.
+      Reiner Umzug, keine Logik geaendert; 388 Tests unveraendert gruen.
+      Die Kern-Datei liegt mit 314 Zeilen knapp ueber der 300er-Marke —
+      der Ueberhang sind die `[ObservableProperty]`-Deklarationen samt
+      Begruendungskommentaren, die zu keiner Gruppe gehoeren.)_
+- [x] **13.5** Kleinigkeiten. — `S`
+      _(erledigt: `scripts/__pycache__/build_icon.cpython-314.pyc` aus der
+      Versionskontrolle genommen, `__pycache__/` + `*.py[cod]` in
+      `.gitignore` ergaenzt. Die drei hardcodeten BMC-Markenfarben in
+      `AboutWindow.axaml` laufen jetzt ueber `BmcBrandBrush` /
+      `BmcBrandBorderBrush` / `BmcBrandTextBrush` — die Farbwerte bleiben
+      bewusst ausserhalb der Kroste-Palette, weil der Button in den
+      Wiedererkennungsfarben von Buy-me-a-coffee stehen soll.)_
 
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 

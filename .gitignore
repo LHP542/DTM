@@ -68,3 +68,7 @@ appsettings.json
 
 external/Oracle/scripts/generic_expdp.sh
 external/Oracle/scripts/run-generic-export.sh
+
+# Python-Bytecode (scripts/build_icon.py)
+__pycache__/
+*.py[cod]
