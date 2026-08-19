@@ -24,8 +24,19 @@ public static class ConnectionStore
             _logger.Info("Verbindungen geladen: {0} Einträge aus {1}", result.Count, _path);
             return result;
         }
+        catch (JsonException ex)
+        {
+            // Kaputtes JSON: Datei sichern statt sie beim naechsten Save
+            // endgueltig zu ueberschreiben — sonst sind alle Server samt
+            // DPAPI-Passwoertern unwiederbringlich weg.
+            _logger.Error(ex, "Verbindungen in {0} sind defekt.", _path);
+            JsonFileStore.Quarantine(_path);
+            return [];
+        }
         catch (Exception ex)
         {
+            // IO-Fehler: Inhalt ist in Ordnung, nur gerade nicht lesbar —
+            // NICHT quarantaenisieren.
             _logger.Error(ex, "Fehler beim Laden der Verbindungen aus {0}", _path);
             return [];
         }
@@ -33,11 +44,10 @@ public static class ConnectionStore
 
     public static void Save(List<ConnectionEntry> entries)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
         string json = JsonSerializer.Serialize(entries, new JsonSerializerOptions { WriteIndented = true });
         try
         {
-            SystemFile.WriteAllText(_path, json);
+            JsonFileStore.WriteAtomic(_path, json);
             _logger.Info("Verbindungen gespeichert: {0} Einträge nach {1}", entries.Count, _path);
         }
         catch (Exception ex)

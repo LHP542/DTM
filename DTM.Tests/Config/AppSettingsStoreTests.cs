@@ -20,7 +20,10 @@ public class AppSettingsStoreTests : IDisposable
 
     public void Dispose()
     {
-        if (SystemFile.Exists(_tmp)) SystemFile.Delete(_tmp);
+        foreach (string p in new[] { _tmp, _tmp + ".broken", _tmp + ".tmp" })
+        {
+            if (SystemFile.Exists(p)) SystemFile.Delete(p);
+        }
         AppSettingsStore._path = _original;
     }
 
@@ -58,6 +61,27 @@ public class AppSettingsStoreTests : IDisposable
         var cfg = AppSettingsStore.LoadFocSql();
         cfg.SambaSource.Should().BeEmpty();
         cfg.ModulePath.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void LoadFocSql_CorruptFile_QuarantinesAsBroken()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_tmp)!);
+        SystemFile.WriteAllText(_tmp, "totally not json");
+
+        AppSettingsStore.LoadFocSql();
+
+        SystemFile.Exists(_tmp).Should().BeFalse();
+        SystemFile.Exists(_tmp + ".broken").Should().BeTrue();
+    }
+
+    [Fact]
+    public void SaveFocSql_LeavesNoTempFileBehind()
+    {
+        AppSettingsStore.SaveFocSql(new FocSqlConfig { SambaSource = "x" });
+
+        SystemFile.Exists(_tmp).Should().BeTrue();
+        SystemFile.Exists(_tmp + ".tmp").Should().BeFalse();
     }
 
     [Fact]

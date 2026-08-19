@@ -23,8 +23,16 @@ public static class AppSettingsStore
             _logger.Info("Einstellungen geladen.");
             return result;
         }
+        catch (JsonException ex)
+        {
+            // Kaputtes JSON: sichern statt beim naechsten Save zu ueberschreiben.
+            _logger.Error(ex, "Einstellungen in {0} sind defekt.", _path);
+            JsonFileStore.Quarantine(_path);
+            return new FocSqlConfig();
+        }
         catch (Exception ex)
         {
+            // IO-Fehler: Inhalt ist in Ordnung, nur gerade nicht lesbar.
             _logger.Error(ex, "Fehler beim Laden der Einstellungen aus {0}", _path);
             return new FocSqlConfig();
         }
@@ -32,11 +40,10 @@ public static class AppSettingsStore
 
     public static void SaveFocSql(FocSqlConfig config)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
         string json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
         try
         {
-            SystemFile.WriteAllText(_path, json);
+            JsonFileStore.WriteAtomic(_path, json);
             _logger.Info("Einstellungen gespeichert nach {0}", _path);
         }
         catch (Exception ex)

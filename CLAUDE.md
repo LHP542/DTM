@@ -951,6 +951,53 @@ Dialoge behalten ihre eigene Titelleiste. Um sie auch umzuziehen:
 Kein funktionaler Gewinn — reines Konsolidierungs-Refactor. Sinnvoll
 gebuendelt mit einer anderen UI-Arbeit; kein eigener Release-Anlass.
 
+#### Phase 13 — Skill-Compliance-Nachzug (`v2.5.0`)
+
+Ergebnis eines vollstaendigen Abgleichs gegen den `kroste-avalonia`-Skill.
+Der Grossteil des Kanons war bereits erfuellt (Struktur, CPM, MinVer,
+Node-24-Actions, app.manifest mit PerMonitorV2, Icon, Tray, NLog-Masking,
+Self-Update inkl. `Process.Kill`, DPAPI-Inline-Secrets, README als
+Benutzerhandbuch). Diese Phase schliesst die verbliebenen Luecken.
+
+- [x] **13.1** Persistenz crash-sicher machen. `ConnectionStore` und
+      `AppSettingsStore` schrieben mit `WriteAllText` direkt auf die
+      Zieldatei und gaben bei kaputtem JSON still ein leeres Ergebnis
+      zurueck — der naechste Save hat die defekte Datei dann endgueltig
+      ueberschrieben (bei `connections.json`: alle Server samt
+      DPAPI-Passwoertern weg, ohne Kopie). Neuer Helper
+      `Data/Config/JsonFileStore.cs` mit `WriteAtomic` (tmp + `File.Move`
+      `overwrite: true`) und `Quarantine` (defekte Datei nach
+      `<datei>.broken`). Bewusst wird **nur** bei `JsonException`
+      quarantaenisiert — bei IO-Fehlern (Datei gesperrt, Netzlaufwerk kurz
+      weg) ist der Inhalt ja intakt und darf nicht weggeraeumt werden. — `S`
+      _(erledigt: dieser Commit; 12 neue Tests, 380 gesamt gruen.)_
+- [ ] **13.2** Single-Instance-Guard (Pflicht fuer Tray-Apps laut
+      `references/design.md`). Zweitstart bedeutet aktuell: zwei
+      PowerShell-Runspaces, zwei Tray-Icons und zwei Prozesse, die auf
+      dieselbe `connections.json` schreiben. Named Pipe in `Program.Main`
+      vor Avalonia, zweiter Start aktiviert die erste Instanz und beendet
+      sich. — `S`
+- [ ] **13.3** Kroste-Palette + fehlende Style-Klassen. DTM faehrt eine
+      eigene Teal-Palette und ein Mini-Style-System (`Button.action`,
+      `.titleBtn`, `TextBlock.groupLabel/.infoLabel/.infoValue`).
+      Entscheidung Lars: **auf die Kroste-Palette umstellen** (Blau
+      `#123E6B` / Gold `#E0B14C` / Grund `#1A1D21`) und die fehlenden
+      Kanon-Klassen ergaenzen (`.accent`, `.ghost`, `.danger`,
+      `Border.card`/`.card-flat`, `TextBlock.h1/.h2/.section-label/
+      .muted/.secondary`, Gold-Fokus-Ring auf TextBox/ComboBox,
+      DataGrid-Row-Hover/Selection, duenne ProgressBar,
+      `Rectangle.divider-*`). App-Icon muss mit `scripts/build_icon.py`
+      auf die neue Akzentfarbe neu erzeugt werden. Ausserdem: 35 nackte
+      Fluent-Buttons in den Dialogen bekommen Klassen. — `M`
+- [ ] **13.4** `MainWindowViewModel` aufteilen. 995 Zeilen — der Skill
+      nennt DTM namentlich als abschreckendes Beispiel, damals mit 885.
+      Schnitt entlang der Backend-Dispatch-Helfer und der
+      Snapshot-/Backup-Command-Bloecke in partial classes. — `M`
+- [ ] **13.5** Kleinigkeiten: `scripts/__pycache__/*.pyc` aus der
+      Versionskontrolle nehmen + `.gitignore` ergaenzen; die drei
+      hardcodeten BMC-Markenfarben in `AboutWindow.axaml` als
+      Resource-Keys fuehren. — `S`
+
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 
 Lars-Idee aus dem v2.0.0-Test: ein eigener Button bzw. Dialog, der **mehr

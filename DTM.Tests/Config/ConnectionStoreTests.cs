@@ -20,7 +20,12 @@ public class ConnectionStoreTests : IDisposable
 
     public void Dispose()
     {
-        if (SystemFile.Exists(_tmp)) SystemFile.Delete(_tmp);
+        // .broken/.tmp mit aufraeumen — die Quarantaene-Tests lassen sonst
+        // Dateien im Temp-Verzeichnis liegen.
+        foreach (string p in new[] { _tmp, _tmp + ".broken", _tmp + ".tmp" })
+        {
+            if (SystemFile.Exists(p)) SystemFile.Delete(p);
+        }
         ConnectionStore._path = _original;
     }
 
@@ -104,6 +109,47 @@ public class ConnectionStoreTests : IDisposable
         Directory.CreateDirectory(Path.GetDirectoryName(_tmp)!);
         SystemFile.WriteAllText(_tmp, "{ not valid json [[[");
         ConnectionStore.Load().Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Load_CorruptJson_QuarantinesFileAsBroken()
+    {
+        // Kernschutz gegen Totalverlust: die kaputte Datei darf nicht einfach
+        // liegen bleiben und beim naechsten Save ueberschrieben werden — sonst
+        // sind alle Server samt DPAPI-Passwoertern unwiederbringlich weg.
+        Directory.CreateDirectory(Path.GetDirectoryName(_tmp)!);
+        SystemFile.WriteAllText(_tmp, "{ not valid json [[[");
+
+        ConnectionStore.Load().Should().BeEmpty();
+
+        SystemFile.Exists(_tmp).Should().BeFalse("die defekte Datei wurde weggeraeumt");
+        SystemFile.Exists(_tmp + ".broken").Should().BeTrue();
+        SystemFile.ReadAllText(_tmp + ".broken").Should().Be("{ not valid json [[[");
+    }
+
+    [Fact]
+    public void Save_LeavesNoTempFileBehind()
+    {
+        ConnectionStore.Save([new ConnectionEntry { Key = "MSSQL", Server = "srv1" }]);
+
+        SystemFile.Exists(_tmp).Should().BeTrue();
+        SystemFile.Exists(_tmp + ".tmp").Should().BeFalse("das .tmp wird beim Move verbraucht");
+    }
+
+    [Fact]
+    public void Save_OverwritesExistingFileCompletely()
+    {
+        // File.Move(overwrite: true) darf keine Reste der laengeren Vorgaenger-
+        // Datei stehen lassen (waere bei einem In-Place-Write moeglich).
+        ConnectionStore.Save([
+            new ConnectionEntry { Key = "MSSQL", Server = "srv1" },
+            new ConnectionEntry { Key = "ORACLE", Server = "srv2" }
+        ]);
+        ConnectionStore.Save([new ConnectionEntry { Key = "MSSQL", Server = "srv1" }]);
+
+        var loaded = ConnectionStore.Load();
+        loaded.Should().HaveCount(1);
+        SystemFile.ReadAllText(_tmp).Should().NotContain("srv2");
     }
 
     [Fact]
