@@ -18,7 +18,14 @@ namespace DTM.ORACLE
         {
             serverCredential = credential;
 
-            _handler = new SocketsHttpHandler();
+            // Kein Proxy: der OLVM-Manager ist immer ein interner Host, oft
+            // sogar nur als Kurzname (z. B. 'olvm-mgmt'). Ohne diese Zeile
+            // uebernimmt SocketsHttpHandler automatisch HttpClient.DefaultProxy,
+            // also HTTP_PROXY/HTTPS_PROXY aus der Umgebung — was lokale
+            // NTLM-Proxies wie px setzen. NO_PROXY greift dabei nicht, weil
+            // .NET Kurznamen ohne Domain nicht als "lokal" behandelt: der
+            // Request landet beim Firmen-Upstream und laeuft ins Timeout.
+            _handler = new SocketsHttpHandler { UseProxy = false };
 
             if (trustAllCertificates)
             {
