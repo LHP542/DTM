@@ -197,6 +197,14 @@ gesamte CDB herunter und setzt sie auf den gewählten Restore Point zurück
   - **ℹ** öffnet die About-Box (Version, Entwickler, Update-Check).
   - **−** minimiert, **⊡/❐** maximiert/restauriert, **✕** schließt.
 - Alle Dialoge verwenden denselben Style (draggable Titelleiste, nur Schließen-Button).
+- **System-Tray** — Minimieren legt DTM in den Tray, statt es zu beenden: die
+  PowerShell-Sitzung und offene Datenbankverbindungen bleiben bestehen. Zurück
+  über einen Klick aufs Tray-Icon oder „Anzeigen" im Kontextmenü. **✕** beendet
+  regulär.
+- **Nur eine Instanz** — startest du DTM ein zweites Mal, wird stattdessen das
+  bereits laufende Fenster nach vorn geholt (auch aus dem Tray heraus). Das
+  verhindert, dass zwei Prozesse gleichzeitig auf `connections.json` schreiben
+  und sich die Änderungen gegenseitig überschreiben.
 
 ---
 
@@ -208,6 +216,12 @@ gesamte CDB herunter und setzt sie auf den gewählten Restore Point zurück
 | `%APPDATA%\DTM\settings.json` | FocSql-Einstellungen (SambaSource, ModulePath) |
 
 Beide Dateien werden beim ersten Speichern automatisch angelegt.
+
+Geschrieben wird immer atomar (erst `.tmp`, dann Umbenennen), damit ein Absturz
+mitten im Speichern keine halbe Datei hinterlässt. Ist eine der Dateien beim
+Start trotzdem nicht lesbar, wird sie als `<name>.json.broken` beiseitegelegt
+und DTM startet mit leerem Bestand — die alte Datei bleibt damit für eine
+Rettung von Hand erhalten. Der Vorfall steht mit Begründung im Error-Log.
 
 ---
 

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using DTM.Composition;
 using DTM.Config;
 using DTM.Diagnostics;
@@ -19,9 +20,17 @@ public partial class App : Application
     /// </summary>
     public static IServiceProvider Services { get; private set; } = default!;
 
+    /// <summary>
+    /// Wird von <see cref="Program.Main"/> gesetzt, sobald dieser Prozess die
+    /// Erstinstanz ist. Die App uebernimmt ihn hier, verkabelt die Aktivierung
+    /// und gibt ihn beim Beenden frei.
+    /// </summary>
+    public static SingleInstanceGuard? PendingGuard { get; set; }
+
     // GC-Referenz: OHNE Feld verschwindet das Tray-Icon nach einiger Laufzeit
     // (Skill-Standard, siehe TrayController-Klassenkommentar).
     private TrayController? _tray;
+    private SingleInstanceGuard? _guard;
 
     public override void Initialize()
     {
@@ -59,6 +68,21 @@ public partial class App : Application
             // Kein ShutdownMode-Umbau noetig (Hide statt Close beim Minimize).
             _tray = new TrayController(this, main);
             _tray.Install();
+
+            // Zweitstart holt uns nach vorn. Das Event kommt vom ThreadPool,
+            // deshalb der Sprung auf den UI-Thread. Restore() deckt auch den
+            // Fall ab, dass das Fenster gerade im Tray versteckt ist.
+            _guard = PendingGuard;
+            PendingGuard = null;
+            if (_guard is not null)
+            {
+                _guard.ActivationRequested += (_, _) =>
+                    Dispatcher.UIThread.Post(() => _tray.Restore());
+
+                // Pipe freigeben, damit ein direkt folgender Neustart sie
+                // wieder belegen kann.
+                desktop.Exit += (_, _) => _guard?.Dispose();
+            }
         }
 
         base.OnFrameworkInitializationCompleted();

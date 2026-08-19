@@ -110,7 +110,12 @@ public sealed class TrayController
         _window.Hide();
     }
 
-    private void Restore()
+    /// <summary>
+    /// Holt das Fenster zurueck in den Vordergrund. Public, weil auch der
+    /// <see cref="Diagnostics.SingleInstanceGuard"/> das beim Zweitstart
+    /// ausloest.
+    /// </summary>
+    public void Restore()
     {
         // Ueber den Dispatcher gepostet, damit der Restore auch dann sauber
         // laeuft, wenn der Aufruf aus einem Nicht-UI-Kontext kommt (TrayIcon.

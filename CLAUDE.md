@@ -971,12 +971,24 @@ Benutzerhandbuch). Diese Phase schliesst die verbliebenen Luecken.
       quarantaenisiert — bei IO-Fehlern (Datei gesperrt, Netzlaufwerk kurz
       weg) ist der Inhalt ja intakt und darf nicht weggeraeumt werden. — `S`
       _(erledigt: dieser Commit; 12 neue Tests, 380 gesamt gruen.)_
-- [ ] **13.2** Single-Instance-Guard (Pflicht fuer Tray-Apps laut
-      `references/design.md`). Zweitstart bedeutet aktuell: zwei
+- [x] **13.2** Single-Instance-Guard (Pflicht fuer Tray-Apps laut
+      `references/design.md`). Zweitstart bedeutete vorher: zwei
       PowerShell-Runspaces, zwei Tray-Icons und zwei Prozesse, die auf
-      dieselbe `connections.json` schreiben. Named Pipe in `Program.Main`
-      vor Avalonia, zweiter Start aktiviert die erste Instanz und beendet
-      sich. — `S`
+      dieselbe `connections.json` schreiben. — `S`
+      _(erledigt: dieser Commit. `Diagnostics/SingleInstanceGuard.cs` mit
+      Named Pipe (auf Linux/macOS ein Unix-Domain-Socket unter
+      `/tmp/CoreFxPipe_<name>`), Pipe-Name benutzerspezifisch wegen
+      Terminalserver. `Program.Main` claimt vor Avalonia und gibt bei
+      Misserfolg nach `NotifyPrimary()` einfach 0 zurueck — Avalonia
+      startet gar nicht erst. `App` verkabelt `ActivationRequested` ueber
+      `Dispatcher.UIThread.Post` auf `TrayController.Restore()` (dafuer
+      public geworden) und disposed den Guard bei `desktop.Exit`.
+      **Stale-Socket-Recovery** ist hier kein Theoriefall: DTM beendet
+      sich im Update-Pfad per `Process.Kill()`, dabei laeuft kein Dispose.
+      Windows raeumt Named Pipes selbst auf, unter Linux bliebe die
+      Socket-Datei liegen und wuerde jeden weiteren Start blockieren —
+      deshalb wird bei belegter Pipe erst geprueft, ob sich wirklich
+      jemand verbinden laesst. 8 neue Tests, 388 gesamt gruen.)_
 - [ ] **13.3** Kroste-Palette + fehlende Style-Klassen. DTM faehrt eine
       eigene Teal-Palette und ein Mini-Style-System (`Button.action`,
       `.titleBtn`, `TextBlock.groupLabel/.infoLabel/.infoValue`).

@@ -9,7 +9,7 @@ internal static class Program
     private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
     [STAThread]
-    public static void Main(string[] args)
+    public static int Main(string[] args)
     {
         // Telemetrie-Opt-Out MUSS gesetzt sein, BEVOR PowerShell-SDK-Typen JIT'd
         // oder Microsoft.ApplicationInsights initialisiert wird. Daher: erste Zeile.
@@ -23,9 +23,24 @@ internal static class Program
         // Dispatcher existiert.
         FatalErrorHandler.Install();
 
+        // Single-Instance-Guard VOR Avalonia: laeuft schon eine Instanz, wird
+        // sie nach vorn geholt und dieser Prozess beendet sich, ohne dass ein
+        // zweiter PowerShell-Runspace oder ein zweites Tray-Icon entsteht.
+        var guard = new SingleInstanceGuard();
+        if (!guard.TryClaim())
+        {
+            guard.NotifyPrimary();
+            guard.Dispose();
+            return 0;
+        }
+
+        // Uebergabe an die App, die den Guard verkabelt und beim Beenden
+        // freigibt.
+        App.PendingGuard = guard;
+
         try
         {
-            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
         catch (Exception ex)
         {
