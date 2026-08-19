@@ -80,13 +80,14 @@ def make_icon_large(size: int) -> Image.Image:
             d.ellipse([(cx - r_x, y - r_y), (cx + r_x, y + r_y)],
                       fill=FG, outline=BG, width=stroke)
         else:
-            # Rille: Umriss zeichnen, obere Haelfte uebermalen
-            d.ellipse([(cx - r_x, y - r_y), (cx + r_x, y + r_y)],
-                      outline=BG, width=stroke)
-            d.rectangle([(cx - r_x - 2, y - r_y - 2),
-                         (cx + r_x + 2, y)], fill=FG)
+            # Rille: nur den UNTEREN Halbbogen (0..180 Grad). Der frueher
+            # genutzte Weg "volle Ellipse zeichnen, obere Haelfte mit einem
+            # Rechteck uebermalen" liess an den Zylinderkanten Reste der
+            # Umrisslinie stehen und sah bei 256px ausgefranst aus.
+            d.arc([(cx - r_x, y - r_y), (cx + r_x, y + r_y)],
+                  start=0, end=180, fill=BG, width=stroke)
 
-    # Akzent-Punkt (Teal) oben rechts
+    # Akzent-Punkt (Gold) oben rechts
     dot_r  = int(20 * scale)
     dot_cx = int(206 * scale)
     dot_cy = int(50 * scale)
@@ -130,12 +131,9 @@ def make_icon_small(size: int) -> Image.Image:
 
     # Rille nur bei 48px sinnvoll — darunter matscht sie
     if size >= 48:
-        stroke = 1
         mid_y = (top_y + bot_y) / 2
-        d.ellipse([(cx - r_x, mid_y - r_y), (cx + r_x, mid_y + r_y)],
-                  outline=BG, width=stroke)
-        d.rectangle([(cx - r_x - 1, mid_y - r_y - 1),
-                     (cx + r_x + 1, mid_y)], fill=FG)
+        d.arc([(cx - r_x, mid_y - r_y), (cx + r_x, mid_y + r_y)],
+              start=0, end=180, fill=BG, width=1)
 
     return img
 

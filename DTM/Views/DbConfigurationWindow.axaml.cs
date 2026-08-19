@@ -17,7 +17,6 @@ public partial class DbConfigurationWindow : ChromeWindow
         InitializeComponent();
     }
 
-    private void OnTitleClose(object? _, RoutedEventArgs e) => Close();
     private void OnCancel(object? _, RoutedEventArgs e) => Close();
 
     private async void OnApplyQueryStore(object? _, RoutedEventArgs e)

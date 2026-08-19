@@ -19,7 +19,6 @@ public partial class OlvmSnapshotSelectWindow : ChromeWindow
         InitializeComponent();
     }
 
-    private void OnTitleClose(object? _, RoutedEventArgs e) => Close(null);
     private void OnCancel(object? _, RoutedEventArgs e) => Close(null);
 
     private void OnRestore(object? _, RoutedEventArgs e)

@@ -16,7 +16,6 @@ public partial class BackupBrowserWindow : ChromeWindow
         InitializeComponent();
     }
 
-    private void OnTitleClose(object? _, RoutedEventArgs e) => Close();
     private void OnCancel(object? _, RoutedEventArgs e) => Close();
 
     private async void OnRestore(object? sender, RoutedEventArgs e)

@@ -17,27 +17,16 @@
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- ===== Titelleiste ===== -->
-        <Border Grid.Row="0" Background="{DynamicResource KrosteTitleBarBrush}"
-                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
-                PointerPressed="OnTitleBarPointerPressed"
-                DoubleTapped="OnTitleBarDoubleTapped">
-            <Grid ColumnDefinitions="*,Auto" Height="36">
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
-                            VerticalAlignment="Center" Margin="14,0" IsHitTestVisible="False">
-                    <TextBlock Text="&#x25A0;" FontSize="11"
-                               Foreground="{DynamicResource KrosteGoldBrush}" VerticalAlignment="Center" />
-                    <TextBlock Text="Datenbank-Manager" FontSize="12" FontWeight="SemiBold"
-                               Foreground="{DynamicResource KrosteMutedTextBrush}" VerticalAlignment="Center" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Stretch">
-                    <Button Classes="chrome" Click="OnAbout"
-                            Content="&#x2139;" ToolTip.Tip="Über Datenbank-Manager" />
-                    <Button Classes="chrome" Click="OnMinimize" Content="&#x2212;" />
-                    <Button Classes="chrome" x:Name="MaximizeButton" Click="OnMaximize" Content="&#x2610;" />
-                    <Button Classes="chrome close" Click="OnClose" Content="&#x2715;" />
-                </StackPanel>
-            </Grid>
-        </Border>
+        <ctrl:TitleBar Grid.Row="0" Title="Datenbank-Manager"
+                    Glyph="&#x25A0;" GlyphBrush="{DynamicResource KrosteGoldBrush}"
+                    ShowMinimize="True" ShowMaximize="True">
+            <!-- Fensterspezifischer Chrome-Button; Min/Max/Close und der
+                 Glyph-Wechsel beim Maximieren kommen aus dem Control. -->
+            <ctrl:TitleBar.ExtraContent>
+                <Button Classes="chrome" Click="OnAbout"
+                        Content="&#x2139;" ToolTip.Tip="Über Datenbank-Manager" />
+            </ctrl:TitleBar.ExtraContent>
+        </ctrl:TitleBar>
 
         <Grid Grid.Row="1" ColumnDefinitions="280,*">
 
@@ -59,8 +48,12 @@
                                     Command="{Binding ManageConnectionsCommand}"
                                     ToolTip.Tip="Verbindungen verwalten"
                                     Width="38" MinWidth="0" Padding="0">
+                                <!-- FontSize passend zum 38px-Button. Stand hier
+                                     lange auf 60 — das Zahnrad wurde dadurch
+                                     abgeschnitten und sah aus wie ein leeres
+                                     graues Kaestchen. -->
                                 <TextBlock Classes="glyph" Text="&#x2699;" Margin="0"
-                                           FontSize="60" HorizontalAlignment="Center" />
+                                           FontSize="16" HorizontalAlignment="Center" />
                             </Button>
                         </Grid>
                     </Border>

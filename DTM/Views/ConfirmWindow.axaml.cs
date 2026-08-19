@@ -19,13 +19,17 @@ public partial class ConfirmWindow : ChromeWindow
     public ConfirmWindow()
     {
         InitializeComponent();
+        // Klick auf "X" verhaelt sich wie "Abbrechen". Ohne das liefert
+        // ShowDialog<bool> zwar auch false (default(bool)), aber nur zufaellig —
+        // explizit gesetzt bleibt es richtig, falls der Result-Typ mal wechselt.
+        Bar.CloseResult = false;
     }
 
     /// <summary>Titel der Titelleiste.</summary>
     public string WindowTitle
     {
-        get => TitleText.Text ?? string.Empty;
-        set { TitleText.Text = value; Title = value; }
+        get => Bar.Title ?? string.Empty;
+        set { Bar.Title = value; Title = value; }
     }
 
     /// <summary>Fragetext (Hauptinhalt).</summary>
@@ -49,7 +53,6 @@ public partial class ConfirmWindow : ChromeWindow
         set => CancelButton.Content = value;
     }
 
-    private void OnTitleClose(object? _, RoutedEventArgs e) => Close(false);
     private void OnCancel(object? _, RoutedEventArgs e) => Close(false);
     private void OnConfirm(object? _, RoutedEventArgs e) => Close(true);
 }

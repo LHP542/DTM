@@ -12,9 +12,10 @@ public partial class OracleRestoreSelectWindow : ChromeWindow
     public OracleRestoreSelectWindow()
     {
         InitializeComponent();
+        // Klick auf "X" = abgebrochen, kein Restore ausloesen.
+        Bar.CloseResult = false;
     }
 
-    private void OnTitleClose(object? _, RoutedEventArgs e) => Close(false);
     private void OnCancel(object? _, RoutedEventArgs e) => Close(false);
     private void OnRestore(object? _, RoutedEventArgs e) => Close(true);
 }

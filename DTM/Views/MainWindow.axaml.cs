@@ -17,23 +17,9 @@ public partial class MainWindow : ChromeWindow
         };
     }
 
-    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
-    {
-        base.OnPropertyChanged(change);
-        if (change.Property == WindowStateProperty)
-            MaximizeButton.Content = WindowState == WindowState.Maximized ? "❐" : "☐";
-    }
-
-    private void OnMinimize(object? _, RoutedEventArgs e) =>
-        WindowState = WindowState.Minimized;
-
-    private void OnMaximize(object? _, RoutedEventArgs e) =>
-        WindowState = WindowState == WindowState.Maximized
-            ? WindowState.Normal
-            : WindowState.Maximized;
-
-    private void OnClose(object? _, RoutedEventArgs e) => Close();
-
+    // Minimieren/Maximieren/Schliessen und der Glyph-Wechsel beim Maximieren
+    // liegen im TitleBar-Control. Hier bleibt nur der fensterspezifische
+    // "Ueber"-Button, den die Titelleiste ueber ExtraContent einhaengt.
     private async void OnAbout(object? _, RoutedEventArgs e) =>
         await new AboutWindow().ShowDialog(this);
 }

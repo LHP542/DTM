@@ -1,7 +1,7 @@
 # DTM App-Icon-Generator (PowerShell-Port von build_icon.py).
 #
 # Warum zwei Varianten: der Arbeitslaptop hat kein Python/Pillow, Bazzite
-# schon. Gleiche Geometrie, gleiche Farben, gleiches Ergebnis — bei
+# schon. Gleiche Geometrie, gleiche Farben, gleiches Ergebnis - bei
 # Design-Aenderungen BEIDE Skripte anpassen.
 #
 # Erzeugt:
@@ -85,9 +85,11 @@ function New-IconLarge([int]$size) {
             $g.FillEllipse($bFg, ($cx - $rX), ($y - $rY), (2 * $rX), (2 * $rY))
             $g.DrawEllipse($pBg, ($cx - $rX), ($y - $rY), (2 * $rX), (2 * $rY))
         } else {
-            # Rille: Umriss zeichnen, obere Haelfte uebermalen
-            $g.DrawEllipse($pBg, ($cx - $rX), ($y - $rY), (2 * $rX), (2 * $rY))
-            $g.FillRectangle($bFg, ($cx - $rX - 2), ($y - $rY - 2), (2 * $rX + 4), ($rY + 2))
+            # Rille: nur den UNTEREN Halbbogen zeichnen (0..180 Grad). Der
+            # frueher genutzte Weg "volle Ellipse zeichnen, obere Haelfte mit
+            # einem Rechteck uebermalen" liess an den Zylinderkanten Reste der
+            # Umrisslinie stehen und sah bei 256px ausgefranst aus.
+            $g.DrawArc($pBg, ($cx - $rX), ($y - $rY), (2 * $rX), (2 * $rY), 0, 180)
         }
     }
 
@@ -128,12 +130,11 @@ function New-IconSmall([int]$size) {
     $g.FillEllipse($bShadow, ($cx - $rX), ($botY - $rY), (2 * $rX), (2 * $rY))
     $g.FillEllipse($bFg, ($cx - $rX), ($topY - $rY), (2 * $rX), (2 * $rY))
 
-    # Rille nur bei 48px sinnvoll — darunter matscht sie
+    # Rille nur bei 48px sinnvoll - darunter matscht sie
     if ($size -ge 48) {
         $pBg  = New-Object System.Drawing.Pen $BG, 1
         $midY = ($topY + $botY) / 2.0
-        $g.DrawEllipse($pBg, ($cx - $rX), ($midY - $rY), (2 * $rX), (2 * $rY))
-        $g.FillRectangle($bFg, ($cx - $rX - 1), ($midY - $rY - 1), (2 * $rX + 2), ($rY + 1))
+        $g.DrawArc($pBg, ($cx - $rX), ($midY - $rY), (2 * $rX), (2 * $rY), 0, 180)
         $pBg.Dispose()
     }
 
@@ -147,7 +148,7 @@ function New-Icon([int]$size) {
 }
 
 function Save-Ico([System.Drawing.Bitmap[]]$images, [string]$path) {
-    # System.Drawing kann keine Multi-Res-ICOs schreiben — deshalb das
+    # System.Drawing kann keine Multi-Res-ICOs schreiben - deshalb das
     # ICO-Format von Hand. Eingebettete PNGs sind ab Windows Vista erlaubt
     # und sparen die BMP/AND-Mask-Fummelei.
     $blobs = foreach ($img in $images) {

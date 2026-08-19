@@ -921,35 +921,55 @@ Sub-Items:
 (gleiches Setup wie andere Oracle-Ziele — Pageant / OpenSSH
 IdentityAgent). Kein Passwort in Klartext.
 
-#### Phase 12 — TitleBar-Rollout-Fortsetzung (Skill-Compliance-Follow-up)
+#### Phase 12 — TitleBar-Rollout (Skill-Compliance-Follow-up) — **erledigt**
 
-Der `TitleBar`-UserControl unter `Views/Controls/TitleBar.axaml` wird
-aktuell nur von `AboutWindow` und `ConnectionManagerWindow` genutzt
-(reine Text-Titel, ohne Dialog-Result-Semantik). Die 12 restlichen
-Dialoge behalten ihre eigene Titelleiste. Um sie auch umzuziehen:
+Vorher nutzten nur `AboutWindow` und `ConnectionManagerWindow` den
+`TitleBar`-UserControl; die 12 restlichen Fenster bauten ihre Titelleiste
+selbst. Jetzt gilt: **alle 14 Fenster** binden `<c:TitleBar>` ein, es gibt
+keine handgebaute Titelleiste mehr im Projekt.
 
-- [ ] **12.1** TitleBar um Content-Slot fuer Titel-Bereich erweitern
-      (`TitleContent`-DependencyProperty oder inner `ContentPresenter`
-      mit angesteuertem Slot), damit die 6 Icon-Titelleisten mit
-      StackPanel + Glyph + Text auf `<c:TitleBar>` umgestellt werden
-      koennen: `ConfirmWindow`, `BackupBrowserWindow`,
-      `OracleRestoreSelectWindow`, `MssqlSnapshotSelectWindow`,
-      `DbConfigurationWindow`, `FatalErrorWindow`. — `S`
-- [ ] **12.2** Fuer die 6 Fenster mit Dialog-Result-Semantik
-      (`EditConnectionWindow` → bool, `TimePickerWindow` →
-      `TimePickResult`, `SessionsWindow`, `UpdatePromptWindow`,
-      `OlvmSnapshotSelectWindow`, `MssqlSnapshotSelectWindow`):
-      `<c:TitleBar x:Name="TitleBar" Title="..."/>` deklarieren,
-      im Code-Behind-Konstruktor `TitleBar.CloseResult = ...` setzen.
-      Fuer `TimePickerWindow` heisst das: `TitleBar.CloseResult =
-      TimePickResult.Cancel();`. — `S`
-- [ ] **12.3** `ChromeWindow`-Basisklasse aufraeumen: sobald ALLE Fenster
-      auf `<c:TitleBar>` umgestellt sind, sind die geerbten
-      `OnTitleBarPointerPressed`/`OnTitleBarDoubleTapped`-Handler
-      unbenutzt und koennen entfernt werden. — `S`
+- [x] **12.1** TitleBar erweitert. Statt der urspruenglich angedachten
+      Content-Slot-API zwei gezielte Properties — alle Icon-Titelleisten
+      folgen demselben Muster (Piktogramm + Text), ein
+      `ContentPresenter` waere unnoetig umstaendlich gewesen:
+      `Glyph` (string) + `GlyphBrush` (IBrush). Ohne gesetztes Glyph
+      bleibt der TextBlock unsichtbar, das Layout entspricht exakt der
+      reinen Text-Variante. Genutzt von `ConfirmWindow` (⚠ Danger),
+      `FatalErrorWindow` (⚠ Danger), `BackupBrowserWindow` (⤓ Gold),
+      `DbConfigurationWindow` (⚙ Gold), `OracleRestoreSelectWindow`
+      (↺ Gold) und `MainWindow` (■ Gold). — `S`
+- [x] **12.2** Die vier Fenster mit echter Dialog-Result-Semantik
+      deklarieren `<c:TitleBar x:Name="Bar" …>` und setzen im
+      Konstruktor `Bar.CloseResult`: `ConfirmWindow` → `false`,
+      `EditConnectionWindow` → `false`, `OracleRestoreSelectWindow` →
+      `false`, `TimePickerWindow` → `TimePickResult.Cancel()`. — `S`
+      _(Bei `TimePickerWindow` ist das **zwingend**, nicht nur sauber:
+      der Result-Typ ist ein Objekt, ohne `CloseResult` kaeme beim Klick
+      auf „X" `null` zurueck und `RunDbActionAsync` wuerde beim Zugriff
+      auf `pick.Cancelled` knallen, statt die Aktion abzubrechen. Bei
+      den drei `bool`-Dialogen liefert `Close()` ohne Argument zwar
+      ohnehin `default(bool)` = false — das ist aber Zufall und bricht,
+      sobald der Result-Typ wechselt. `SessionsWindow`,
+      `UpdatePromptWindow`, `MssqlSnapshotSelectWindow`,
+      `OlvmSnapshotSelectWindow`, `BackupBrowserWindow`,
+      `DbConfigurationWindow` und `FatalErrorWindow` brauchen nichts —
+      deren „X" schloss auch vorher schon ohne Ergebnis.)_
+- [x] **12.3** `ChromeWindow` aufgeraeumt: `OnTitleBarPointerPressed`
+      und `OnTitleBarDoubleTapped` sind entfernt, ebenso das
+      `Avalonia.Input`-using. Die Basisklasse setzt jetzt nur noch
+      Fenster-Dekoration und App-Icon. — `S`
+      _(Dafuer musste **MainWindow** mit umziehen — es war der letzte
+      Nutzer der Handler. Damit sein „Ueber"-Button erhalten bleibt, hat
+      die TitleBar ein `ExtraContent`-Property bekommen: ein
+      `ContentControl` links von Min/Max/Close. Der Glyph-Wechsel
+      beim Maximieren (☐ ↔ ❐) liegt jetzt ebenfalls im Control — es
+      abonniert `Window.WindowStateProperty` in
+      `OnAttachedToVisualTree` und meldet sich in
+      `OnDetachedFromVisualTree` wieder ab. `MainWindow.axaml.cs`
+      schrumpft dadurch auf den einen `OnAbout`-Handler.)_
 
-Kein funktionaler Gewinn — reines Konsolidierungs-Refactor. Sinnvoll
-gebuendelt mit einer anderen UI-Arbeit; kein eigener Release-Anlass.
+Reines Konsolidierungs-Refactor, kein Release-Anlass fuer sich — aber
+zusammen mit dem Paletten-Umbau aus Phase 13.3 abgearbeitet.
 
 #### Phase 13 — Skill-Compliance-Nachzug (`v2.5.0`)
 
@@ -1054,6 +1074,31 @@ Benutzerhandbuch). Diese Phase schliesst die verbliebenen Luecken.
       `BmcBrandBorderBrush` / `BmcBrandTextBrush` — die Farbwerte bleiben
       bewusst ausserhalb der Kroste-Palette, weil der Button in den
       Wiedererkennungsfarben von Buy-me-a-coffee stehen soll.)_
+- [x] **13.6** Visuelle Pruefung der Fenster im laufenden Programm
+      (nachgezogen, nachdem Palette und TitleBar umgebaut waren). — `S`
+      _(erledigt: App gestartet und per UI-Automation durchgeklickt,
+      Screenshots via `PrintWindow`. Geprueft: `MainWindow`,
+      `AboutWindow`, `ConnectionManagerWindow`, `EditConnectionWindow` —
+      zusammen decken die alle Stil-Elemente ab (TitleBar mit Glyph und
+      ExtraContent, Button-Default/`.accent`/`.danger`, DataGrid,
+      TextBox/ComboBox mit Gold-Fokusring, Sektions-Karten, Statusbar,
+      Konsole). Drei Befunde, alle gefixt:
+
+      1. **Zahnrad-Button im MainWindow war ein leeres graues Kaestchen.**
+         Der Glyph stand auf `FontSize="60"` in einem 38px-Button und
+         wurde komplett abgeschnitten. Auf 16 korrigiert. Bestand schon
+         vor dem Paletten-Umbau — faellt eben nur auf, wenn man wirklich
+         hinschaut.
+      2. **ConnectionManagerWindow schnitt Texte ab**: Fenster von 700
+         auf 820 (MinWidth 560 → 620), Label-Spalte 130 → 170, die drei
+         Buttons 90 → 110 (aus „Bearbeiten" wurde sonst „Bearbeite").
+      3. Bestaetigt, dass der Gold-Fokusring auf Formularfeldern greift
+         und die neue Glyph-API rendert.
+
+      **Nebenbefund zur Arbeitsweise:** `dotnet build`, waehrend die App
+      noch laeuft, schlaegt still fehl (DLL gesperrt) — der naechste
+      Screenshot zeigt dann den alten Stand und man sucht den Fehler an
+      der falschen Stelle. Immer erst `taskkill /IM DTM.exe`, dann bauen.)_
 
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 

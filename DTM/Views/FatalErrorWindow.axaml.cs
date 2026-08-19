@@ -20,7 +20,6 @@ public partial class FatalErrorWindow : ChromeWindow
         StackTraceText.Text = ex.ToString();
     }
 
-    private void OnTitleClose(object? _, RoutedEventArgs e) => Close();
     private void OnClose(object? _, RoutedEventArgs e) => Close();
 
     private void OnOpenLogs(object? _, RoutedEventArgs e)

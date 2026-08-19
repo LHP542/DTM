@@ -13,12 +13,24 @@
             PointerPressed="OnBarPointerPressed"
             DoubleTapped="OnBarDoubleTapped">
         <Grid ColumnDefinitions="*,Auto">
-            <TextBlock x:Name="TitleText" Grid.Column="0"
-                       FontSize="12" FontWeight="SemiBold"
-                       Foreground="{DynamicResource KrosteMutedTextBrush}"
-                       VerticalAlignment="Center" Margin="14,0"
-                       IsHitTestVisible="False" />
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <!-- Glyph + Text als eine Einheit: die meisten Dialoge fuehren ein
+                 kleines Piktogramm vor dem Titel (Warnung, Zahnrad, Restore-
+                 Pfeil). Ohne gesetztes Glyph bleibt der TextBlock unsichtbar
+                 und das Layout entspricht exakt der reinen Text-Variante. -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8"
+                        VerticalAlignment="Center" Margin="14,0"
+                        IsHitTestVisible="False">
+                <TextBlock x:Name="GlyphText" FontSize="13"
+                           VerticalAlignment="Center" IsVisible="False" />
+                <TextBlock x:Name="TitleText"
+                           FontSize="12" FontWeight="SemiBold"
+                           Foreground="{DynamicResource KrosteMutedTextBrush}"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Stretch">
+                <!-- Platz fuer fensterspezifische Chrome-Buttons links von
+                     Min/Max/Close (MainWindow haengt hier sein "Ueber"-i ein). -->
+                <ContentControl x:Name="ExtraSlot" />
                 <Button x:Name="MinButton" Classes="chrome"
                         Click="OnMinClick" Content="&#x2013;"
                         IsVisible="False" />

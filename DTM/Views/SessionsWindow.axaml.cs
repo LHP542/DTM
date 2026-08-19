@@ -10,7 +10,6 @@ public partial class SessionsWindow : ChromeWindow
         InitializeComponent();
     }
 
-    private void OnTitleClose(object? _, RoutedEventArgs e) => Close();
 
     private async void OnCloseAllSessions(object? sender, RoutedEventArgs e)
     {

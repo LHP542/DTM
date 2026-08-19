@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 
 namespace DTM.Views.Controls;
 
@@ -14,6 +15,21 @@ public partial class TitleBar : UserControl
 {
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<TitleBar, string?>(nameof(Title));
+
+    // Optionales Piktogramm links vom Titel (Warnung, Zahnrad, Restore-Pfeil).
+    // Nicht gesetzt = kein Glyph, Layout wie bei einer reinen Text-Titelleiste.
+    public static readonly StyledProperty<string?> GlyphProperty =
+        AvaloniaProperty.Register<TitleBar, string?>(nameof(Glyph));
+
+    // Farbe des Glyphs. Default Gold — im Kroste-Look der Highlight-Ton;
+    // Dialoge mit Warncharakter setzen KrosteDangerBrush.
+    public static readonly StyledProperty<IBrush?> GlyphBrushProperty =
+        AvaloniaProperty.Register<TitleBar, IBrush?>(nameof(GlyphBrush));
+
+    // Fensterspezifische Chrome-Buttons links von Min/Max/Close.
+    // MainWindow haengt hier seinen "Ueber"-Button ein.
+    public static readonly StyledProperty<object?> ExtraContentProperty =
+        AvaloniaProperty.Register<TitleBar, object?>(nameof(ExtraContent));
 
     public static readonly StyledProperty<bool> ShowMinimizeProperty =
         AvaloniaProperty.Register<TitleBar, bool>(nameof(ShowMinimize));
@@ -32,6 +48,24 @@ public partial class TitleBar : UserControl
     {
         get => GetValue(TitleProperty);
         set => SetValue(TitleProperty, value);
+    }
+
+    public string? Glyph
+    {
+        get => GetValue(GlyphProperty);
+        set => SetValue(GlyphProperty, value);
+    }
+
+    public IBrush? GlyphBrush
+    {
+        get => GetValue(GlyphBrushProperty);
+        set => SetValue(GlyphBrushProperty, value);
+    }
+
+    public object? ExtraContent
+    {
+        get => GetValue(ExtraContentProperty);
+        set => SetValue(ExtraContentProperty, value);
     }
 
     public bool ShowMinimize
@@ -66,10 +100,53 @@ public partial class TitleBar : UserControl
         base.OnPropertyChanged(change);
         if (change.Property == TitleProperty)
             TitleText.Text = Title;
+        else if (change.Property == GlyphProperty)
+        {
+            GlyphText.Text = Glyph;
+            GlyphText.IsVisible = !string.IsNullOrEmpty(Glyph);
+        }
+        else if (change.Property == GlyphBrushProperty)
+            GlyphText.Foreground = GlyphBrush;
+        else if (change.Property == ExtraContentProperty)
+            ExtraSlot.Content = ExtraContent;
         else if (change.Property == ShowMinimizeProperty)
             MinButton.IsVisible = ShowMinimize;
         else if (change.Property == ShowMaximizeProperty)
+        {
             MaxButton.IsVisible = ShowMaximize;
+            UpdateMaximizeGlyph();
+        }
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        // Erst hier existiert das Host-Window. Der Glyph muss dem WindowState
+        // folgen, sonst zeigt ein maximiertes Fenster weiter das
+        // "Maximieren"-Symbol.
+        if (Host is { } w)
+        {
+            w.PropertyChanged += OnHostPropertyChanged;
+            UpdateMaximizeGlyph();
+        }
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        if (Host is { } w) w.PropertyChanged -= OnHostPropertyChanged;
+        base.OnDetachedFromVisualTree(e);
+    }
+
+    private void OnHostPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == Window.WindowStateProperty) UpdateMaximizeGlyph();
+    }
+
+    private void UpdateMaximizeGlyph()
+    {
+        if (!ShowMaximize || Host is not { } w) return;
+        // U+2750 = Wiederherstellen, U+2610 = Maximieren
+        MaxButton.Content = w.WindowState == WindowState.Maximized ? "❐" : "☐";
     }
 
     private void OnBarPointerPressed(object? sender, PointerPressedEventArgs e)

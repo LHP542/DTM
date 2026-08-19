@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 
@@ -7,10 +6,14 @@ namespace DTM.Views;
 
 /// <summary>
 /// Basisklasse für alle DTM-Fenster mit Custom-Chrome (Avalonia 12).
-/// Setzt die einheitliche Fenster-Dekoration und stellt die gemeinsamen
-/// Drag/DoubleTap-Handler für die selbstgebaute Titelleiste bereit.
-/// Window-spezifische Logik (Min/Max-Glyph, Schließen mit Dialog-Result)
-/// bleibt in der jeweiligen abgeleiteten Klasse.
+/// Setzt die einheitliche Fenster-Dekoration und das App-Icon.
+///
+/// Drag, Doppelklick-Maximieren, Min/Max/Close und der Glyph-Wechsel beim
+/// Maximieren liegen seit dem TitleBar-Rollout komplett im
+/// <see cref="Controls.TitleBar"/>-Control — jedes Fenster bindet es als
+/// <c>&lt;c:TitleBar/&gt;</c> ein, statt die Leiste selbst zu bauen.
+/// Fensterspezifische Chrome-Buttons kommen über
+/// <c>TitleBar.ExtraContent</c> dazu (MainWindow: „Über"-Button).
 /// </summary>
 public class ChromeWindow : Window
 {
@@ -36,14 +39,4 @@ public class ChromeWindow : Window
         }
     }
 
-    public void OnTitleBarPointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
-            BeginMoveDrag(e);
-    }
-
-    public void OnTitleBarDoubleTapped(object? sender, TappedEventArgs e) =>
-        WindowState = WindowState == WindowState.Maximized
-            ? WindowState.Normal
-            : WindowState.Maximized;
 }

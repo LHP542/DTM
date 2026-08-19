@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="using:DTM.ViewModels"
         mc:Ignorable="d"
+        xmlns:c="using:DTM.Views.Controls"
         x:Class="DTM.Views.SessionsWindow"
         x:DataType="vm:SessionsViewModel"
         Title="Sessions"
@@ -14,19 +15,7 @@
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!-- Titelleiste -->
-        <Border Grid.Row="0" Background="{DynamicResource KrosteTitleBarBrush}"
-                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
-                PointerPressed="OnTitleBarPointerPressed">
-            <Grid ColumnDefinitions="*,Auto" Height="36">
-                <TextBlock Grid.Column="0"
-                           Text="Sessions" FontSize="12" FontWeight="SemiBold"
-                           Foreground="{DynamicResource KrosteMutedTextBrush}"
-                           VerticalAlignment="Center" Margin="14,0"
-                           IsHitTestVisible="False" />
-                <Button Grid.Column="1" Classes="chrome close"
-                        Click="OnTitleClose" Content="&#x2715;" />
-            </Grid>
-        </Border>
+        <c:TitleBar Grid.Row="0" Title="Sessions" />
 
         <DataGrid Grid.Row="1"
                   ItemsSource="{Binding Sessions}"

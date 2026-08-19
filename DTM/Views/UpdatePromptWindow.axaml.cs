@@ -34,7 +34,6 @@ public partial class UpdatePromptWindow : ChromeWindow
         }
     }
 
-    private void OnTitleClose(object? _, RoutedEventArgs e) => Close();
 
     private void OnApply(object? _, RoutedEventArgs e) { Result = UpdateDialogResult.ApplyNow; Close(); }
     private void OnLater(object? _, RoutedEventArgs e) { Result = UpdateDialogResult.Later;    Close(); }
