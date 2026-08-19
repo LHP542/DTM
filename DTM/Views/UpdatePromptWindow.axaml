@@ -77,7 +77,7 @@
         <Border Grid.Row="2" BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,1,0,0"
                 Padding="16,12">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-                <Button Content="Überspringen"        Click="OnSkip"  Width="120" />
+                <Button x:Name="SkipButton" Content="Überspringen"        Click="OnSkip"  Width="120" />
                 <Button Content="Später (30 min)"     Click="OnLater" Width="120" />
                 <Button Content="Jetzt aktualisieren" Click="OnApply" Width="160" Classes="accent" />
             </StackPanel>

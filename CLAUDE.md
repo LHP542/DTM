@@ -1100,6 +1100,80 @@ Benutzerhandbuch). Diese Phase schliesst die verbliebenen Luecken.
       Screenshot zeigt dann den alten Stand und man sucht den Fehler an
       der falschen Stelle. Immer erst `taskkill /IM DTM.exe`, dann bauen.)_
 
+#### Phase 14 — Lokale REST-API fuer UI-Pruefungen (`v2.6.0`)
+
+**Anlass:** Beim visuellen Abnehmen des Paletten-Umbaus (13.6) habe ich die
+Oberflaeche von aussen ferngesteuert — `SetForegroundWindow`, `mouse_event`,
+`PrintWindow`, UI-Automation. Das ist aus Sicht eines verhaltensbasierten
+Virenscanners das Muster einer Fernsteuerungs-Schadsoftware: **Trend Micro
+hat einen Teil dieser Aktionen blockiert** (2026-08-19). Der Weg ist auf
+verwalteten Rechnern also nicht gangbar — und war ohnehin fragil
+(Fokus-Wechsel, DPI, verdeckte Fenster).
+
+**Loesung** nach dem Vorbild von `KroModIx` (Repo `KroModIx/KroModIx`,
+`Services/Api/`): DTM bringt die Schnittstelle selbst mit. Screenshots
+entstehen ueber Avalonias `RenderTargetBitmap`, Klicks ueber
+`ICommand.Execute` bzw. `RaiseEvent(Button.ClickEvent)` — alles **innerhalb
+des Prozesses**, kein einziger Win32-Aufruf von aussen.
+
+- [x] **14.1** Grundgeruest unter `Data/Api/`, uebernommen aus KroModIx:
+      `ApiOptions`/`ApiOptionsResolver` (CLI schlaegt settings.json),
+      `ApiBearerAuth` (statisches Token, Vergleich in konstanter Zeit),
+      `ApiHost` (Kestrel via `WebApplication.CreateSlimBuilder`, nur
+      `ListenLocalhost`, HTTP/1). Kestrel kommt ueber
+      `<FrameworkReference Include="Microsoft.AspNetCore.App" />` — kein
+      NuGet-Paket. **Falle:** der bestehende `PackageReference` auf
+      `Microsoft.Extensions.DependencyInjection` muss weg, sonst bricht der
+      Build mit `NU1510` (das Paket kommt ueber den FrameworkReference mit).
+      `Config/AppLaunchOptions.cs` parst `--api-port`, `--api-token`,
+      `--api-allow-destructive`, `--auto-shutdown-after`. — `M`
+- [x] **14.2** `DtmUiActions` — alle UI-Zugriffe ueber
+      `Dispatcher.UIThread`. **Wichtig: Momentaufnahmen komplett INNERHALB
+      des Dispatchers bauen.** Erst hatte ich nur das ViewModel ueber den
+      Dispatcher geholt und danach im HTTP-Thread durch seine
+      `ObservableCollection`s iteriert — das ist eine Race Condition. Jetzt
+      liefern `GetStateAsync`/`GetTreeAsync` fertige Records zurueck.
+      `ClickAsync` bedient beide Bauarten: Buttons mit Command direkt (inkl.
+      `CanExecute`-Pruefung), Buttons mit Click-Handler ueber
+      `RaiseEvent(Button.ClickEvent)` — ohne den zweiten Zweig liessen sich
+      Dialoge oeffnen, aber nicht wieder schliessen. — `M`
+- [x] **14.3** `DestructiveGuard` — die DTM-spezifische Zutat, die es bei
+      KroModIx nicht braucht. DTM loest Backups, Restores, Snapshot-Drops
+      und Session-Kills auf produktiven Datenbanken aus; ein einzelner
+      HTTP-Aufruf darf das nicht koennen. Die API ist deshalb per Default
+      ein **Beobachtungs- und Navigationskanal**: gesperrt sind die
+      schreibenden Commands des MainWindowViewModel *und* die Buttons, die
+      solche Aktionen bestaetigen (`ConfirmButton`, `RestoreButton`,
+      `CloseSessionsButton`) — sonst haette man die Sperre einfach
+      wegklicken koennen. Freigabe nur bewusst per
+      `--api-allow-destructive` bzw. `AllowDestructive` in den
+      Einstellungen. Zwei Tests halten die Sperrliste gegen die echten
+      Commands: einer verlangt, dass **jeder** Command entweder gesperrt
+      oder ausdruecklich als harmlos gelistet ist (sonst rutscht eine neue
+      destruktive Aktion still durch), der andere findet verwaiste
+      Eintraege nach Umbenennungen. — `M`
+- [x] **14.4** Endpoints: `/state`, `/tree`, `/elements`, `/select-node`,
+      `/command`, `/click`, `/text`, `/screenshot`. Fehler kommen als
+      `application/problem+json`; ein 404 liefert gleich mit, was es
+      stattdessen gaebe (`available`). — `M`
+      _(Live geprueft: Auth 401/403, destruktive Sperre 403, Dialog
+      oeffnen und schliessen, Navigation bis auf DB-Ebene, Screenshot als
+      PNG. 50 neue Tests, 438 gesamt gruen.)_
+
+**Nutzung** siehe README. Kurzform:
+`DTM.exe --api-port 8765 --api-token <geheim> --auto-shutdown-after 10m`,
+danach `curl -H "Authorization: Bearer <geheim>" http://127.0.0.1:8765/state`.
+
+**Stolperstelle beim Navigieren:** der Baum laedt die Datenbanken erst beim
+Auswaehlen eines Servers. Also zuerst `/select-node` mit dem Servernamen,
+dann mit `<Server>/<Datenbank>`. `/tree` zeigt ueber `databasesLoaded`, ob
+schon geladen wurde. Datenbanknamen werden ohne Status-Suffix erwartet
+(`ALKIS`, nicht `ALKIS (up)`) — die Beschriftung wird aber auch akzeptiert.
+
+**Offen:** Endpoints fuer die Fenstergroesse (fuer Screenshots in
+definierten Groessen) und ein `/wait`-Endpunkt, der auf einen Zustand
+wartet, statt im Skript zu schlafen. Beides erst bauen, wenn es fehlt.
+
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 
 Lars-Idee aus dem v2.0.0-Test: ein eigener Button bzw. Dialog, der **mehr

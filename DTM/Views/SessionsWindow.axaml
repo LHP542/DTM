@@ -41,7 +41,7 @@
                     <Run Text="{Binding DatabaseDisplayName}" FontWeight="SemiBold"
                          Foreground="{DynamicResource KrosteTextBrush}" />
                 </TextBlock>
-                <Button Grid.Column="1" Click="OnCloseAllSessions"
+                <Button x:Name="CloseSessionsButton" Grid.Column="1" Click="OnCloseAllSessions"
                         IsEnabled="{Binding CanCloseSessions}"
                         Classes="action danger"
                         ToolTip.Tip="Alle aktiven Sessions zu dieser Datenbank per KILL beenden">

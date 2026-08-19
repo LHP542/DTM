@@ -89,7 +89,7 @@
 
                 <!-- Footer -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,6,0,0">
-                    <Button Content="Schliessen" Click="OnCancel" MinWidth="100" />
+                    <Button x:Name="CloseButton" Content="Schliessen" Click="OnCancel" MinWidth="100" />
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

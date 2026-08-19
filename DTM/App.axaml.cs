@@ -13,6 +13,8 @@ namespace DTM;
 
 public partial class App : Application
 {
+    private static readonly NLog.ILogger _logger = NLog.LogManager.GetCurrentClassLogger();
+
     /// <summary>
     /// Composition-Root des laufenden Prozesses. Wird in <see cref="Initialize"/>
     /// gebaut. Tests instanziieren ViewModels weiterhin direkt und beruehren
@@ -31,6 +33,7 @@ public partial class App : Application
     // (Skill-Standard, siehe TrayController-Klassenkommentar).
     private TrayController? _tray;
     private SingleInstanceGuard? _guard;
+    private DTM.Data.Api.ApiHost? _api;
 
     public override void Initialize()
     {
@@ -83,8 +86,54 @@ public partial class App : Application
                 // wieder belegen kann.
                 desktop.Exit += (_, _) => _guard?.Dispose();
             }
+
+            StartApiIfEnabled(desktop);
+            ScheduleAutoShutdownIfRequested(desktop);
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    /// <summary>
+    /// Startet die lokale REST-API, wenn sie in den Einstellungen oder per
+    /// <c>--api-port</c> eingeschaltet ist. Der Start laeuft bewusst
+    /// nebenlaeufig: das Fenster soll nicht auf Kestrel warten, und ein
+    /// Fehlschlag darf DTM nicht aufhalten (der Host loggt und laeuft weiter).
+    /// </summary>
+    private void StartApiIfEnabled(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        var settings = AppSettingsStore.LoadFocSql().Api;
+        var options = DTM.Data.Api.ApiOptionsResolver.Resolve(settings, Program.LaunchOptions);
+        if (!options.Enabled) return;
+
+        _api = new DTM.Data.Api.ApiHost();
+        _ = _api.StartAsync(options);
+
+        // Kestrel sauber herunterfahren. Achtung: im Update-Pfad beendet sich
+        // DTM per Process.Kill() — dann laeuft das hier nicht, was in Ordnung
+        // ist, weil das Betriebssystem den Port ohnehin freigibt.
+        desktop.Exit += (_, _) =>
+        {
+            try { _api?.DisposeAsync().AsTask().Wait(TimeSpan.FromSeconds(3)); }
+            catch (Exception ex) { _logger.Warn(ex, "REST-API konnte nicht sauber gestoppt werden."); }
+        };
+    }
+
+    /// <summary>
+    /// Beendet die App nach <c>--auto-shutdown-after</c> von selbst. Gedacht
+    /// fuer automatisierte Laeufe, damit keine Instanz stehen bleibt, wenn das
+    /// steuernde Skript abbricht.
+    /// </summary>
+    private static void ScheduleAutoShutdownIfRequested(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        if (Program.LaunchOptions.AutoShutdownAfter is not { } delay) return;
+
+        _logger.Info("Auto-Shutdown in {0:0} s (--auto-shutdown-after).", delay.TotalSeconds);
+        _ = Task.Delay(delay).ContinueWith(_ =>
+            Dispatcher.UIThread.Post(() =>
+            {
+                _logger.Info("Auto-Shutdown erreicht — DTM wird beendet.");
+                desktop.Shutdown();
+            }));
     }
 }

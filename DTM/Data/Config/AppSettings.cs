@@ -26,4 +26,42 @@ public sealed class FocSqlConfig
     /// nirgends mehr gelesen.
     /// </summary>
     public string UpdateSource { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Einstellungen der lokalen REST-API. Eigenes Unterobjekt, damit die
+    /// settings.json lesbar bleibt und nicht alles flach im Wurzelobjekt
+    /// haengt. Fehlt der Block in einer bestehenden Datei, greifen die
+    /// Defaults (API aus).
+    /// </summary>
+    public ApiSettings Api { get; set; } = new();
+}
+
+/// <summary>
+/// Konfiguration der eingebauten REST-API (siehe <c>Data/Api/</c>).
+///
+/// <para><b>Standard ist AUS.</b> DTM ist ein Datenbank-Administrationswerkzeug —
+/// ein offener Steuerkanal ist hier deutlich heikler als bei einer
+/// Endanwender-App. Die API muss bewusst eingeschaltet werden, bindet
+/// ausschliesslich an Loopback und verlangt ein Bearer-Token.</para>
+/// </summary>
+public sealed class ApiSettings
+{
+    /// <summary>API beim Start hochfahren. Ohne <see cref="BearerToken"/>
+    /// beantwortet sie jeden Request mit 403 — das ist Absicht.</summary>
+    public bool Enabled { get; set; }
+
+    /// <summary>Loopback-Port. Nur wirksam, wenn <see cref="Enabled"/>
+    /// oder <c>--api-port</c> gesetzt ist.</summary>
+    public int Port { get; set; } = 8765;
+
+    /// <summary>Statisches Bearer-Token. Leer = API verweigert alles.</summary>
+    public string BearerToken { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Erlaubt der API, auch destruktive Commands auszuloesen (Restore,
+    /// Snapshot-Drop, Shrink-Log, Sessions-Kill …). Default <c>false</c>:
+    /// die API ist als Beobachtungs- und Navigationskanal gedacht, nicht
+    /// als Fernbedienung fuer Aktionen, die Datenbanken veraendern.
+    /// </summary>
+    public bool AllowDestructive { get; set; }
 }

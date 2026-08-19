@@ -54,7 +54,7 @@
                         HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
                 <Button Content="Log-Ordner &#xF6;ffnen" Click="OnOpenLogs"
                         MinWidth="140" />
-                <Button Content="Schlie&#xDF;en" Click="OnClose"
+                <Button x:Name="CloseButton" Content="Schlie&#xDF;en" Click="OnClose"
                         MinWidth="100" IsDefault="True" Classes="action primary" />
             </StackPanel>
         </Grid>

@@ -8,6 +8,13 @@ internal static class Program
 {
     private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
+    /// <summary>
+    /// Ergebnis des CLI-Parsers, von <see cref="App"/> beim Startup abgeholt.
+    /// Statisch, weil der Avalonia-Lifecycle keine Stelle bietet, an der sich
+    /// Argumente sauber in die App-Instanz reichen liessen.
+    /// </summary>
+    public static DTM.Config.AppLaunchOptions LaunchOptions { get; private set; } = new();
+
     [STAThread]
     public static int Main(string[] args)
     {
@@ -22,6 +29,11 @@ internal static class Program
         // registriert App.OnFrameworkInitializationCompleted, sobald der
         // Dispatcher existiert.
         FatalErrorHandler.Install();
+
+        // CLI vor allem anderen auswerten — die REST-API-Optionen braucht die
+        // App beim Startup, und Parser-Warnungen sollen im Log stehen, bevor
+        // irgendetwas anderes passiert.
+        LaunchOptions = DTM.Config.AppLaunchOptions.Parse(args);
 
         // Single-Instance-Guard VOR Avalonia: laeuft schon eine Instanz, wird
         // sie nach vorn geholt und dieser Prozess beendet sich, ohne dass ein
@@ -40,7 +52,9 @@ internal static class Program
 
         try
         {
-            return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            // Nur die von DTM nicht verstandenen Argumente weiterreichen,
+            // damit Avalonia seine eigenen Flags noch sieht.
+            return BuildAvaloniaApp().StartWithClassicDesktopLifetime(LaunchOptions.RemainingArgs);
         }
         catch (Exception ex)
         {

@@ -18,8 +18,17 @@
     <ApplicationIcon>Assets\dtm.ico</ApplicationIcon>
   </PropertyGroup>
 
+  <!-- ASP.NET Core (Kestrel + Minimal-API) fuer die eingebaute REST-API unter
+       Data/Api/. FrameworkReference statt PackageReference: das Runtime-Bundle
+       steckt im .NET-10-SDK, es kommt kein NuGet-Paket dazu. -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Microsoft.Extensions.DependencyInjection kommt seit der REST-API ueber
+         den FrameworkReference Microsoft.AspNetCore.App mit. Ein zusaetzlicher
+         PackageReference bricht den Build mit NU1510. -->
     <PackageReference Include="MinVer">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

@@ -225,6 +225,55 @@ Rettung von Hand erhalten. Der Vorfall steht mit Begründung im Error-Log.
 
 ---
 
+## REST-API (optional, standardmäßig aus)
+
+DTM kann eine kleine HTTP-API im eigenen Prozess mitlaufen lassen, über die
+sich der Zustand auslesen, durch den Baum navigieren und ein Bildschirmfoto
+des Fensters abrufen lässt. Gedacht ist sie für automatisierte Prüfungen der
+Oberfläche — Screenshots entstehen über Avalonias eigenes Rendering, es wird
+nichts von außen ferngesteuert.
+
+**Sie ist standardmäßig aus und muss bewusst eingeschaltet werden:**
+
+```bash
+DTM.exe --api-port 8765 --api-token <geheim> --auto-shutdown-after 10m
+```
+
+Oder dauerhaft in `%APPDATA%\DTM\settings.json`:
+
+```json
+{ "Api": { "Enabled": true, "Port": 8765, "BearerToken": "<geheim>" } }
+```
+
+Jeder Aufruf braucht `Authorization: Bearer <token>`. Ohne gesetztes Token
+antwortet die API auf **jede** Anfrage mit `403` — eine offene Steuerschnittstelle
+auf einem Rechner mit Datenbankzugängen soll es nicht versehentlich geben.
+Gelauscht wird ausschließlich auf `127.0.0.1`; für den Zugriff von einem anderen
+Rechner ist ein SSH-Tunnel der vorgesehene Weg.
+
+| Endpunkt | Zweck |
+|---|---|
+| `GET /state` | Ausgewählter Knoten, Statuszeile, Kennzahlen der Datenbank, offene Fenster |
+| `GET /tree` | Server- und Datenbankbaum (`databasesLoaded` zeigt, ob schon geladen wurde) |
+| `GET /elements` | Namen aller ansprechbaren Bedienelemente |
+| `POST /select-node` | `{ "path": "SRV" }` oder `{ "path": "SRV/DATENBANK" }` |
+| `POST /command` | `{ "name": "ManageConnections" }` — Command des Hauptfensters |
+| `POST /click` | `{ "elementId": "CancelButton" }` |
+| `POST /text` | `{ "elementId": "…", "text": "…" }` |
+| `POST /screenshot` | PNG des Fensters (`?target=active`, `?format=json` für Base64) |
+
+**Was die API nicht darf.** Aktionen, die Datenbanken verändern — Backup,
+Clone, Snapshot anlegen/zurückspielen/löschen, Index-Rebuild, Shrink-Log,
+Archive-Log umschalten und das Bestätigen solcher Dialoge — sind gesperrt und
+liefern `403`. Freischalten nur bewusst, per `--api-allow-destructive` oder
+`"AllowDestructive": true`. Ohne diese Sperre könnte ein einzelner
+HTTP-Aufruf eine produktive Datenbank überschreiben.
+
+Der Datenbankbaum lädt seine Einträge erst beim Auswählen eines Servers:
+erst `/select-node` mit dem Servernamen, dann mit dem vollen Pfad.
+
+---
+
 ## Logs & Fehlersuche
 
 DTM verwendet **NLog**. Die Log-Dateien liegen neben der Anwendung unter `logs/`:
