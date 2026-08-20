@@ -971,7 +971,7 @@ keine handgebaute Titelleiste mehr im Projekt.
 Reines Konsolidierungs-Refactor, kein Release-Anlass fuer sich — aber
 zusammen mit dem Paletten-Umbau aus Phase 13.3 abgearbeitet.
 
-#### Phase 13 — Skill-Compliance-Nachzug (`v2.5.0`)
+#### Phase 13 — Skill-Compliance-Nachzug (ausgeliefert mit `v2.3.11`)
 
 Ergebnis eines vollstaendigen Abgleichs gegen den `kroste-avalonia`-Skill.
 Der Grossteil des Kanons war bereits erfuellt (Struktur, CPM, MinVer,
@@ -1100,7 +1100,7 @@ Benutzerhandbuch). Diese Phase schliesst die verbliebenen Luecken.
       Screenshot zeigt dann den alten Stand und man sucht den Fehler an
       der falschen Stelle. Immer erst `taskkill /IM DTM.exe`, dann bauen.)_
 
-#### Phase 14 — Lokale REST-API fuer UI-Pruefungen (`v2.6.0`)
+#### Phase 14 — Lokale REST-API fuer UI-Pruefungen (ausgeliefert mit `v2.3.11`)
 
 **Anlass:** Beim visuellen Abnehmen des Paletten-Umbaus (13.6) habe ich die
 Oberflaeche von aussen ferngesteuert — `SetForegroundWindow`, `mouse_event`,
