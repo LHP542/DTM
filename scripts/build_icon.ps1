@@ -46,8 +46,11 @@ function Add-RoundedRect($g, [float]$x, [float]$y, [float]$w, [float]$h, [float]
 }
 
 function Add-Background($g, [int]$size, [double]$scale) {
-    # Bei sehr kleinen Groessen kleinere Rundung, sonst wirkt es rund.
-    $corner = if ($size -ge 48) { [int]($CORNER * $scale) } else { [Math]::Max(2, [int]($size * 0.14)) }
+    # Radius IMMER gegen die Kantenlaenge deckeln. Ohne das Min traf bei der
+    # 48px-Variante ein Radius von 48 auf eine 48px-Flaeche: die vier Boegen
+    # ueberlappten sich, der Pfad degenerierte und das Icon zerfiel sichtbar
+    # an den Ecken (real im Windows-Explorer aufgefallen).
+    $corner = [Math]::Max(2, [int][Math]::Min($CORNER * $scale, $size * 0.22))
     $b = New-Object System.Drawing.SolidBrush $BG
     Add-RoundedRect $g 0 0 ($size - 1) ($size - 1) $corner $b
     $b.Dispose()
@@ -108,9 +111,13 @@ function New-IconLarge([int]$size) {
 }
 
 function New-IconSmall([int]$size) {
-    # Vereinfachte Variante fuer 16..48px (Windows-Taskbar, Explorer).
-    # Aggressives Padding, damit der blaue Grund nicht verschwindet;
-    # nur Deckel + Boden, keine Rillen, kein Akzent-Punkt.
+    # Vereinfachte Variante fuer 16..48px (Windows-Taskbar, Explorer, Alt-Tab).
+    # Nur Deckel + Koerper + Boden, keine Rillen, kein Akzent-Punkt.
+    #
+    # Proportionen sind der Knackpunkt: mit 28% Seitenpadding und 50% Hoehe war
+    # der Zylinder schmaler als hoch und las sich bei 16-32px als weisse Pille,
+    # nicht als Datenbank. Ein Zylinder wird erst dann erkennbar, wenn er
+    # deutlich BREITER als hoch ist und die Deckel-Ellipse sichtbar bleibt.
     $bmp = New-Object System.Drawing.Bitmap $size, $size,
         ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $g = New-Graphics $bmp
@@ -119,11 +126,21 @@ function New-IconSmall([int]$size) {
     $bFg     = New-Object System.Drawing.SolidBrush $FG
     $bShadow = New-Object System.Drawing.SolidBrush $FG_SHADOW
 
+    # Zwei Erkenntnisse aus dem 16px-Test:
+    # (1) rY mindestens 2px — bei 1px verschwindet die Deckel-Ellipse und der
+    #     Koerper liest sich als Rechteck.
+    # (2) Der Zylinder muss deutlich BREITER als hoch sein. Mit gleicher Breite
+    #     und Hoehe entstand ein weisser Klotz mit runden Kanten; erst ein
+    #     gedrungenes Verhaeltnis (~3:2) liest sich als Datenbank.
+    # (3) Die Ellipsen duerfen den Koerper nicht dominieren: mit rY=0.12 und
+    #     nur 25% Koerperhoehe sah das Ergebnis aus wie eine Untertasse.
+    #     Faustregel, die sich bewaehrt hat — Koerper etwa doppelt so hoch wie
+    #     eine Ellipse, Gesamtbreite etwa das 1,4-fache der Gesamthoehe.
     $cx   = $size / 2.0
-    $padX = [Math]::Max(2, [int]($size * 0.28))
+    $padX = [Math]::Max(2, [int]($size * 0.15))
     $rX   = $size / 2.0 - $padX
-    $topY = [int]($size * 0.28)
-    $botY = [int]($size * 0.78)
+    $topY = [int]($size * 0.33)
+    $botY = [int]($size * 0.70)
     $rY   = [Math]::Max(2, [int]($size * 0.09))
 
     $g.FillRectangle($bFg, ($cx - $rX), $topY, (2 * $rX), ($botY - $topY))

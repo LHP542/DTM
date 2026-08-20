@@ -41,7 +41,11 @@ CORNER = 48    # Rundung des Grunds
 def _draw_bg(d: ImageDraw.ImageDraw, size: int, scale: float) -> None:
     """Abgerundetes Quadrat als Grund (Kroste-Familien-Look)."""
     # Bei sehr kleinen Groessen kleinere Rundung, sonst wirkt es rund.
-    corner = int(CORNER * scale) if size >= 48 else max(2, int(size * 0.14))
+    # Radius IMMER gegen die Kantenlaenge deckeln. Ohne das Min traf bei der
+    # 48px-Variante ein Radius von 48 auf eine 48px-Flaeche: die Ecken
+    # degenerierten und das Icon zerfiel sichtbar (im Windows-Explorer
+    # aufgefallen, 2026-08-20).
+    corner = max(2, int(min(CORNER * scale, size * 0.22)))
     d.rounded_rectangle([(0, 0), (size - 1, size - 1)],
                         radius=corner, fill=BG)
 
@@ -100,24 +104,29 @@ def make_icon_large(size: int) -> Image.Image:
 
 def make_icon_small(size: int) -> Image.Image:
     """
-    Vereinfachte Variante fuer 16..48px (Windows-Taskbar, Explorer).
-    Aggressives Padding, damit blauer Grund nicht komplett verschwindet;
-    nur oberer Deckel + Rundung unten, keine Rillen, kein Akzent-Punkt.
-    Zylinder wirkt dadurch wie ein "kleiner weisser Turm" auf blauem Grund
-    (aus 30cm Entfernung noch als DB-Silhouette erkennbar).
+    Vereinfachte Variante fuer 16..48px (Windows-Taskbar, Explorer, Alt-Tab).
+    Nur Deckel + Koerper + Boden, keine Rillen, kein Akzent-Punkt.
+
+    Die Proportionen sind der Knackpunkt und wurden am 2026-08-20 korrigiert,
+    weil das Icon unter Windows schlecht aussah:
+    (1) r_y mindestens 2px — bei 1px verschwindet die Deckel-Ellipse und der
+        Koerper liest sich als Rechteck.
+    (2) Der Zylinder muss BREITER als hoch sein. Mit 28% Seitenpadding war er
+        schmaler als hoch und wirkte bei 16-32px wie eine weisse Pille.
+    (3) Die Ellipsen duerfen den Koerper nicht dominieren, sonst sieht es aus
+        wie eine Untertasse. Faustregel: Koerper etwa doppelt so hoch wie eine
+        Ellipse, Gesamtbreite etwa das 1,4-fache der Gesamthoehe.
     """
     img = Image.new("RGBA", (size, size), TRANSP)
     d = ImageDraw.Draw(img)
     _draw_bg(d, size, 1.0)
 
     cx = size / 2
-    # Padding: 28% seitlich (viel Grund sichtbar, kein "Weisser Kloetzchen"-Effekt)
-    pad_x = max(2, int(size * 0.28))
+    pad_x = max(2, int(size * 0.15))
     r_x = size / 2 - pad_x
 
-    # Vertikaler Aufbau: schmaler Rand oben/unten, dazwischen Zylinder
-    top_y = int(size * 0.28)
-    bot_y = int(size * 0.78)
+    top_y = int(size * 0.33)
+    bot_y = int(size * 0.70)
     r_y   = max(2, int(size * 0.09))
 
     # Body

@@ -1099,6 +1099,40 @@ Benutzerhandbuch). Diese Phase schliesst die verbliebenen Luecken.
       noch laeuft, schlaegt still fehl (DLL gesperrt) — der naechste
       Screenshot zeigt dann den alten Stand und man sucht den Fehler an
       der falschen Stelle. Immer erst `taskkill /IM DTM.exe`, dann bauen.)_
+- [x] **13.7** App-Icon in den kleinen Groessen repariert (Lars-Meldung
+      2026-08-20: "sieht auf Windows fuerchterlich aus"). — `S`
+      _(erledigt: zwei Fehler in `New-IconSmall`/`Add-Background`.
+
+      **(a) Die 48px-Variante war kaputt** — die Ecken zerfielen sichtbar.
+      Ursache: `Add-Background` nahm bei `size >= 48` den vollen Radius
+      `CORNER * scale`; die Small-Variante ruft aber mit `scale = 1.0`, also
+      traf ein Radius von 48 auf eine 48px-Flaeche. Die vier Boegen
+      ueberlappten sich und der Pfad degenerierte. Fix: Radius immer gegen
+      die Kantenlaenge deckeln (`min(CORNER * scale, size * 0.22)`).
+      48px ist die Standardgroesse im Explorer und auf dem Desktop — das
+      war mit hoher Wahrscheinlichkeit das, was Lars gesehen hat.
+
+      **(b) 16-32px sahen aus wie eine weisse Pille**, nicht wie eine
+      Datenbank. Drei Proportionsfehler, in dieser Reihenfolge gefunden:
+      der Zylinder war schmaler als hoch (28 % Seitenpadding); danach zu
+      flach, sodass er wie eine Untertasse wirkte; und `r_y` durfte nicht
+      unter 2px fallen, sonst verschwindet die Deckel-Ellipse und der
+      Koerper liest sich als Rechteck. Endwerte: Padding 15 %, Koerper von
+      33 % bis 70 % der Hoehe, `r_y` 9 % (mindestens 2px). Faustregel fuers
+      naechste Mal: **Koerper etwa doppelt so hoch wie eine Ellipse,
+      Gesamtbreite etwa das 1,4-fache der Gesamthoehe.**
+
+      Bei 16px bleibt es notgedrungen eine grobe Silhouette — auf
+      16x16 Pixeln ist ein Zylinder nicht wirklich darstellbar; dort traegt
+      die Farbkombination die Wiedererkennung. Die 256px-Master-PNG
+      (Fenster, Tray, AppImage) war nie betroffen, die nutzt
+      `New-IconLarge`.
+
+      Beide Generatoren (`build_icon.ps1` und `build_icon.py`) nachgezogen;
+      derselbe Radius-Bug steckte auch in der Skill-Vorlage und ist dort
+      ebenfalls behoben. Pruefweg: die ICO-Eintraege einzeln extrahieren und
+      als Kontaktbogen 1:1 plus vergroessert nebeneinander rendern — im
+      256px-Master faellt so ein Fehler naemlich gar nicht auf.)_
 
 #### Phase 14 — Lokale REST-API fuer UI-Pruefungen (ausgeliefert mit `v2.3.11`)
 
