@@ -10,7 +10,7 @@ namespace DTM.Views;
 
 public partial class AboutWindow : ChromeWindow
 {
-    private const string GitHubUrl = "https://github.com/Kroste/DTM";
+    private const string GitHubUrl = "https://github.com/LHP542/DTM";
     private const string BuyMeCoffeeUrl = "https://buymeacoffee.com/kroste";
 
     public AboutWindow()

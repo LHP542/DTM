@@ -23,7 +23,7 @@
 
 - **Name:** `DTM`
 - **Kurzbeschreibung:** Avalonia-Desktop-App zur PowerShell-gestützten Administration von MSSQL- und Oracle-Datenbanken (Backup, Clone, Snapshot, Archive-Log, Samba-Copy) über das Modul `FOC-SQL.psm1` in einer in-process PowerShell-Session.
-- **Repository:** `https://github.com/Kroste/DTM`
+- **Repository:** `https://github.com/LHP542/DTM`
 - **Lokaler Pfad:** `~/Entwicklung/DTM` (Linux) bzw. `D:\Entwicklung\DTM` (Windows)
 - **Projektspezifische Besonderheiten:** Embedded PowerShell-Runspace via `Microsoft.PowerShell.SDK`; externes Update-Skript `dtm_update.ps1`; keine KI-Integration; Logo der Landeshauptstadt Potsdam (`Assets/lhp_logo.png`).
 - **Bewusste Ausnahme — Localization (EN+DE):** Der Kroste-Skill führt UI-Localization (mindestens Englisch + Deutsch) als Pflicht. DTM ist davon **bewusst ausgenommen** und bleibt **rein deutsch**: Es ist ein internes Admin-Werkzeug für einen deutschsprachigen DBA-Kreis, die Fachbegriffe (Backup, Snapshot, Archive-Log, VERSION_MISMATCH-Banner) sind deutsch etabliert, und ein zweiter Sprachstrang würde nur Pflegeaufwand ohne Nutzer bringen. Diese Ausnahme gilt damit dokumentiert (analog zur Cross-Platform-Ausnahme-Klausel des Skills) und ist **nicht** als Abweichung zu „reparieren". Sollte DTM je extern/mehrsprachig genutzt werden, wird das Localization-Gerüst nach Skill-Template nachgezogen.
@@ -57,7 +57,7 @@ Zentrale Metadaten, damit nichts pro csproj wiederholt wird:
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Authors>Lars Oste</Authors>
-    <RepositoryUrl>https://github.com/Kroste/$(MSBuildProjectName)</RepositoryUrl>
+    <RepositoryUrl>https://github.com/LHP542/$(MSBuildProjectName)</RepositoryUrl>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>
@@ -230,7 +230,7 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
   Logische Spezialisierung der allgemeinen Secrets-Regel.
 
 - **FOC-SQL als Dev-Submodul:** Das PowerShell-Modul `FOC-SQL.psm1` ist unter
-  `external/FOC-SQL/` als Git-Submodul (`https://github.com/Kroste/FOC-SQL.git`)
+  `external/FOC-SQL/` als Git-Submodul (`https://github.com/LHP542/FOC-SQL.git`)
   eingebunden — **ausschließlich als Code-Referenz für die Entwicklung** (Aufrufe
   und Verhalten der Modulfunktionen wie `Backup-Database`, `Set-Snapshot`,
   `Restore-Snapshot` im Original nachschlagen). Die DTM-Runtime lädt das Modul
@@ -538,7 +538,7 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
       auf dem MSSQL-Server (`Database-Snapshot-Delete -Day n` wird dort regelmäßig
       ausgeführt). DTM braucht dafür keinen UI-Pfad. — `S` 📦
       _(skip, redundant zum Server-Side-Job)_
-- [x] **4.2** `AboutWindow` ergänzen: GitHub-Link auf `https://github.com/Kroste/DTM`
+- [x] **4.2** `AboutWindow` ergänzen: GitHub-Link auf `https://github.com/LHP542/DTM`
       + „Buy me a coffee"-Button (`buymeacoffee.com`). — `S`
       _(erledigt: dieser Commit; zwei Buttons vor dem Footer, BMC-URL
       `https://buymeacoffee.com/kroste` aus `.github/FUNDING.yml`. Browser-Open

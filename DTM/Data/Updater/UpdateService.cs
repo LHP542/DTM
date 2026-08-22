@@ -32,7 +32,7 @@ public sealed class UpdateService : IDisposable
     private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
     private const string ReleasesUrl =
-        "https://api.github.com/repos/Kroste/DTM/releases/latest";
+        "https://api.github.com/repos/LHP542/DTM/releases/latest";
     private const string ReleaseNotesRawUrl =
         "https://raw.githubusercontent.com/Kroste/DTM/main/release-notes.json";
 

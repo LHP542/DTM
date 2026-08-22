@@ -1,7 +1,10 @@
 # DTM — Datenbank-Manager
 
-[![CI](https://github.com/Kroste/DTM/actions/workflows/ci.yml/badge.svg)](https://github.com/Kroste/DTM/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/Kroste/DTM)](https://github.com/Kroste/DTM/releases)
+> Projekt der **Arbeitsgruppe 5424 IT-Basis-Dienste** der Landeshauptstadt Potsdam.
+> Alle dienstlichen Repos liegen in der GitHub-Organisation [LHP542](https://github.com/LHP542).
+
+[![CI](https://github.com/LHP542/DTM/actions/workflows/ci.yml/badge.svg)](https://github.com/LHP542/DTM/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/LHP542/DTM)](https://github.com/LHP542/DTM/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Avalonia-Desktop-App (.NET 10) zur Verwaltung von MSSQL- und Oracle-Datenbanken
@@ -10,7 +13,7 @@ laufen über das PowerShell-Modul **FOC-SQL.psm1**; DTM baut kein eigenes
 Remoting nach, sondern ruft die Modulfunktionen in einer eingebetteten
 PowerShell-Session auf.
 
-Entwickelt von **Lars Oste** · Landeshauptstadt Potsdam · Fachbereich 54.2
+Entwickelt von **Lars Oste** · Landeshauptstadt Potsdam · Arbeitsgruppe 5424 IT-Basis-Dienste
 
 ![DTM Hauptfenster](docs/screenshot-main.png)
 
@@ -18,7 +21,7 @@ Entwickelt von **Lars Oste** · Landeshauptstadt Potsdam · Fachbereich 54.2
 
 ## Installation
 
-Fertige Pakete gibt es auf der [Releases-Seite](https://github.com/Kroste/DTM/releases):
+Fertige Pakete gibt es auf der [Releases-Seite](https://github.com/LHP542/DTM/releases):
 
 **Windows:** `DTM-vX.Y.Z-windows.zip` herunterladen, entpacken, `DTM.exe`
 starten. Keine Installation nötig (self-contained, .NET-Runtime ist enthalten).
@@ -99,13 +102,13 @@ Unter **FOC-SQL Modul** im gleichen Dialog:
 ## Auto-Update
 
 DTM prüft beim Start (einmalig pro App-Start, im Hintergrund) gegen die
-[GitHub-Releases-Seite](https://github.com/Kroste/DTM/releases), ob eine neuere
+[GitHub-Releases-Seite](https://github.com/LHP542/DTM/releases), ob eine neuere
 Version verfügbar ist. Ein manueller Check ist jederzeit über **ℹ → Auf Updates
 prüfen** in der About-Box möglich (umgeht den Cache).
 
 ### Ablauf
 
-1. DTM ruft `api.github.com/repos/Kroste/DTM/releases/latest` auf (proxy-fähig
+1. DTM ruft `api.github.com/repos/LHP542/DTM/releases/latest` auf (proxy-fähig
    via `WebRequest.DefaultWebProxy` + `CredentialCache.DefaultCredentials`).
 2. Ist die veröffentlichte Version größer als die laufende (`Assembly­Informational­Version`),
    erscheint der Update-Dialog mit den Release Notes zwischen aktueller und
@@ -297,7 +300,7 @@ Bei einem Problem bitte ein Issue mit der aktuellen Logdatei eröffnen.
 
 ```bash
 # Klone (inkl. Dev-Submodul FOC-SQL unter external/):
-git clone --recurse-submodules https://github.com/Kroste/DTM.git
+git clone --recurse-submodules https://github.com/LHP542/DTM.git
 # oder, falls schon geklont:
 git submodule update --init external/FOC-SQL
 

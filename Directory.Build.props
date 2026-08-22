@@ -5,7 +5,7 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Authors>Lars Oste</Authors>
-    <RepositoryUrl>https://github.com/Kroste/$(MSBuildProjectName)</RepositoryUrl>
+    <RepositoryUrl>https://github.com/LHP542/$(MSBuildProjectName)</RepositoryUrl>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>
