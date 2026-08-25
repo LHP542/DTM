@@ -39,27 +39,37 @@ jobs:
       - name: Build DTM (Release)
         run: dotnet build DTM.slnx -c Release
 
+      # KEINE VSTest-Flags. Seit DTM ueber die Microsoft.Testing.Platform
+      # laeuft, kennt der Runner "--logger" und "--results-directory" nicht:
+      # er meldet "Unknown option", fuehrt NULL Tests aus und endet mit
+      # "Zero tests ran" / Exitcode 5. Der Lauf ist dann rot, OHNE dass ein
+      # Test fehlschlaegt.
+      #
+      # Den TRX-Report bringt xunit selbst mit, er heisst --report-xunit-trx
+      # (nicht --report-trx, das gehoert zu einer separaten
+      # Testing-Platform-Erweiterung). Optionen fuer die Test-App stehen
+      # hinter dem "--"-Separator.
       - name: Tests ausfuehren
         run: >
-          dotnet test DTM.Tests/DTM.Tests.csproj --no-build -c Release
-          --logger "console;verbosity=normal"
-          --logger "trx;LogFileName=test-results.trx"
-          --results-directory TestResults
+          dotnet test DTM.Tests/DTM.Tests.csproj --no-build -c Release --
+          --report-xunit-trx --report-xunit-trx-filename test-results.trx
 
       # Ohne diesen Schritt steht bei einem roten Lauf nur "Process completed
       # with exit code 1" in der Job-Zusammenfassung — die eigentliche
       # Fehlermeldung liegt im Job-Log, und das laesst sich ueber die API nur
-      # mit Admin-Rechten am Repo herunterladen. Wer den Fehler ohne
-      # Browser-Zugriff nachvollziehen will (kein gh auf dem Arbeitslaptop),
-      # steht sonst vor einer Wand. ::error:: landet dagegen als Annotation
-      # und ist ueber die oeffentliche API lesbar.
+      # mit Admin-Rechten am Repo herunterladen. Mit angemeldetem gh geht
+      # "gh run view <ID> --log-failed", aber die Annotation steht direkt am
+      # Lauf und ist auch ohne gh ueber die oeffentliche API lesbar.
+      #
+      # Die TRX schreibt xunit neben die Test-Assembly, nicht nach
+      # TestResults/ im Repo-Root — deshalb rekursiv suchen.
       - name: Fehlgeschlagene Tests als Annotation ausgeben
         if: failure()
         shell: bash
         run: |
-          shopt -s nullglob
+          shopt -s nullglob globstar
           found=0
-          for trx in TestResults/*.trx; do
+          for trx in **/TestResults/*.trx; do
             found=1
             python3 - "$trx" <<'PY'
           import sys, xml.etree.ElementTree as ET
