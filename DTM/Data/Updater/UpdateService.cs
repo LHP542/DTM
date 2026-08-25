@@ -12,7 +12,7 @@ namespace DTM.Updater;
 
 /// <summary>
 /// Update-Check + Self-Update. Zwei Kanaltypen, erkannt an der Schreibweise
-/// der Einstellung <c>UpdateSource</c> (siehe <see cref="UpdateChannel"/>):
+/// der Einstellung <c>UpdateChannel</c> (siehe <see cref="UpdateChannel"/>):
 ///
 /// <list type="bullet">
 /// <item><b>Ordner im Netz</b> (Standard) — das Rollout-Verzeichnis
@@ -44,27 +44,42 @@ public sealed class UpdateService : IDisposable
     private const string ReleaseNotesRawUrl =
         "https://raw.githubusercontent.com/LHP542/DTM/main/release-notes.json";
 
-    private readonly HttpClient _http;
+    private readonly Lazy<HttpClient> _http;
     private readonly string _channel;
+    private readonly bool _isWindows;
     private UpdateCheckResult? _cached;
 
     /// <param name="channel">
     /// Update-Quelle. Leer = <see cref="UpdateChannel.DefaultFolder"/>.
-    /// Wird ueblicherweise aus <c>AppSettingsStore.LoadFocSql().UpdateSource</c>
+    /// Wird ueblicherweise aus <c>AppSettingsStore.LoadFocSql().UpdateChannel</c>
     /// gespeist; als Parameter, damit Tests einen Temp-Ordner setzen koennen.
     /// </param>
-    public UpdateService(string? channel = null)
+    /// <param name="isWindows">
+    /// Bestimmt, nach welchem Paketformat gesucht wird. Injizierbar, damit
+    /// beide Plattform-Zweige unabhaengig vom Test-Host geprueft werden
+    /// koennen — dieselbe Ueberlegung wie bei <see cref="SelectAsset"/>.
+    /// </param>
+    public UpdateService(string? channel = null, bool? isWindows = null)
     {
         _channel = UpdateChannel.Resolve(channel);
+        _isWindows = isWindows ?? RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        var handler = new HttpClientHandler
+        // Lazy: der Ordner-Kanal braucht keinen HttpClient. Ihn trotzdem im
+        // Konstruktor zu bauen hiesse, bei jedem Start einen Proxy-Handler mit
+        // Windows-Integrated-Credentials aufzusetzen — auf Nicht-Windows
+        // unnoetig und je nach Laufzeit nicht unterstuetzt.
+        _http = new Lazy<HttpClient>(() =>
         {
-            Proxy = WebRequest.DefaultWebProxy,
-            DefaultProxyCredentials = CredentialCache.DefaultCredentials
-        };
-        _http = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(60) };
-        _http.DefaultRequestHeaders.UserAgent.ParseAdd("DTM-UpdateCheck");
-        _http.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+            var handler = new HttpClientHandler
+            {
+                Proxy = WebRequest.DefaultWebProxy,
+                DefaultProxyCredentials = CredentialCache.DefaultCredentials
+            };
+            var client = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(60) };
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("DTM-UpdateCheck");
+            client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+            return client;
+        });
 
         _logger.Debug("Update-Kanal: {0} ({1})", _channel,
             UpdateChannel.LooksLikeFolder(_channel) ? "Ordner" : "GitHub");
@@ -120,7 +135,7 @@ public sealed class UpdateService : IDisposable
         try
         {
             _logger.Debug("Update-Check: {0}", ReleasesUrl);
-            using var response = await _http.GetAsync(ReleasesUrl, ct);
+            using var response = await _http.Value.GetAsync(ReleasesUrl, ct);
             response.EnsureSuccessStatusCode();
 
             using var json = JsonDocument.Parse(await response.Content.ReadAsStreamAsync(ct));
@@ -141,7 +156,7 @@ public sealed class UpdateService : IDisposable
             string releaseUrl = root.TryGetProperty("html_url", out var urlEl)
                 ? urlEl.GetString() ?? string.Empty : string.Empty;
             var (assetName, assetUrl) = SelectAsset(
-                root, RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+                root, _isWindows);
 
             var current = CurrentVersion();
             _cached = new UpdateCheckResult(current, latest, latest > current,
@@ -167,7 +182,7 @@ public sealed class UpdateService : IDisposable
         var sw = Stopwatch.StartNew();
 
         (string? path, Version? latest) = UpdateChannel.FindNewestPackage(
-            _channel, RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+            _channel, _isWindows);
 
         if (path is null || latest is null)
         {
@@ -226,7 +241,7 @@ public sealed class UpdateService : IDisposable
             }
             else
             {
-                notes = await _http.GetFromJsonAsync<List<ReleaseNote>>(source, options, ct);
+                notes = await _http.Value.GetFromJsonAsync<List<ReleaseNote>>(source, options, ct);
             }
 
             if (notes is null) return Array.Empty<ReleaseNote>();
@@ -405,7 +420,7 @@ public sealed class UpdateService : IDisposable
     private async Task DownloadWithProgressAsync(string url, string dest,
         IProgress<double>? progress, CancellationToken ct)
     {
-        using var resp = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+        using var resp = await _http.Value.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
         resp.EnsureSuccessStatusCode();
         var total = resp.Content.Headers.ContentLength ?? -1L;
 
@@ -513,7 +528,12 @@ public sealed class UpdateService : IDisposable
         return true;
     }
 
-    public void Dispose() => _http.Dispose();
+    public void Dispose()
+    {
+        // Nur wegwerfen, was auch gebaut wurde — beim Ordner-Kanal entsteht
+        // nie ein HttpClient.
+        if (_http.IsValueCreated) _http.Value.Dispose();
+    }
 }
 
 public sealed record UpdateCheckResult(

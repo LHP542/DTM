@@ -53,7 +53,7 @@ public class UpdateServiceFolderTests : IDisposable
         SystemFile.WriteAllText(Path.Combine(_dir, "DTM-v9.9.9-windows.zip"), "x");
         SystemFile.WriteAllText(Path.Combine(_dir, "DTM-v9.9.9-x86_64.AppImage"), "x");
 
-        using var svc = new UpdateService(_dir);
+        using var svc = new UpdateService(_dir, isWindows: true);
         UpdateCheckResult? result = await svc.CheckForUpdateAsync(ct: TestContext.Current.CancellationToken);
 
         result.Should().NotBeNull();
@@ -66,7 +66,7 @@ public class UpdateServiceFolderTests : IDisposable
     [Fact]
     public async Task CheckForUpdate_EmptyFolder_ReturnsNull()
     {
-        using var svc = new UpdateService(_dir);
+        using var svc = new UpdateService(_dir, isWindows: true);
 
         UpdateCheckResult? result = await svc.CheckForUpdateAsync(ct: TestContext.Current.CancellationToken);
 
@@ -77,7 +77,7 @@ public class UpdateServiceFolderTests : IDisposable
     public async Task CheckForUpdate_MissingFolder_ReturnsNullWithoutThrowing()
     {
         // Notebook ohne Netzlaufwerk: kein Fehler, nur kein Update.
-        using var svc = new UpdateService(Path.Combine(_dir, "nicht-da"));
+        using var svc = new UpdateService(Path.Combine(_dir, "nicht-da"), isWindows: true);
 
         UpdateCheckResult? result = await svc.CheckForUpdateAsync(ct: TestContext.Current.CancellationToken);
 
@@ -97,7 +97,7 @@ public class UpdateServiceFolderTests : IDisposable
             Path.Combine(_dir, UpdateChannel.ReleaseNotesFileName),
             JsonSerializer.Serialize(notes));
 
-        using var svc = new UpdateService(_dir);
+        using var svc = new UpdateService(_dir, isWindows: true);
         IReadOnlyList<ReleaseNote> result = await svc.LoadReleaseNotesAsync(
             new Version(2, 3, 10), new Version(2, 3, 11),
             TestContext.Current.CancellationToken);
@@ -113,7 +113,7 @@ public class UpdateServiceFolderTests : IDisposable
     public async Task LoadReleaseNotes_MissingFile_ReturnsEmpty()
     {
         // Fehlende Notizen sind kein Grund, ein Update zu verschweigen.
-        using var svc = new UpdateService(_dir);
+        using var svc = new UpdateService(_dir, isWindows: true);
 
         IReadOnlyList<ReleaseNote> result = await svc.LoadReleaseNotesAsync(
             new Version(1, 0, 0), new Version(9, 0, 0),
@@ -128,7 +128,7 @@ public class UpdateServiceFolderTests : IDisposable
         SystemFile.WriteAllText(
             Path.Combine(_dir, UpdateChannel.ReleaseNotesFileName), "{ kaputt [[[");
 
-        using var svc = new UpdateService(_dir);
+        using var svc = new UpdateService(_dir, isWindows: true);
         IReadOnlyList<ReleaseNote> result = await svc.LoadReleaseNotesAsync(
             new Version(1, 0, 0), new Version(9, 0, 0),
             TestContext.Current.CancellationToken);
