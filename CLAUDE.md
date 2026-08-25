@@ -1208,6 +1208,71 @@ schon geladen wurde. Datenbanknamen werden ohne Status-Suffix erwartet
 definierten Groessen) und ein `/wait`-Endpunkt, der auf einen Zustand
 wartet, statt im Skript zu schlafen. Beides erst bauen, wenn es fehlt.
 
+#### Phase 15 — Update-Weg zurueck auf ein Netzlaufwerk (`v2.3.12`)
+
+**Anlass (Lars, 2026-08-25):** „Die Aktualisierung ueber Github funktioniert
+auf Arbeit leider nicht mehr." Kuenftig liegen die ZIPs unter
+`\\samba01\542$\5424_IT-Basis-Dienste\MS-SQL\DTM`.
+
+Der Skill deckt das bereits ab — `references/autoupdate.md` →
+„Ausnahme fuer dienstliche Werkzeuge: ein Ordner im Netz", geschrieben nach
+dem Checkmk-Cockpit-Fall, **mit DTM namentlich in der Ausnahmeliste**. Es war
+also nichts nachzutragen, nur umzusetzen. Referenz-Implementierung:
+`Checkmk.App/Services/FileShareUpdateChecker.cs`.
+
+- [x] **15.1** `Data/Updater/UpdateChannel.cs` — die reine Logik, ohne Netz-
+      und Dateizugriff im Kern und damit ohne Share testbar:
+      `LooksLikeFolder` (Kanaltyp an der Schreibweise, kein zweiter Schalter),
+      `Resolve` (leer → Default-Ordner), `ParseVersionFromFileName`,
+      `Normalize` (vier Segmente), `FindNewestPackage`. — `M`
+- [x] **15.2** `UpdateService` verzweigt an drei Stellen: Check,
+      Release-Notes, Paket-Beschaffung. Bewusst **kein** `IUpdateChecker`-
+      Interface wie bei Checkmk — dort waehlt die DI-Registrierung zwischen
+      zwei Checkern, DTM hat einen Service ohne Interface, und zwei
+      Checker-Klassen muessten sich Apply/Terminate teilen. Der Gewinn haette
+      den Umbau nicht getragen; die inhaltlichen Regeln sind alle umgesetzt. — `M`
+- [x] **15.3** Neues Settings-Feld `UpdateChannel` **statt** des alten
+      `UpdateSource`. — `S`
+      _(Der wichtigste Fund des Tages: `UpdateSource` gab es bis v2.2.0 schon
+      einmal fuer denselben Zweck, und in Lars' echter settings.json steht
+      dort noch `…\MS-SQL\DTM_Update\AktuelleVersion` — das **abgeloeste**
+      Verzeichnis. Haette ich das Feld wiederverwendet (mein erster Ansatz),
+      waeren genau die Bestandsnutzer unbemerkt auf dem falschen Ordner
+      gelandet, waehrend Neuinstallationen korrekt laufen. Der neue Name
+      faengt bei allen mit dem Default an; `UpdateSource` faellt beim
+      naechsten Speichern aus der Datei, weil unbekannte Felder beim Lesen
+      ignoriert werden.)_
+- [x] **15.4** Update-Quelle im ConnectionManagerWindow pflegbar gemacht.
+      Vorher wurde das Feld nur durchgereicht, ohne UI — ein Wechsel zurueck
+      auf GitHub haette Handarbeit an der JSON verlangt. — `S`
+- [x] **15.5** Tests: 33 neue (Kanaltyp-Erkennung, Version aus Dateiname,
+      Paketwahl, Release-Notes aus dem Ordner), 471 gesamt gruen. — `M`
+
+**Die vier Regeln aus dem Skill, die real etwas verhindern:**
+1. **Hoechste Version gewinnt, nicht neuester Zeitstempel.** Kopiert jemand
+   ein aelteres Paket zurueck, ist es die juengste Datei — nach `LastWriteTime`
+   sortiert waere das ein „Update" auf eine aeltere Version. Eigener Test.
+2. **Version aus dem Dateinamen.** Sie aus dem Paket zu lesen hiesse, es bei
+   jedem Start herunterzuladen und auszupacken.
+3. **Auch vom Share erst kopieren, dann entpacken.** Das Paket koennte
+   zwischen Pruefung und Entpacken ausgetauscht werden, und ein wegbrechendes
+   Netzlaufwerk wuerde ein halb ersetztes Programmverzeichnis hinterlassen.
+4. **Unerreichbarer Ordner ist `Debug`, nicht `Error`.** Ein Notebook ohne
+   Netzlaufwerk ist der Normalfall; sonst steht im Log jedes mobilen Nutzers
+   taeglich ein Fehler, den niemand beheben kann.
+
+**Live geprueft** (Kanal temporaer auf einen Testordner, settings.json vorher
+gesichert und danach zurueckgespielt): Paketwahl nach Version, kein Update bei
+aelterem Paket, Update-Dialog samt Release-Notes und MSSQL-Banner aus der
+`release-notes.json` im Ordner. Der echte Share existiert und ist erreichbar,
+war zum Zeitpunkt der Umstellung aber noch leer.
+
+**Nebenbefund:** Der `ScrollViewer` im `UpdatePromptWindow` hatte kein
+`HorizontalScrollBarVisibility="Disabled"`. Ohne das darf der Inhalt beliebig
+breit messen und `TextWrapping="Wrap"` greift nie. Nachgezogen — der im
+Screenshot sichtbare Textabriss im MSSQL-Banner blieb allerdings bestehen und
+ist vermutlich ein Rand-Artefakt des In-Process-Screenshots, kein Layoutfehler.
+
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 
 Lars-Idee aus dem v2.0.0-Test: ein eigener Button bzw. Dialog, der **mehr

@@ -16,7 +16,16 @@ public sealed partial class ConnectionManagerViewModel : ViewModelBase
 
     [ObservableProperty] private string _sambaSource = string.Empty;
     [ObservableProperty] private string _modulePath = string.Empty;
-    [ObservableProperty] private string _updateSource = string.Empty;
+
+    /// <summary>
+    /// Update-Quelle: leer = Rollout-Verzeichnis im Netz, <c>https://…</c> =
+    /// GitHub. Siehe <see cref="DTM.Updater.UpdateChannel"/>.
+    /// </summary>
+    [ObservableProperty] private string _updateChannel = string.Empty;
+
+    /// <summary>Platzhalter im Eingabefeld — zeigt, was ohne Eintrag gilt.</summary>
+    public static string UpdateChannelPlaceholder =>
+        $"leer = {DTM.Updater.UpdateChannel.DefaultFolder}";
 
     public ConnectionManagerViewModel()
     {
@@ -26,18 +35,26 @@ public sealed partial class ConnectionManagerViewModel : ViewModelBase
         FocSqlConfig foc = AppSettingsStore.LoadFocSql();
         _sambaSource = foc.SambaSource;
         _modulePath = foc.ModulePath;
-        _updateSource = foc.UpdateSource;
+        _updateChannel = foc.UpdateChannel;
 
         _logger.Debug("ConnectionManager: {0} Verbindungen geladen.", Connections.Count);
     }
 
     public void SaveFocSql()
     {
-        FocSqlConfig config = new() { SambaSource = SambaSource, ModulePath = ModulePath, UpdateSource = UpdateSource };
+        FocSqlConfig config = new()
+        {
+            SambaSource = SambaSource,
+            ModulePath = ModulePath,
+            UpdateChannel = UpdateChannel,
+        };
         AppSettingsStore.SaveFocSql(config);
         FocSqlRuntime.Current = config;
         TerminalBus.SendScript(FocSqlRuntime.BuildImportSnippet());
-        _logger.Info("FOC-SQL: SambaSource={0}, ModulePath={1}", SambaSource, ModulePath);
+        // Der Kanal wird beim App-Start in den UpdateService gegeben — eine
+        // Aenderung greift daher erst beim naechsten Start.
+        _logger.Info("FOC-SQL: SambaSource={0}, ModulePath={1}, UpdateChannel={2}",
+            SambaSource, ModulePath, string.IsNullOrWhiteSpace(UpdateChannel) ? "(Default)" : UpdateChannel);
     }
 
     public void AddEntry(ConnectionEntry entry)

@@ -11,21 +11,29 @@ using SystemFile = System.IO.File;
 namespace DTM.Updater;
 
 /// <summary>
-/// Update-Check + Self-Update gegen GitHub Releases (Muster: Klemmbrett/
-/// Kroste-Standard). Ersetzt seit v2.3.0 den Samba-basierten Update-Weg —
-/// funktioniert Cross-Platform (Windows-ZIP, Linux tar.gz, AppImage
-/// inplace) ohne SMB-Abhaengigkeit.
+/// Update-Check + Self-Update. Zwei Kanaltypen, erkannt an der Schreibweise
+/// der Einstellung <c>UpdateSource</c> (siehe <see cref="UpdateChannel"/>):
 ///
-/// Prinzipien:
+/// <list type="bullet">
+/// <item><b>Ordner im Netz</b> (Standard) — das Rollout-Verzeichnis
+///       <c>\\samba01\…\MS-SQL\DTM</c>. Kein Proxy, kein Internetzugang; das
+///       Ausrollen ist ein Kopiervorgang. Seit 2026-08-25 der Regelweg, weil
+///       GitHub aus dem Firmennetz nicht mehr erreichbar ist.</item>
+/// <item><b>GitHub Releases</b> — greift, sobald in der Einstellung eine
+///       <c>https://</c>-Adresse steht. Fuer Entwicklung ausserhalb des
+///       Firmennetzes.</item>
+/// </list>
+///
+/// Prinzipien (unveraendert fuer beide Kanaele):
 /// - Nie silent installieren: User muss zustimmen (UpdatePromptWindow).
-/// - Fehler nur Warn-Log — offline/Proxy stoert die App nicht.
-/// - Max. 1 echter GitHub-Check pro App-Start (Cache); der manuelle
+/// - Fehler nur Warn-Log — offline/Proxy/fehlendes Netzlaufwerk stoeren die
+///   App nicht.
+/// - Max. 1 echter Check pro App-Start (Cache); der manuelle
 ///   "Auf Updates pruefen"-Button im AboutWindow umgeht den Cache
 ///   ueber <c>forceRefresh=true</c>.
-/// - Proxy-aware HttpClient (DefaultProxy + Negotiate) — laeuft
-///   identisch am Arbeitsplatz und zuhause.
-/// - Release-Notes werden aus dem Raw-File des Repos geladen
-///   (release-notes.json auf main), unabhaengig vom Release-Bundle.
+/// - Proxy-aware HttpClient (DefaultProxy + Negotiate) fuer den GitHub-Weg.
+/// - Das Paket wird auch vom Share erst in den Temp-Ordner kopiert und dann
+///   entpackt, nie direkt vom Netzlaufwerk (siehe <see cref="FetchAsync"/>).
 /// </summary>
 public sealed class UpdateService : IDisposable
 {
@@ -34,13 +42,21 @@ public sealed class UpdateService : IDisposable
     private const string ReleasesUrl =
         "https://api.github.com/repos/LHP542/DTM/releases/latest";
     private const string ReleaseNotesRawUrl =
-        "https://raw.githubusercontent.com/Kroste/DTM/main/release-notes.json";
+        "https://raw.githubusercontent.com/LHP542/DTM/main/release-notes.json";
 
     private readonly HttpClient _http;
+    private readonly string _channel;
     private UpdateCheckResult? _cached;
 
-    public UpdateService()
+    /// <param name="channel">
+    /// Update-Quelle. Leer = <see cref="UpdateChannel.DefaultFolder"/>.
+    /// Wird ueblicherweise aus <c>AppSettingsStore.LoadFocSql().UpdateSource</c>
+    /// gespeist; als Parameter, damit Tests einen Temp-Ordner setzen koennen.
+    /// </param>
+    public UpdateService(string? channel = null)
     {
+        _channel = UpdateChannel.Resolve(channel);
+
         var handler = new HttpClientHandler
         {
             Proxy = WebRequest.DefaultWebProxy,
@@ -49,7 +65,16 @@ public sealed class UpdateService : IDisposable
         _http = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(60) };
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("DTM-UpdateCheck");
         _http.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+
+        _logger.Debug("Update-Kanal: {0} ({1})", _channel,
+            UpdateChannel.LooksLikeFolder(_channel) ? "Ordner" : "GitHub");
     }
+
+    /// <summary>Der aktive Kanal — fuer Anzeige und Diagnose.</summary>
+    public string Channel => _channel;
+
+    /// <summary><c>true</c>, wenn der Kanal ein Ordner ist (kein GitHub).</summary>
+    public bool UsesFolderChannel => UpdateChannel.LooksLikeFolder(_channel);
 
     /// <summary>
     /// Liest die laufende Version aus <c>AssemblyInformationalVersion</c>.
@@ -88,6 +113,8 @@ public sealed class UpdateService : IDisposable
         bool forceRefresh = false, CancellationToken ct = default)
     {
         if (!forceRefresh && _cached is not null) return _cached;
+
+        if (UsesFolderChannel) return CheckFolder();
 
         var sw = Stopwatch.StartNew();
         try
@@ -131,19 +158,77 @@ public sealed class UpdateService : IDisposable
     }
 
     /// <summary>
-    /// Laedt <c>release-notes.json</c> als Raw-File aus dem Repo und
-    /// filtert die Eintraege im Bereich (currentVersion, newVersion].
-    /// Sortiert absteigend. Leere Liste bei Fehler / Datei fehlt.
+    /// Prueft den Ordner-Kanal. Laeuft synchron — es sind ein
+    /// <c>Directory.Exists</c> und ein Verzeichnis-Listing, kein Netz-Roundtrip
+    /// wie bei GitHub.
+    /// </summary>
+    private UpdateCheckResult? CheckFolder()
+    {
+        var sw = Stopwatch.StartNew();
+
+        (string? path, Version? latest) = UpdateChannel.FindNewestPackage(
+            _channel, RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+
+        if (path is null || latest is null)
+        {
+            // Kein Paket oder Ordner nicht erreichbar — beides bereits in
+            // UpdateChannel geloggt (Debug). Kein Cache: beim naechsten
+            // manuellen Versuch soll erneut geschaut werden.
+            return null;
+        }
+
+        var current = CurrentVersion();
+        bool available = UpdateChannel.Normalize(latest) > UpdateChannel.Normalize(current);
+
+        _cached = new UpdateCheckResult(
+            current, latest, available,
+            // "Release-Seite oeffnen" oeffnet den Ordner im Explorer — der
+            // sinnvollste Ersatz, wenn es keine Release-Seite gibt.
+            ReleaseUrl: _channel,
+            AssetName: Path.GetFileName(path),
+            AssetUrl: path);
+
+        _logger.Info("Update-Check (Ordner) fertig in {0} ms: aktuell {1}, neueste {2}, Update: {3}, Paket: {4}",
+            sw.ElapsedMilliseconds, current, latest, available, Path.GetFileName(path));
+        return _cached;
+    }
+
+    /// <summary>
+    /// Laedt <c>release-notes.json</c> und filtert die Eintraege im Bereich
+    /// (currentVersion, newVersion]. Sortiert absteigend. Leere Liste bei
+    /// Fehler oder fehlender Datei — fehlende Notizen sind kein Grund, ein
+    /// Update zu verschweigen.
+    ///
+    /// <para>Quelle ist der aktive Kanal: die Datei neben den Paketen im
+    /// Ordner bzw. das Raw-File im Repo.</para>
     /// </summary>
     public async Task<IReadOnlyList<ReleaseNote>> LoadReleaseNotesAsync(
         Version currentVersion, Version newVersion, CancellationToken ct = default)
     {
+        string source = UsesFolderChannel
+            ? Path.Combine(_channel, UpdateChannel.ReleaseNotesFileName)
+            : ReleaseNotesRawUrl;
+
         try
         {
-            var notes = await _http.GetFromJsonAsync<List<ReleaseNote>>(
-                ReleaseNotesRawUrl,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true },
-                ct);
+            List<ReleaseNote>? notes;
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+            if (UsesFolderChannel)
+            {
+                if (!SystemFile.Exists(source))
+                {
+                    _logger.Debug("Keine {0} im Update-Ordner.", UpdateChannel.ReleaseNotesFileName);
+                    return Array.Empty<ReleaseNote>();
+                }
+                await using var stream = SystemFile.OpenRead(source);
+                notes = await JsonSerializer.DeserializeAsync<List<ReleaseNote>>(stream, options, ct);
+            }
+            else
+            {
+                notes = await _http.GetFromJsonAsync<List<ReleaseNote>>(source, options, ct);
+            }
+
             if (notes is null) return Array.Empty<ReleaseNote>();
 
             return notes
@@ -153,7 +238,7 @@ public sealed class UpdateService : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.Warn(ex, "release-notes.json konnte nicht gelesen werden ({0}).", ReleaseNotesRawUrl);
+            _logger.Warn(ex, "release-notes.json konnte nicht gelesen werden ({0}).", source);
             return Array.Empty<ReleaseNote>();
         }
     }
@@ -241,8 +326,8 @@ public sealed class UpdateService : IDisposable
             Directory.CreateDirectory(work);
             var assetPath = Path.Combine(work, update.AssetName);
 
-            _logger.Info("Lade Update herunter: {0}", update.AssetName);
-            await DownloadWithProgressAsync(update.AssetUrl, assetPath, progress, ct);
+            _logger.Info("Hole Update-Paket: {0}", update.AssetName);
+            await FetchAsync(update.AssetUrl, assetPath, progress, ct);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 return ApplyWindows(assetPath, work, appDir);
@@ -283,6 +368,38 @@ public sealed class UpdateService : IDisposable
             _logger.Warn(ex, "Process.Kill fuer Self-Update fehlgeschlagen — Fallback Environment.Exit(0).");
             Environment.Exit(0);
         }
+    }
+
+    /// <summary>
+    /// Holt das Paket — per HTTP oder aus dem Ordner.
+    ///
+    /// <para><b>Auch vom Share wird kopiert, nicht direkt entpackt.</b> Zwei
+    /// Gruende: Das Paket koennte zwischen Pruefung und Entpacken ausgetauscht
+    /// werden, und ein Netzlaufwerk, das mitten im Entpacken wegbricht, wuerde
+    /// ein halb ersetztes Programmverzeichnis hinterlassen.</para>
+    /// </summary>
+    private async Task FetchAsync(string source, string dest,
+        IProgress<double>? progress, CancellationToken ct)
+    {
+        if (!UpdateChannel.LooksLikeFolder(source))
+        {
+            await DownloadWithProgressAsync(source, dest, progress, ct);
+            return;
+        }
+
+        await using var src = SystemFile.OpenRead(source);
+        await using var dst = SystemFile.Create(dest);
+        long total = src.Length;
+        var buffer = new byte[81920];
+        long read = 0;
+        int n;
+        while ((n = await src.ReadAsync(buffer, ct)) > 0)
+        {
+            await dst.WriteAsync(buffer.AsMemory(0, n), ct);
+            read += n;
+            if (total > 0) progress?.Report((double)read / total);
+        }
+        _logger.Debug("Vom Update-Ordner kopiert: {0} Bytes.", read);
     }
 
     private async Task DownloadWithProgressAsync(string url, string dest,

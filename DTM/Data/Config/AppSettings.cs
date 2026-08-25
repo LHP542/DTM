@@ -19,13 +19,28 @@ public sealed class FocSqlConfig
     public string SambaSource { get; set; } = string.Empty;
 
     /// <summary>
-    /// Legacy (bis v2.2.0): UNC-Pfad zum Samba-Update-Verzeichnis.
-    /// Seit v2.3.0 wird ueber GitHub Releases geupdatet (siehe
-    /// <see cref="DTM.Updater.UpdateService"/>) — das Feld bleibt nur,
-    /// damit bestehende settings.json weiter round-trippen; wird
-    /// nirgends mehr gelesen.
+    /// Quelle fuer Updates. Zwei Schreibweisen sind moeglich, der Typ wird
+    /// daran erkannt (siehe <see cref="DTM.Updater.UpdateChannel"/>):
+    /// <list type="bullet">
+    /// <item>UNC-Pfad oder Laufwerk → Ordner im Netz (Regelweg im Firmennetz,
+    ///       kein Proxy und kein Internetzugang noetig).</item>
+    /// <item><c>https://…</c> → GitHub-Releases-API (Entwicklung ausserhalb
+    ///       des Firmennetzes).</item>
+    /// </list>
+    ///
+    /// <para>Leer = <see cref="DTM.Updater.UpdateChannel.DefaultFolder"/>.</para>
+    ///
+    /// <para><b>Warum ein neues Feld statt des alten <c>UpdateSource</c>:</b>
+    /// Bis v2.2.0 gab es schon einmal einen Samba-Update-Weg, dessen Pfad in
+    /// <c>UpdateSource</c> stand — bei Bestandsnutzern zeigt der auf das
+    /// inzwischen abgeloeste Verzeichnis <c>…\MS-SQL\DTM_Update\AktuelleVersion</c>.
+    /// Haette man das Feld wiederverwendet, wuerden genau die Nutzer mit
+    /// Altbestand auf dem falschen Ordner landen, und zwar unbemerkt. Der neue
+    /// Name faengt bei allen mit dem Default an; <c>UpdateSource</c> faellt
+    /// beim naechsten Speichern aus der Datei (unbekannte Felder werden beim
+    /// Lesen ignoriert).</para>
     /// </summary>
-    public string UpdateSource { get; set; } = string.Empty;
+    public string UpdateChannel { get; set; } = string.Empty;
 
     /// <summary>
     /// Einstellungen der lokalen REST-API. Eigenes Unterobjekt, damit die

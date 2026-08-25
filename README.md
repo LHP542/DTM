@@ -101,30 +101,64 @@ Unter **FOC-SQL Modul** im gleichen Dialog:
 
 ## Auto-Update
 
-DTM prüft beim Start (einmalig pro App-Start, im Hintergrund) gegen die
-[GitHub-Releases-Seite](https://github.com/LHP542/DTM/releases), ob eine neuere
-Version verfügbar ist. Ein manueller Check ist jederzeit über **ℹ → Auf Updates
+DTM prüft beim Start (einmalig pro App-Start, im Hintergrund), ob eine neuere
+Version bereitliegt. Ein manueller Check ist jederzeit über **ℹ → Auf Updates
 prüfen** in der About-Box möglich (umgeht den Cache).
+
+### Update-Quelle
+
+Standard ist das **Rollout-Verzeichnis im Firmennetz**:
+
+```
+\\samba01\542$\5424_IT-Basis-Dienste\MS-SQL\DTM
+```
+
+Dort liegen die ZIP-Dateien; die Version steht im Dateinamen
+(`DTM-v2.3.12-windows.zip`). Ausrollen heißt: Datei hineinkopieren — fertig.
+Kein Proxy, kein Internetzugang, kein Release-Workflow nötig.
+
+Die Quelle ist im Verbindungsmanager unter **Update-Quelle** einstellbar
+(gespeichert in `%APPDATA%\DTM\settings.json` als `UpdateChannel`, wirkt beim
+nächsten Start). Welcher Kanaltyp gilt, erkennt DTM an der Schreibweise:
+
+| Eintrag | Bedeutung |
+|---|---|
+| *(leer)* | Rollout-Verzeichnis oben |
+| `\\server\freigabe\…` oder `D:\…` | Anderer Ordner |
+| `https://…` | GitHub-Releases-API (für Entwicklung außerhalb des Firmennetzes) |
+
+> Bis v2.3.11 lief der Update-Weg ausschließlich über GitHub. Da GitHub aus dem
+> Firmennetz nicht mehr erreichbar ist, ist der Ordner seit v2.3.12 der
+> Regelweg.
 
 ### Ablauf
 
-1. DTM ruft `api.github.com/repos/LHP542/DTM/releases/latest` auf (proxy-fähig
-   via `WebRequest.DefaultWebProxy` + `CredentialCache.DefaultCredentials`).
-2. Ist die veröffentlichte Version größer als die laufende (`Assembly­Informational­Version`),
+1. DTM sucht im Ordner das Paket mit der **höchsten Version** — nicht das
+   zuletzt geänderte. (Kopiert jemand ein älteres Paket zurück, wäre es sonst
+   das „neueste" und DTM böte ein Downgrade an.)
+2. Ist diese Version größer als die laufende (`AssemblyInformationalVersion`),
    erscheint der Update-Dialog mit den Release Notes zwischen aktueller und
-   Zielversion (aus `raw.githubusercontent.com/Kroste/DTM/main/release-notes.json`):
+   Zielversion (aus der `release-notes.json` neben den Paketen):
 
    | Option | Verhalten |
    |--------|-----------|
-   | **Jetzt aktualisieren** | Lädt das passende Plattform-Asset (Windows-ZIP / Linux-tar.gz / AppImage), zeigt einen Fortschrittsbalken und startet ein Skript, das nach dem Beenden von DTM die Dateien austauscht und die App neu startet. |
-   | **Später** | Erinnerung beim nächsten App-Start. |
+   | **Jetzt aktualisieren** | Kopiert das Paket in einen Temp-Ordner, zeigt einen Fortschrittsbalken und startet ein Skript, das nach dem Beenden von DTM die Dateien austauscht und die App neu startet. |
+   | **Später** | Erinnerung nach 30 Minuten. |
    | **Überspringen** | Kein weiterer Hinweis in dieser Sitzung. |
 
-Ist die `release-notes.json` mit einem `"modulesChanged"`-Eintrag markiert
+Das Paket wird auch vom Netzlaufwerk erst kopiert und dann entpackt — nie
+direkt von der Freigabe. Sonst könnte es zwischen Prüfung und Entpacken
+ausgetauscht werden, und ein Netzlaufwerk, das mitten im Entpacken wegbricht,
+würde ein halb ersetztes Programmverzeichnis hinterlassen.
+
+Ist ein Eintrag in der `release-notes.json` mit `"modulesChanged"` markiert
 (`"MSSQL"` bzw. `"FOC-SQL"`), zeigt der Dialog einen roten Banner
 („MSSQL-Modul wurde geändert — jeder Server braucht einmal eine
 PowerShell-Sitzung") bzw. einen grünen Hinweis (FOC-SQL sync't automatisch
 beim nächsten Start).
+
+Ist das Netzlaufwerk nicht erreichbar (Notebook außer Haus), passiert schlicht
+nichts — das ist der Normalfall und steht nur auf Debug-Ebene im Log.
 
 ### GitHub Actions
 
@@ -216,7 +250,7 @@ gesamte CDB herunter und setzt sie auf den gewählten Restore Point zurück
 | Datei | Inhalt |
 |-------|--------|
 | `%APPDATA%\DTM\connections.json` | Verbindungsliste (Passwörter und optionale PS-Remoting-Credentials DPAPI-verschlüsselt) |
-| `%APPDATA%\DTM\settings.json` | FocSql-Einstellungen (SambaSource, ModulePath) |
+| `%APPDATA%\DTM\settings.json` | FOC-SQL-Einstellungen (SambaSource, ModulePath), Update-Quelle (`UpdateChannel`) und die REST-API-Optionen (`Api`) |
 
 Beide Dateien werden beim ersten Speichern automatisch angelegt.
 

@@ -14,7 +14,12 @@
         <!-- Titelleiste -->
         <c:TitleBar Grid.Row="0" Title="Update verfügbar" />
 
-        <ScrollViewer Grid.Row="1" Padding="20,16">
+        <!-- HorizontalScrollBarVisibility="Disabled" ist hier kein Detail:
+             ohne das darf der Inhalt beliebig breit messen, und die
+             TextWrapping="Wrap" der Texte greift nie — der MSSQL-Banner wurde
+             dadurch rechts abgeschnitten statt umzubrechen. -->
+        <ScrollViewer Grid.Row="1" Padding="20,16"
+                      HorizontalScrollBarVisibility="Disabled">
             <StackPanel Spacing="14">
                 <TextBlock x:Name="MessageText" TextWrapping="Wrap" FontSize="14" />
 
