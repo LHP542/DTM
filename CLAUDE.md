@@ -1245,8 +1245,32 @@ also nichts nachzutragen, nur umzusetzen. Referenz-Implementierung:
 - [x] **15.4** Update-Quelle im ConnectionManagerWindow pflegbar gemacht.
       Vorher wurde das Feld nur durchgereicht, ohne UI — ein Wechsel zurueck
       auf GitHub haette Handarbeit an der JSON verlangt. — `S`
-- [x] **15.5** Tests: 33 neue (Kanaltyp-Erkennung, Version aus Dateiname,
-      Paketwahl, Release-Notes aus dem Ordner), 471 gesamt gruen. — `M`
+- [x] **15.5** Tests: 37 neue (Kanaltyp-Erkennung, Version aus Dateiname,
+      Paketwahl, Release-Notes aus dem Ordner), 475 gesamt gruen. — `M`
+- [x] **15.6** CI war rot, lokal gruen — Ursache und zwei Lehren. — `M`
+      _`LooksLikeFolder` stammt aus Checkmk und kannte nur UNC-Pfade und
+      Windows-Laufwerke. Ein absoluter Unix-Pfad (`/tmp/…`, wo die Tests auf
+      dem Linux-Runner arbeiten) galt damit als Adresse: der Service lief
+      still gegen GitHub und verglich echte Release-Daten mit den
+      Test-Erwartungen. **Das ist kein Testartefakt — DTM laeuft als AppImage
+      unter Linux**, dort waere jeder lokale Ordner als Kanal unbrauchbar
+      gewesen. Derselbe Fehler steckt in der Skill-Vorlage und ist dort
+      nachgezogen.
+
+      **Diagnose-Luecke:** Bei einem roten Lauf steht in der
+      Job-Zusammenfassung nur „Process completed with exit code 1"; das
+      Job-Log laedt die API nur mit Admin-Rechten am Repo, und `gh` gibt es
+      auf dem Arbeitslaptop nicht. Der CI schreibt deshalb jetzt eine
+      TRX-Datei und gibt bei `failure()` Testname, Meldung und ersten
+      Stack-Frame als `::error::`-Annotation aus — die sind ueber die
+      oeffentliche API lesbar. Damit war die Ursache in einem Lauf sichtbar.
+
+      **Vorher lag ich einmal daneben:** erster Verdacht war der
+      `HttpClientHandler` mit `CredentialCache.DefaultCredentials` im
+      Konstruktor (auf Nicht-Windows heikel, und die neuen Tests
+      instanziierten den Service erstmals ueberhaupt). Der Umbau auf einen
+      `Lazy<HttpClient>` war trotzdem richtig — der Ordner-Kanal braucht gar
+      keinen HttpClient — hat den Lauf aber nicht repariert._
 
 **Die vier Regeln aus dem Skill, die real etwas verhindern:**
 1. **Hoechste Version gewinnt, nicht neuester Zeitstempel.** Kopiert jemand

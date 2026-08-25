@@ -32,6 +32,13 @@ public class UpdateChannelTests : IDisposable
     [InlineData(@"\\samba01\542$\5424_IT-Basis-Dienste\MS-SQL\DTM")]
     [InlineData(@"C:\Rollout\DTM")]
     [InlineData("//samba01/share/DTM")]
+    // Absolute Unix-Pfade: DTM laeuft als AppImage auch unter Linux. Fehlte
+    // dieser Fall, galt dort jeder lokale Ordner als Adresse und der Check
+    // lief still gegen GitHub — im CI so aufgeschlagen, weil die Tests mit
+    // /tmp/… arbeiten.
+    [InlineData("/srv/rollout/dtm")]
+    [InlineData("/tmp/dtm-updatesvc-abc123")]
+    [InlineData("/home/OsteL/Rollout")]
     public void LooksLikeFolder_RecognisesPaths(string channel)
     {
         UpdateChannel.LooksLikeFolder(channel).Should().BeTrue();

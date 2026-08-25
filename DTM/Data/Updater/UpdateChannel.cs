@@ -32,9 +32,16 @@ public static class UpdateChannel
         new(@"(\d+\.\d+\.\d+(?:\.\d+)?)", RegexOptions.Compiled);
 
     /// <summary>
-    /// Ist die Kanal-Angabe ein Ordner statt einer Adresse? UNC
-    /// (<c>\\server\share</c>) und Laufwerksbuchstaben zaehlen dazu,
-    /// <c>http(s)://</c> nicht.
+    /// Ist die Kanal-Angabe ein Ordner statt einer Adresse? Erkannt werden
+    /// UNC (<c>\\server\share</c>), Windows-Laufwerke (<c>D:\…</c>) und
+    /// absolute Unix-Pfade (<c>/srv/rollout</c>). Nicht erkannt wird
+    /// <c>http(s)://</c>.
+    ///
+    /// <para>Der Unix-Zweig ist kein Schoenheitsfehler-Fix: DTM laeuft als
+    /// AppImage auch unter Linux. Ohne ihn wuerde dort jeder lokale Ordner
+    /// als Adresse behandelt und der Update-Check liefe still gegen GitHub —
+    /// im CI genau so passiert, wo die Tests mit <c>/tmp/…</c> arbeiten und
+    /// echte GitHub-Ergebnisse zurueckbekamen.</para>
     /// </summary>
     public static bool LooksLikeFolder(string? channel)
     {
@@ -43,8 +50,10 @@ public static class UpdateChannel
         if (s.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
             || s.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
             return false;
-        return s.StartsWith(@"\\", StringComparison.Ordinal)
-            || s.StartsWith("//", StringComparison.Ordinal)
+        // "/" deckt sowohl den Unix-Pfad als auch die "//server/share"-
+        // Schreibweise ab; das Schema ist oben bereits ausgeschlossen.
+        return s.StartsWith(@"\", StringComparison.Ordinal)
+            || s.StartsWith("/", StringComparison.Ordinal)
             || (s.Length > 2 && s[1] == ':');
     }
 

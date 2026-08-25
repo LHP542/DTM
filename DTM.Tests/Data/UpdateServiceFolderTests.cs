@@ -46,6 +46,21 @@ public class UpdateServiceFolderTests : IDisposable
         svc.UsesFolderChannel.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Der Test, der den CI-Fehler gefangen haette: unter Linux liegt das
+    /// Temp-Verzeichnis unter <c>/tmp/…</c>, und absolute Unix-Pfade galten
+    /// nicht als Ordner. Die uebrigen Tests hier liefen dadurch still gegen
+    /// GitHub und verglichen echte Release-Daten mit ihren Erwartungen.
+    /// </summary>
+    [Fact]
+    public void TempFolderChannel_IsRecognisedAsFolder()
+    {
+        using var svc = new UpdateService(_dir, isWindows: true);
+
+        svc.UsesFolderChannel.Should().BeTrue(
+            "ein absoluter Pfad ist ein Ordner — auf jeder Plattform");
+    }
+
     [Fact]
     public async Task CheckForUpdate_FindsNewestPackageInFolder()
     {
