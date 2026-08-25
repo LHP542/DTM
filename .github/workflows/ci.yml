@@ -40,4 +40,44 @@ jobs:
         run: dotnet build DTM.slnx -c Release
 
       - name: Tests ausfuehren
-        run: dotnet test DTM.Tests/DTM.Tests.csproj --no-build -c Release --logger "console;verbosity=normal"
+        run: >
+          dotnet test DTM.Tests/DTM.Tests.csproj --no-build -c Release
+          --logger "console;verbosity=normal"
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory TestResults
+
+      # Ohne diesen Schritt steht bei einem roten Lauf nur "Process completed
+      # with exit code 1" in der Job-Zusammenfassung — die eigentliche
+      # Fehlermeldung liegt im Job-Log, und das laesst sich ueber die API nur
+      # mit Admin-Rechten am Repo herunterladen. Wer den Fehler ohne
+      # Browser-Zugriff nachvollziehen will (kein gh auf dem Arbeitslaptop),
+      # steht sonst vor einer Wand. ::error:: landet dagegen als Annotation
+      # und ist ueber die oeffentliche API lesbar.
+      - name: Fehlgeschlagene Tests als Annotation ausgeben
+        if: failure()
+        shell: bash
+        run: |
+          shopt -s nullglob
+          found=0
+          for trx in TestResults/*.trx; do
+            found=1
+            python3 - "$trx" <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          ns = {"t": "http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
+          root = ET.parse(sys.argv[1]).getroot()
+          for r in root.findall(".//t:UnitTestResult", ns):
+              if r.get("outcome") != "Failed":
+                  continue
+              name = r.get("testName", "?")
+              msg = r.findtext(".//t:Message", default="", namespaces=ns).strip()
+              trace = r.findtext(".//t:StackTrace", default="", namespaces=ns).strip()
+              first_frame = next((l.strip() for l in trace.splitlines() if l.strip()), "")
+              # Zeilenumbrueche escapen, sonst bricht die Annotation nach der
+              # ersten Zeile ab.
+              body = f"{msg}\n{first_frame}".replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+              print(f"::error title={name}::{body}")
+          PY
+          done
+          if [ "$found" = "0" ]; then
+            echo "::error::Keine .trx-Datei gefunden — der Testlauf ist vor dem Schreiben der Ergebnisse abgebrochen."
+          fi
