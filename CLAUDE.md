@@ -1208,7 +1208,7 @@ schon geladen wurde. Datenbanknamen werden ohne Status-Suffix erwartet
 definierten Groessen) und ein `/wait`-Endpunkt, der auf einen Zustand
 wartet, statt im Skript zu schlafen. Beides erst bauen, wenn es fehlt.
 
-#### Phase 15 — Update-Weg zurueck auf ein Netzlaufwerk (`v2.3.12`)
+#### Phase 15 — Update-Weg zurueck auf ein Netzlaufwerk (noch nicht getaggt, naechster Tag waere `v2.3.14`)
 
 **Anlass (Lars, 2026-08-25):** „Die Aktualisierung ueber Github funktioniert
 auf Arbeit leider nicht mehr." Kuenftig liegen die ZIPs unter
