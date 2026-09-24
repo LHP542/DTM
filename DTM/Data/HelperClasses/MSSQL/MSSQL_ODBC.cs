@@ -99,16 +99,16 @@ public class MSSQL_ODBC(ServerCredential credential) : IDisposable, IDTM_ODBC
         Connection.Dispose();
     }
 
-    // Phase 10.3a: Public Action-Ausfuehrung fuer OdbcDirect-Backend.
-    // Serialisierung ueber SemaphoreSlim, weil OdbcConnection nicht
+    // Phase 10.3a: Public Action-Ausführung für OdbcDirect-Backend.
+    // Serialisierung über SemaphoreSlim, weil OdbcConnection nicht
     // thread-safe ist — parallele Actions auf denselben Server sequen-
     // zieren, keine Kollisionen.
     private readonly SemaphoreSlim _actionLock = new(1, 1);
 
     /// <summary>
-    /// Fuehrt ein T-SQL-Statement ohne Ergebnismenge aus (BACKUP, ALTER,
+    /// Führt ein T-SQL-Statement ohne Ergebnismenge aus (BACKUP, ALTER,
     /// DBCC, KILL, sp_executesql-Wrapper …). PRINT/RAISERROR/DBCC-
-    /// Meldungen werden ueber <paramref name="onInfo"/> live durchgereicht,
+    /// Meldungen werden über <paramref name="onInfo"/> live durchgereicht,
     /// damit der Aufrufer sie als Notices in den pwsh-Tab injizieren
     /// kann. Cancellation-Token wird auf den <see cref="OdbcCommand"/>
     /// registriert.
@@ -158,7 +158,7 @@ public class MSSQL_ODBC(ServerCredential credential) : IDisposable, IDTM_ODBC
     }
 
     /// <summary>
-    /// Fuehrt ein SELECT-Statement aus und mapt jede Zeile per
+    /// Führt ein SELECT-Statement aus und mapt jede Zeile per
     /// <paramref name="map"/>-Delegate. Wird von Actions wie
     /// Backup-Browser (msdb-Query), Snapshot-Datei-Layout
     /// (sys.master_files) und Cluster-Health (sys.dm_hadr_*) genutzt.

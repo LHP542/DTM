@@ -17,14 +17,14 @@ public partial class App : Application
 
     /// <summary>
     /// Composition-Root des laufenden Prozesses. Wird in <see cref="Initialize"/>
-    /// gebaut. Tests instanziieren ViewModels weiterhin direkt und beruehren
+    /// gebaut. Tests instanziieren ViewModels weiterhin direkt und berühren
     /// diesen Container nicht.
     /// </summary>
     public static IServiceProvider Services { get; private set; } = default!;
 
     /// <summary>
     /// Wird von <see cref="Program.Main"/> gesetzt, sobald dieser Prozess die
-    /// Erstinstanz ist. Die App uebernimmt ihn hier, verkabelt die Aktivierung
+    /// Erstinstanz ist. Die App übernimmt ihn hier, verkabelt die Aktivierung
     /// und gibt ihn beim Beenden frei.
     /// </summary>
     public static SingleInstanceGuard? PendingGuard { get; set; }
@@ -40,7 +40,7 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
 
         // FOC-SQL-Runtime hat ihren eigenen static-Singleton (FocSqlRuntime.Current);
-        // bleibt aus dem DI-Container raus, damit der Lifecycle nicht zerfaellt.
+        // bleibt aus dem DI-Container raus, damit der Lifecycle nicht zerfällt.
         DTM.Data.Terminal.FocSqlRuntime.Current = AppSettingsStore.LoadFocSql();
 
         Services = new ServiceCollection()
@@ -67,8 +67,8 @@ public partial class App : Application
             };
             desktop.MainWindow = main;
 
-            // System-Tray: Minimieren → Tray, Schliessen → beendet regulaer.
-            // Kein ShutdownMode-Umbau noetig (Hide statt Close beim Minimize).
+            // System-Tray: Minimieren → Tray, Schließen → beendet regulär.
+            // Kein ShutdownMode-Umbau nötig (Hide statt Close beim Minimize).
             _tray = new TrayController(this, main);
             _tray.Install();
 
@@ -96,9 +96,9 @@ public partial class App : Application
 
     /// <summary>
     /// Startet die lokale REST-API, wenn sie in den Einstellungen oder per
-    /// <c>--api-port</c> eingeschaltet ist. Der Start laeuft bewusst
-    /// nebenlaeufig: das Fenster soll nicht auf Kestrel warten, und ein
-    /// Fehlschlag darf DTM nicht aufhalten (der Host loggt und laeuft weiter).
+    /// <c>--api-port</c> eingeschaltet ist. Der Start läuft bewusst
+    /// nebenläufig: das Fenster soll nicht auf Kestrel warten, und ein
+    /// Fehlschlag darf DTM nicht aufhalten (der Host loggt und läuft weiter).
     /// </summary>
     private void StartApiIfEnabled(IClassicDesktopStyleApplicationLifetime desktop)
     {
@@ -110,7 +110,7 @@ public partial class App : Application
         _ = _api.StartAsync(options);
 
         // Kestrel sauber herunterfahren. Achtung: im Update-Pfad beendet sich
-        // DTM per Process.Kill() — dann laeuft das hier nicht, was in Ordnung
+        // DTM per Process.Kill() — dann läuft das hier nicht, was in Ordnung
         // ist, weil das Betriebssystem den Port ohnehin freigibt.
         desktop.Exit += (_, _) =>
         {
@@ -121,7 +121,7 @@ public partial class App : Application
 
     /// <summary>
     /// Beendet die App nach <c>--auto-shutdown-after</c> von selbst. Gedacht
-    /// fuer automatisierte Laeufe, damit keine Instanz stehen bleibt, wenn das
+    /// für automatisierte Läufe, damit keine Instanz stehen bleibt, wenn das
     /// steuernde Skript abbricht.
     /// </summary>
     private static void ScheduleAutoShutdownIfRequested(IClassicDesktopStyleApplicationLifetime desktop)

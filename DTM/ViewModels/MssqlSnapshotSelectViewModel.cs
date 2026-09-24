@@ -6,14 +6,14 @@ using NLog;
 namespace DTM.ViewModels;
 
 /// <summary>
-/// Auswahl-Dialog fuer MSSQL-DB-Snapshots (Phase 10.4d, OdbcDirect-Modus).
-/// Ersetzt den interaktiven pwsh-Tab-Weg (Read-Host) im FOC-SQL-Modus fuer
+/// Auswahl-Dialog für MSSQL-DB-Snapshots (Phase 10.4d, OdbcDirect-Modus).
+/// Ersetzt den interaktiven pwsh-Tab-Weg (Read-Host) im FOC-SQL-Modus für
 /// alle DMZ-Server. Bei FocSql-Servern kommt weiterhin der pwsh-Tab-Weg
 /// zum Einsatz.
 ///
 /// Vereinigt Restore und Drop: nach der Snapshot-Auswahl entscheidet der
 /// Klick auf einen der beiden Buttons im Window die Aktion. Der Aufrufer
-/// (MainWindowViewModel) prueft <see cref="MssqlSnapshotSelectResult.Action"/>
+/// (MainWindowViewModel) prüft <see cref="MssqlSnapshotSelectResult.Action"/>
 /// und ruft den entsprechenden <see cref="OdbcMssqlActionService"/>-Aufruf
 /// auf.
 /// </summary>
@@ -51,7 +51,7 @@ public sealed partial class MssqlSnapshotSelectViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "ListSnapshots fuer '{0}' fehlgeschlagen.", database);
+            _logger.Error(ex, "ListSnapshots für '{0}' fehlgeschlagen.", database);
             ErrorMessage = ex.Message;
         }
         finally
@@ -61,14 +61,14 @@ public sealed partial class MssqlSnapshotSelectViewModel : ViewModelBase
     }
 }
 
-/// <summary>Was der User im Dialog ausgewaehlt hat.</summary>
+/// <summary>Was der User im Dialog ausgewählt hat.</summary>
 public enum MssqlSnapshotAction
 {
     Restore,
     Drop
 }
 
-/// <summary>Rueckgabe des Dialogs.</summary>
+/// <summary>Rückgabe des Dialogs.</summary>
 public sealed record MssqlSnapshotSelectResult(
     MssqlSnapshotAction Action,
     MssqlSnapshotInfo Snapshot);

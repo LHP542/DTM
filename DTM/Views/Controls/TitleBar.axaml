@@ -18,7 +18,7 @@
             PointerPressed="OnBarPointerPressed"
             DoubleTapped="OnBarDoubleTapped">
         <Grid ColumnDefinitions="*,Auto">
-            <!-- Glyph + Text als eine Einheit: die meisten Dialoge fuehren ein
+            <!-- Glyph + Text als eine Einheit: die meisten Dialoge führen ein
                  kleines Piktogramm vor dem Titel (Warnung, Zahnrad, Restore-
                  Pfeil). Ohne gesetztes Glyph bleibt der TextBlock unsichtbar
                  und das Layout entspricht exakt der reinen Text-Variante. -->
@@ -33,8 +33,8 @@
                            VerticalAlignment="Center" />
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Stretch">
-                <!-- Platz fuer fensterspezifische Chrome-Buttons links von
-                     Min/Max/Close (MainWindow haengt hier sein "Ueber"-i ein). -->
+                <!-- Platz für fensterspezifische Chrome-Buttons links von
+                     Min/Max/Close (MainWindow hängt hier sein "Über"-i ein). -->
                 <ContentControl x:Name="ExtraSlot" />
                 <Button x:Name="MinButton" Classes="chrome"
                         Click="OnMinClick" Content="&#x2013;"

@@ -5,13 +5,13 @@ namespace DTM.Updater;
 
 /// <summary>
 /// Reine Logik rund um den Update-Kanal — bewusst ohne Netz- und Dateizugriff
-/// im Kern, damit sie sich ohne Share und ohne GitHub testen laesst.
+/// im Kern, damit sie sich ohne Share und ohne GitHub testen lässt.
 ///
 /// <para>DTM kennt zwei Kanaltypen: einen <b>Ordner im Netz</b> (Standard, weil
 /// DTM ein dienstliches Werkzeug im Firmennetz ist) und <b>GitHub Releases</b>
-/// (fuer Entwicklung ausserhalb des Netzes). Welcher gilt, wird an der
+/// (für Entwicklung außerhalb des Netzes). Welcher gilt, wird an der
 /// Schreibweise erkannt — nicht an einem zweiten Schalter. Ein UNC-Pfad und
-/// eine URL sind nicht zu verwechseln, und eine Einstellung mehr waere eine
+/// eine URL sind nicht zu verwechseln, und eine Einstellung mehr wäre eine
 /// mehr, die jemand falsch setzt.</para>
 /// </summary>
 public static class UpdateChannel
@@ -37,11 +37,11 @@ public static class UpdateChannel
     /// absolute Unix-Pfade (<c>/srv/rollout</c>). Nicht erkannt wird
     /// <c>http(s)://</c>.
     ///
-    /// <para>Der Unix-Zweig ist kein Schoenheitsfehler-Fix: DTM laeuft als
-    /// AppImage auch unter Linux. Ohne ihn wuerde dort jeder lokale Ordner
+    /// <para>Der Unix-Zweig ist kein Schönheitsfehler-Fix: DTM läuft als
+    /// AppImage auch unter Linux. Ohne ihn würde dort jeder lokale Ordner
     /// als Adresse behandelt und der Update-Check liefe still gegen GitHub —
     /// im CI genau so passiert, wo die Tests mit <c>/tmp/…</c> arbeiten und
-    /// echte GitHub-Ergebnisse zurueckbekamen.</para>
+    /// echte GitHub-Ergebnisse zurückbekamen.</para>
     /// </summary>
     public static bool LooksLikeFolder(string? channel)
     {
@@ -73,24 +73,24 @@ public static class UpdateChannel
 
     /// <summary>
     /// Auf vier Segmente bringen. Ohne das gilt "2.3.11" (Revision -1) als
-    /// kleiner als "2.3.11.0" und ein Gleichstand wuerde als Update angeboten.
+    /// kleiner als "2.3.11.0" und ein Gleichstand würde als Update angeboten.
     /// </summary>
     public static Version Normalize(Version v) =>
         new(v.Major, v.Minor, Math.Max(v.Build, 0), Math.Max(v.Revision, 0));
 
     /// <summary>
     /// Dateimuster des plattformpassenden Pakets. Windows bekommt das ZIP,
-    /// Linux bevorzugt das AppImage (ersetzt sich selbst) und faellt sonst auf
-    /// das tar.gz zurueck.
+    /// Linux bevorzugt das AppImage (ersetzt sich selbst) und fällt sonst auf
+    /// das tar.gz zurück.
     /// </summary>
     public static IReadOnlyList<string> PackagePatterns(bool isWindows) =>
         isWindows ? ["DTM-*.zip"] : ["DTM-*.AppImage", "DTM-*.tar.gz"];
 
     /// <summary>
     /// Neuestes Paket im Ordner, nach <b>Version</b> sortiert — nicht nach
-    /// Zeitstempel. Kopiert jemand ein aelteres Paket zurueck in den Ordner,
-    /// ist es die juengste Datei und wuerde sonst als "Update" auf eine
-    /// aeltere Version angeboten.
+    /// Zeitstempel. Kopiert jemand ein älteres Paket zurück in den Ordner,
+    /// ist es die jüngste Datei und würde sonst als "Update" auf eine
+    /// ältere Version angeboten.
     ///
     /// <para>Die Reihenfolge der Muster entscheidet bei Gleichstand: unter
     /// Linux gewinnt das AppImage gegen das tar.gz derselben Version.</para>
@@ -102,8 +102,8 @@ public static class UpdateChannel
             if (!Directory.Exists(folder))
             {
                 // Absichtlich Debug: ein Notebook ohne Netzlaufwerk ist der
-                // Normalfall, nicht die Stoerung. Sonst steht im Log jedes
-                // mobilen Nutzers taeglich ein Fehler, den niemand beheben kann.
+                // Normalfall, nicht die Störung. Sonst steht im Log jedes
+                // mobilen Nutzers täglich ein Fehler, den niemand beheben kann.
                 _logger.Debug("Update-Ordner {0} nicht erreichbar.", folder);
                 return (null, null);
             }

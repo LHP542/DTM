@@ -4,10 +4,10 @@ namespace DTM.ViewModels.TreeNodes;
 /// Top-Level-Knoten im DB-Baum — gruppiert alle <see cref="ServerNodeViewModel"/>
 /// eines bestimmten <see cref="DB_SERVER.ServerTyp"/>. Statischer Container,
 /// kein async-Loading; die Server-Children werden vom MainWindowViewModel beim
-/// Aufbau der RootNodes hinzugefuegt.
+/// Aufbau der RootNodes hinzugefügt.
 ///
 /// Header ist der Typ-Name (z. B. „MSSQL", „ORACLE"). Bei Selektion passiert
-/// nichts ausser dem Standard-Expand der Children.
+/// nichts außer dem Standard-Expand der Children.
 /// </summary>
 public sealed class ServerGroupNodeViewModel : NodeViewModelBase
 {

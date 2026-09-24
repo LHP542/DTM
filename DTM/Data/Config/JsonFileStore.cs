@@ -4,26 +4,26 @@ using SystemFile = System.IO.File;
 namespace DTM.Config;
 
 /// <summary>
-/// Gemeinsame Datei-Primitiven fuer die JSON-Stores (<see cref="ConnectionStore"/>,
+/// Gemeinsame Datei-Primitiven für die JSON-Stores (<see cref="ConnectionStore"/>,
 /// <see cref="AppSettingsStore"/>).
 ///
 /// Zwei Regeln, die beide Stores vorher verletzt haben:
 ///
 /// 1. <b>Atomar schreiben.</b> Ein <c>WriteAllText</c> direkt auf die Zieldatei
-///    laesst bei Absturz/Stromausfall mitten im Schreiben eine halbe Datei
-///    zurueck. Stattdessen erst nach <c>&lt;datei&gt;.tmp</c>, dann
+///    lässt bei Absturz/Stromausfall mitten im Schreiben eine halbe Datei
+///    zurück. Stattdessen erst nach <c>&lt;datei&gt;.tmp</c>, dann
 ///    <c>File.Move(tmp, ziel, overwrite: true)</c> — das Move ist atomar.
 ///
-/// 2. <b>Defekte Daten nicht stillschweigend verlieren.</b> Laesst sich die
+/// 2. <b>Defekte Daten nicht stillschweigend verlieren.</b> Lässt sich die
 ///    Datei nicht deserialisieren, wurde vorher einfach ein leeres Ergebnis
-///    zurueckgegeben — der naechste Save hat die kaputte Datei dann endgueltig
-///    ueberschrieben. Bei <c>connections.json</c> heisst das: alle Server samt
-///    DPAPI-Passwoertern weg, ohne Kopie. Jetzt wandert die kaputte Datei nach
-///    <c>&lt;datei&gt;.broken</c> und bleibt fuer Diagnose/Rettung erhalten.
+///    zurückgegeben — der nächste Save hat die kaputte Datei dann endgültig
+///    überschrieben. Bei <c>connections.json</c> heißt das: alle Server samt
+///    DPAPI-Passwörtern weg, ohne Kopie. Jetzt wandert die kaputte Datei nach
+///    <c>&lt;datei&gt;.broken</c> und bleibt für Diagnose/Rettung erhalten.
 ///
-/// Bewusst NICHT quarantaenisiert wird bei IO-Fehlern (Datei gesperrt, Netz-
+/// Bewusst NICHT quarantänisiert wird bei IO-Fehlern (Datei gesperrt, Netz-
 /// laufwerk kurz weg): dort ist der Inhalt ja in Ordnung, nur gerade nicht
-/// lesbar. Ein Verschieben wuerde intakte Daten aus dem Weg raeumen.
+/// lesbar. Ein Verschieben würde intakte Daten aus dem Weg räumen.
 /// </summary>
 internal static class JsonFileStore
 {
@@ -31,7 +31,7 @@ internal static class JsonFileStore
 
     /// <summary>
     /// Schreibt <paramref name="json"/> atomar nach <paramref name="path"/>.
-    /// Legt das Zielverzeichnis an, falls noetig.
+    /// Legt das Zielverzeichnis an, falls nötig.
     /// </summary>
     public static void WriteAtomic(string path, string json)
     {
@@ -44,8 +44,8 @@ internal static class JsonFileStore
         }
         catch
         {
-            // Halb geschriebene .tmp nicht liegen lassen — sie wuerde beim
-            // naechsten Versuch ohnehin ueberschrieben, aber ein Restmuell im
+            // Halb geschriebene .tmp nicht liegen lassen — sie würde beim
+            // nächsten Versuch ohnehin überschrieben, aber ein Restmüll im
             // AppData-Ordner verwirrt bei der Fehlersuche.
             TryDeleteTemp(tmp);
             throw;
@@ -54,7 +54,7 @@ internal static class JsonFileStore
 
     /// <summary>
     /// Verschiebt eine nicht deserialisierbare Datei nach
-    /// <c>&lt;datei&gt;.broken</c>. Schlaegt das fehl (z.B. Datei gesperrt),
+    /// <c>&lt;datei&gt;.broken</c>. Schlägt das fehl (z.B. Datei gesperrt),
     /// wird nur geloggt — der Aufrufer startet in jedem Fall leer weiter.
     /// </summary>
     public static void Quarantine(string path)
@@ -79,7 +79,7 @@ internal static class JsonFileStore
         }
         catch (Exception ex)
         {
-            _logger.Warn(ex, "Temporaere Datei {0} konnte nicht aufgeraeumt werden.", tmp);
+            _logger.Warn(ex, "Temporäre Datei {0} konnte nicht aufgeräumt werden.", tmp);
         }
     }
 }

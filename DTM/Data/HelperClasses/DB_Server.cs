@@ -6,11 +6,11 @@ public class DB_SERVER
     {
         ORACLE,
         MSSQL,
-        // Phase 16: direkter Zugriff ueber MySqlConnector, ohne FOC-SQL.
-        // PostgreSQL stand hier frueher als Platzhalter — ohne jede
+        // Phase 16: direkter Zugriff über MySqlConnector, ohne FOC-SQL.
+        // PostgreSQL stand hier früher als Platzhalter — ohne jede
         // Implementierung. Der Typ-Dropdown speist sich direkt aus diesem
-        // Enum, ein nicht implementierter Wert war dort also waehlbar und
-        // lief in der Factory ins Leere. Kommt zurueck, wenn er gebaut wird.
+        // Enum, ein nicht implementierter Wert war dort also wählbar und
+        // lief in der Factory ins Leere. Kommt zurück, wenn er gebaut wird.
         MariaDB
     }
 
@@ -18,17 +18,17 @@ public class DB_SERVER
     public ServerCredential? serverCredential { get; private set; }
 
     /// <summary>
-    /// Phase 10: Ausfuehrungspfad fuer FOC-SQL-Actions. Fuer MSSQL vom User
-    /// waehlbar (FocSql vs. OdbcDirect), fuer Oracle irrelevant und wird
+    /// Phase 10: Ausführungspfad für FOC-SQL-Actions. Für MSSQL vom User
+    /// wählbar (FocSql vs. OdbcDirect), für Oracle irrelevant und wird
     /// beim Speichern in <see cref="Config.ConnectionEntry"/> auf Default
-    /// zurueckgesetzt. Siehe <see cref="ServerBackend"/>.
+    /// zurückgesetzt. Siehe <see cref="ServerBackend"/>.
     /// </summary>
     public ServerBackend Backend { get; }
 
     /// <summary>
-    /// Composite-Identitaet (Typ, Hostname). Wird in Phase 6 zur eindeutigen
-    /// Adressierung eines Servers genutzt — frueher reichte der Typ allein
-    /// (Dictionary-Key), jetzt koennen mehrere Hosts pro Typ existieren.
+    /// Composite-Identität (Typ, Hostname). Wird in Phase 6 zur eindeutigen
+    /// Adressierung eines Servers genutzt — früher reichte der Typ allein
+    /// (Dictionary-Key), jetzt können mehrere Hosts pro Typ existieren.
     /// </summary>
     public ServerIdentity Identity =>
         new(Typ, serverCredential?.Server ?? string.Empty);

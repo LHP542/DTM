@@ -60,12 +60,12 @@ public class DestructiveGuardTests
 
     /// <summary>
     /// Der eigentliche Wert dieser Testdatei: die Sperrliste ist von Hand
-    /// gepflegt, das MainWindowViewModel waechst aber weiter. Dieser Test
+    /// gepflegt, das MainWindowViewModel wächst aber weiter. Dieser Test
     /// zwingt dazu, bei jedem NEUEN Command bewusst zu entscheiden, ob er
     /// schreibend wirkt — sonst rutscht eine destruktive Aktion still in den
     /// Nur-Beobachten-Modus.
     ///
-    /// Faellt der Test um, gehoert der neue Command entweder in
+    /// Fällt der Test um, gehört der neue Command entweder in
     /// <see cref="DestructiveGuard"/> oder in die Liste unten.
     /// </summary>
     [Fact]
@@ -81,7 +81,7 @@ public class DestructiveGuardTests
             "OpenBackupBrowser",
             "OpenDbConfiguration",
             "RunCheckDb",
-            // MariaDB: CHECK ist rein lesend, ANALYZE beruehrt nur die
+            // MariaDB: CHECK ist rein lesend, ANALYZE berührt nur die
             // Optimizer-Statistiken. OPTIMIZE schreibt dagegen jede Tabelle
             // neu und steht in der Sperrliste.
             "MariaDbCheckTables",
@@ -104,7 +104,7 @@ public class DestructiveGuardTests
 
         unclassified.Should().BeEmpty(
             "jeder Command muss in DestructiveGuard oder in knownHarmless stehen — "
-            + "sonst waere er ueber die REST-API ausloesbar, ohne dass jemand darueber "
+            + "sonst wäre er über die REST-API auslösbar, ohne dass jemand darüber "
             + "nachgedacht hat. Nicht eingeordnet: {0}", string.Join(", ", unclassified));
     }
 

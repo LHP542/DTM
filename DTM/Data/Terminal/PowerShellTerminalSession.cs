@@ -253,7 +253,7 @@ Remove-Variable __cmd, __sb -ErrorAction SilentlyContinue
     /// Setzt eine globale Runspace-Variable direkt via SessionStateProxy —
     /// KEIN Command-Interpreter, keine Command-Line, kein Log-Leak. Genutzt
     /// von Phase 9.5, um <c>$global:DtmCredMap</c> (PSCredential-Hashtable)
-    /// in den Runspace zu geben, ohne dass Passwoerter je durch den
+    /// in den Runspace zu geben, ohne dass Passwörter je durch den
     /// Terminal-Ausgabe-Pfad laufen.
     /// </summary>
     public void SetGlobalVariable(string name, object? value)

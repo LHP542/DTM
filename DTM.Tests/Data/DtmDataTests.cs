@@ -106,7 +106,7 @@ public class DtmDataTests
         var data = new DTM_DATA(new List<DB_SERVER> { s1, s2 }, factory);
 
         data.Servers.Should().HaveCount(2);
-        // Beide ueber ihre Identity einzeln auflosbar.
+        // Beide über ihre Identity einzeln auflosbar.
         Action act1 = () => data.get_Database_Names(s1.Identity);
         Action act2 = () => data.get_Database_Names(s2.Identity);
         act1.Should().NotThrow();

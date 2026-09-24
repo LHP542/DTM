@@ -78,8 +78,8 @@ public class ORACLE_ODBC(ServerCredential credential) : IDisposable, IDTM_ODBC
 
         ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,';
 
-        -- Groesse = allokierte Gesamtgroesse: Datendateien + Temp-Dateien.
-        -- dba_data_files enthaelt KEINE Tempfiles (die liegen in dba_temp_files);
+        -- Größe = allokierte Gesamtgröße: Datendateien + Temp-Dateien.
+        -- dba_data_files enthält KEINE Tempfiles (die liegen in dba_temp_files);
         -- ohne den zweiten Summanden fehlt der TEMP-Tablespace in der Anzeige.
         SELECT 'DBSIZE|' || ROUND((
                  (SELECT NVL(SUM(bytes), 0) FROM dba_data_files)

@@ -11,18 +11,18 @@ namespace DTM.ViewModels;
 /// Aktions-Gruppen ARCHIVE-LOG und WARTUNG plus der Recovery-Mode-Dropdown
 /// und der Cluster-Health-Check.
 ///
-/// Alles hier ausser Archive-Log ist MSSQL-only (T-SQL-spezifisch) und in der
-/// UI ueber <c>MaintenanceVisible</c> / <c>RecoveryModeVisible</c> /
-/// <c>ClusterHealthVisible</c> ausgeblendet, wenn eine Oracle-DB gewaehlt ist.
+/// Alles hier außer Archive-Log ist MSSQL-only (T-SQL-spezifisch) und in der
+/// UI über <c>MaintenanceVisible</c> / <c>RecoveryModeVisible</c> /
+/// <c>ClusterHealthVisible</c> ausgeblendet, wenn eine Oracle-DB gewählt ist.
 /// </summary>
 public sealed partial class MainWindowViewModel
 {
     // Set-Archive-Log dispatched im FOC-SQL-Modul nach DB-Typ:
     //   MSSQL  -> Database-Set-Recovery-Mode -Recovery FULL/SIMPLE
     //   Oracle -> /mnt/dbmgmt/scripts/archivelog-on.sh / -off.sh
-    // Die "Log An/Aus"-Labels sind dadurch Oracle-zentriert; fuer MSSQL ist
+    // Die "Log An/Aus"-Labels sind dadurch Oracle-zentriert; für MSSQL ist
     // es semantisch ein Recovery-Mode-Toggle. Akzeptierte Doppelnutzung
-    // (siehe CLAUDE.md / Roadmap 1.1); fuer MSSQL bringt 3.4 einen dedizierten
+    // (siehe CLAUDE.md / Roadmap 1.1); für MSSQL bringt 3.4 einen dedizierten
     // Recovery-Mode-Dropdown als saubere Alternative.
     [RelayCommand]
     private async Task ArchiveLogOn()
@@ -126,12 +126,12 @@ public sealed partial class MainWindowViewModel
 
         string warning = string.Equals(newMode, "SIMPLE", StringComparison.OrdinalIgnoreCase)
             ? "\n\nAchtung: Wechsel zu SIMPLE bricht die Log-Chain — Point-in-Time-Restore ist "
-              + "ab diesem Zeitpunkt erst nach dem naechsten Voll-Backup wieder moeglich."
+              + "ab diesem Zeitpunkt erst nach dem nächsten Voll-Backup wieder möglich."
             : string.Empty;
 
         ConfirmWindow dlg = new()
         {
-            WindowTitle = "Recovery-Modus aendern?",
+            WindowTitle = "Recovery-Modus ändern?",
             Message = $"Der Recovery-Modus der Datenbank „{db.Database.Name}\" wird von "
                     + $"{_lastSyncedRecoveryMode} auf {newMode} gesetzt.{warning}\n\nFortfahren?",
             ConfirmText = newMode,
@@ -142,7 +142,7 @@ public sealed partial class MainWindowViewModel
         if (!ok)
         {
             // User hat abgelehnt — Dropdown auf den zuletzt synchronisierten
-            // Server-Stand zurueckdrehen, ohne erneut den Change-Pfad zu triggern.
+            // Server-Stand zurückdrehen, ohne erneut den Change-Pfad zu triggern.
             _settingRecoveryModeInternally = true;
             try { RecoveryModeSelected = _lastSyncedRecoveryMode; }
             finally { _settingRecoveryModeInternally = false; }
@@ -159,7 +159,7 @@ public sealed partial class MainWindowViewModel
         {
             RunSimpleAction("Set-DbRecoveryMode", db, $"-Recovery {newMode}", $"Recovery -> {newMode}");
         }
-        // Optimistisches Update — der naechste DB-Select holt den echten Stand neu.
+        // Optimistisches Update — der nächste DB-Select holt den echten Stand neu.
         _lastSyncedRecoveryMode = newMode;
     }
 
@@ -205,9 +205,9 @@ public sealed partial class MainWindowViewModel
         {
             WindowTitle = "Logdatei verkleinern?",
             Message = $"Die Log-Datei der Datenbank „{db.Database.Name}\" wird per DBCC SHRINKFILE verkleinert.\n\n"
-                    + "Die Funktion schaltet intern auf Recovery-Modus SIMPLE und wieder zurueck — "
+                    + "Die Funktion schaltet intern auf Recovery-Modus SIMPLE und wieder zurück — "
                     + "dadurch wird die Log-Chain unterbrochen. Point-in-Time-Restore ab diesem Zeitpunkt "
-                    + "ist erst nach dem naechsten Voll-Backup wieder moeglich.\n\nWirklich fortfahren?",
+                    + "ist erst nach dem nächsten Voll-Backup wieder möglich.\n\nWirklich fortfahren?",
             ConfirmText = "Shrinken",
             CancelText = "Abbrechen",
         };
@@ -243,8 +243,8 @@ public sealed partial class MainWindowViewModel
         // Info-Card sichtbar ist). Stats nicht neu abrufen — der User sieht ja
         // die gleichen Werte, die er gerade angeschaut hat.
         int currentCompat = int.TryParse(DbVersion, out int v) ? v : 0;
-        // PageVerify ist heute kein Property im VM — wir uebergeben null und
-        // lassen das ViewModel auf CHECKSUM-Default fallen, bis der User waehlt.
+        // PageVerify ist heute kein Property im VM — wir übergeben null und
+        // lassen das ViewModel auf CHECKSUM-Default fallen, bis der User wählt.
         vm.Configure(
             database: ModuleDatabaseId(db),
             serverHost: ServerParamFor(db),

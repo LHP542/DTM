@@ -4,8 +4,8 @@ using NLog;
 namespace DTM.ViewModels.TreeNodes;
 
 /// <summary>
-/// Tree-Knoten fuer einen einzelnen Server (Hostname). Liegt unter einem
-/// <see cref="ServerGroupNodeViewModel"/>. Beim Expand laedt der Knoten
+/// Tree-Knoten für einen einzelnen Server (Hostname). Liegt unter einem
+/// <see cref="ServerGroupNodeViewModel"/>. Beim Expand lädt der Knoten
 /// die Datenbank-Liste seines Servers via <see cref="IDTM_DATA"/> und legt
 /// pro DB einen <see cref="DatabaseNodeViewModel"/> als Child an.
 /// </summary>

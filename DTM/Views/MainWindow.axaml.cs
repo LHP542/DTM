@@ -17,9 +17,9 @@ public partial class MainWindow : ChromeWindow
         };
     }
 
-    // Minimieren/Maximieren/Schliessen und der Glyph-Wechsel beim Maximieren
+    // Minimieren/Maximieren/Schließen und der Glyph-Wechsel beim Maximieren
     // liegen im TitleBar-Control. Hier bleibt nur der fensterspezifische
-    // "Ueber"-Button, den die Titelleiste ueber ExtraContent einhaengt.
+    // "Über"-Button, den die Titelleiste über ExtraContent einhängt.
     private async void OnAbout(object? _, RoutedEventArgs e) =>
         await new AboutWindow().ShowDialog(this);
 }

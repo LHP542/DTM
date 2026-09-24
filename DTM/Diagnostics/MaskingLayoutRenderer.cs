@@ -9,10 +9,10 @@ namespace DTM.Diagnostics;
 
 /// <summary>
 /// Wrapper-LayoutRenderer <c>${masked:inner=...}</c>: durchsucht die Inner-
-/// Ausgabe nach Passwoertern/Tokens/Credentials und ersetzt den Wert durch
+/// Ausgabe nach Passwörtern/Tokens/Credentials und ersetzt den Wert durch
 /// <c>***</c>. Harte Absicherung gegen versehentliches Log-Leak — nicht darauf
 /// verlassen, dass jede Call-Site vorher maskiert. Register via [ModuleInitializer]
-/// laeuft vor allen statischen Feld-Initialisierern im Modul (also insbesondere
+/// läuft vor allen statischen Feld-Initialisierern im Modul (also insbesondere
 /// vor <c>LogManager.GetCurrentClassLogger()</c> in Program.cs).
 /// </summary>
 [LayoutRenderer("masked")]
@@ -20,14 +20,14 @@ namespace DTM.Diagnostics;
 public sealed class MaskingLayoutRenderer : WrapperLayoutRendererBase
 {
     // Capture-Group-basiert (Prefix wird als Gruppe 1 gecaptured und via
-    // ${1}*** unveraendert zurueckgeschrieben) — behaelt Whitespace/Trennzeichen
+    // ${1}*** unverändert zurückgeschrieben) — behält Whitespace/Trennzeichen
     // zwischen Key und Wert, ersetzt nur den Wert. Sicherer als lookbehind mit
-    // \s*, das an frueheren Positionen matcht und Leerzeichen mitfrisst.
+    // \s*, das an früheren Positionen matcht und Leerzeichen mitfrisst.
     private static readonly (Regex Pattern, string Replacement)[] Rules =
     [
         // ConnectionString-Style: Password=xyz; PWD=xyz;
         // (&/,/} auch ausgeschlossen, damit URL-Query/JSON-Kontexte nicht
-        // ueber die Wortgrenze mitgefressen werden.)
+        // über die Wortgrenze mitgefressen werden.)
         (new(@"(?i)(Password|PWD)(\s*=\s*)[^;""'\s&,}]+",
              RegexOptions.Compiled), "$1$2***"),
 
@@ -48,8 +48,8 @@ public sealed class MaskingLayoutRenderer : WrapperLayoutRendererBase
     internal static void Register()
     {
         // NLog v5.2+: SetupBuilder-API statt der veralteten
-        // LayoutRenderer.Register<T>. Additive Registrierung ueber
-        // ConfigurationItemFactory — laesst die per Nlog.config geladene
+        // LayoutRenderer.Register<T>. Additive Registrierung über
+        // ConfigurationItemFactory — lässt die per Nlog.config geladene
         // Konfiguration unangetastet.
         LogManager.Setup().SetupExtensions(ext =>
             ext.RegisterLayoutRenderer<MaskingLayoutRenderer>("masked"));
@@ -57,7 +57,7 @@ public sealed class MaskingLayoutRenderer : WrapperLayoutRendererBase
 
     protected override string Transform(string text) => Mask(text);
 
-    /// <summary>Public entry point fuer Tests und direkte Verwendung.</summary>
+    /// <summary>Public entry point für Tests und direkte Verwendung.</summary>
     public static string Mask(string? text)
     {
         if (string.IsNullOrEmpty(text)) return text ?? string.Empty;

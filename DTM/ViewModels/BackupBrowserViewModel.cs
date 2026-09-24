@@ -8,8 +8,8 @@ using NLog;
 namespace DTM.ViewModels;
 
 /// <summary>
-/// ViewModel fuer den Backup-Browser-Dialog. Laedt asynchron alle
-/// Sicherungen der ausgewaehlten Datenbank.
+/// ViewModel für den Backup-Browser-Dialog. Lädt asynchron alle
+/// Sicherungen der ausgewählten Datenbank.
 ///
 /// Drei Quellen, eine Ansicht:
 /// <list type="bullet">
@@ -20,10 +20,10 @@ namespace DTM.ViewModels;
 ///   <item>MariaDB via <see cref="MariaDbBackupService"/> (Dumps im
 ///   konfigurierten Backup-Verzeichnis).</item>
 /// </list>
-/// Der User sieht in allen drei Faellen dieselbe Liste.
+/// Der User sieht in allen drei Fällen dieselbe Liste.
 ///
-/// Oracle wird nicht unterstuetzt — der Dialog wird dafuer gar nicht erst
-/// geoeffnet (Filter in MainWindowViewModel).
+/// Oracle wird nicht unterstützt — der Dialog wird dafür gar nicht erst
+/// geöffnet (Filter in MainWindowViewModel).
 /// </summary>
 public sealed partial class BackupBrowserViewModel : ViewModelBase
 {
@@ -43,29 +43,29 @@ public sealed partial class BackupBrowserViewModel : ViewModelBase
         _service = service;
     }
 
-    /// <summary>Server-Hostname fuer den FOC-SQL-Restore-Aufruf.</summary>
+    /// <summary>Server-Hostname für den FOC-SQL-Restore-Aufruf.</summary>
     public string? ServerHost { get; set; }
 
     /// <summary>Wenn gesetzt: OdbcDirect-Pfad; sonst FOC-SQL-Pfad.</summary>
     public OdbcMssqlActionService? OdbcActions { get; set; }
 
-    /// <summary>Wenn gesetzt: MariaDB-Pfad; schlaegt die beiden anderen.</summary>
+    /// <summary>Wenn gesetzt: MariaDB-Pfad; schlägt die beiden anderen.</summary>
     public MariaDbBackupService? MariaDbBackups { get; set; }
 
     /// <summary>
-    /// Zusatz im Bestaetigungs-Dialog vor dem Restore. Bei MSSQL beendet das
+    /// Zusatz im Bestätigungs-Dialog vor dem Restore. Bei MSSQL beendet das
     /// Modul die Sessions selbst; der MariaDB-Client tut das nicht — dort
-    /// waere der Satz schlicht falsch.
+    /// wäre der Satz schlicht falsch.
     /// </summary>
     public string RestoreNote => MariaDbBackups is not null
         ? "Offene Verbindungen werden dabei nicht beendet — laufende Schreibzugriffe "
-          + "koennen den eingespielten Stand sofort wieder veraendern."
+          + "können den eingespielten Stand sofort wieder verändern."
         : "Alle aktiven Sessions werden vorher beendet.";
 
     /// <summary>
     /// Vom MainWindowViewModel vor dem Anzeigen aufzurufen. Setzt DB,
-    /// Server-Host und — je nach Server — den Dienst, ueber den geladen und
-    /// zurueckgespielt wird.
+    /// Server-Host und — je nach Server — den Dienst, über den geladen und
+    /// zurückgespielt wird.
     /// </summary>
     public async Task LoadAsync(string database, string? server = null,
                                  OdbcMssqlActionService? odbcActions = null,
@@ -95,7 +95,7 @@ public sealed partial class BackupBrowserViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Backup-Liste fuer '{0}' fehlgeschlagen.", database);
+            _logger.Error(ex, "Backup-Liste für '{0}' fehlgeschlagen.", database);
             ErrorMessage = ex.Message;
         }
         finally
@@ -121,8 +121,8 @@ public sealed partial class BackupBrowserViewModel : ViewModelBase
 
     /// <summary>
     /// Dumps aus dem Backup-Verzeichnis. Der Zugriff ist rein lesend auf dem
-    /// Dateisystem und schnell genug fuer den UI-Thread — ein
-    /// <c>Task.Run</c> waere hier nur Zeremonie.
+    /// Dateisystem und schnell genug für den UI-Thread — ein
+    /// <c>Task.Run</c> wäre hier nur Zeremonie.
     /// </summary>
     private static IReadOnlyList<MssqlBackup> LoadViaMariaDb(
         string database, MariaDbBackupService svc)
@@ -137,10 +137,10 @@ public sealed partial class BackupBrowserViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Startet den Restore. Bei MariaDB ueber den Client, bei OdbcDirect
+    /// Startet den Restore. Bei MariaDB über den Client, bei OdbcDirect
     /// direkt via <see cref="OdbcMssqlActionService.RestoreBackupAsync"/> mit
     /// dem vollen Path aus msdb, bei FOC-SQL als Invoke-DbRestore-Aufruf im
-    /// pwsh-Tab. Bestaetigung passiert im Code-Behind (ConfirmWindow).
+    /// pwsh-Tab. Bestätigung passiert im Code-Behind (ConfirmWindow).
     /// </summary>
     public void PerformRestore(MssqlBackup backup)
     {
@@ -159,7 +159,7 @@ public sealed partial class BackupBrowserViewModel : ViewModelBase
         }
 
         // FOC-SQL: Invoke-DbRestore erwartet nur den Filename (Modul baut
-        // den Pfad ueber $global:BackupRoot).
+        // den Pfad über $global:BackupRoot).
         string dbEsc = DatabaseName.Replace("'", "''");
         string fileEsc = backup.Name.Replace("'", "''");
         string script = $"Invoke-DbRestore -Database '{dbEsc}' -BackupFile '{fileEsc}'";

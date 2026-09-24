@@ -20,18 +20,18 @@ namespace DTM.Updater;
 ///       Ausrollen ist ein Kopiervorgang. Seit 2026-08-25 der Regelweg, weil
 ///       GitHub aus dem Firmennetz nicht mehr erreichbar ist.</item>
 /// <item><b>GitHub Releases</b> — greift, sobald in der Einstellung eine
-///       <c>https://</c>-Adresse steht. Fuer Entwicklung ausserhalb des
+///       <c>https://</c>-Adresse steht. Für Entwicklung außerhalb des
 ///       Firmennetzes.</item>
 /// </list>
 ///
-/// Prinzipien (unveraendert fuer beide Kanaele):
+/// Prinzipien (unverändert für beide Kanäle):
 /// - Nie silent installieren: User muss zustimmen (UpdatePromptWindow).
-/// - Fehler nur Warn-Log — offline/Proxy/fehlendes Netzlaufwerk stoeren die
+/// - Fehler nur Warn-Log — offline/Proxy/fehlendes Netzlaufwerk stören die
 ///   App nicht.
 /// - Max. 1 echter Check pro App-Start (Cache); der manuelle
-///   "Auf Updates pruefen"-Button im AboutWindow umgeht den Cache
-///   ueber <c>forceRefresh=true</c>.
-/// - Proxy-aware HttpClient (DefaultProxy + Negotiate) fuer den GitHub-Weg.
+///   "Auf Updates prüfen"-Button im AboutWindow umgeht den Cache
+///   über <c>forceRefresh=true</c>.
+/// - Proxy-aware HttpClient (DefaultProxy + Negotiate) für den GitHub-Weg.
 /// - Das Paket wird auch vom Share erst in den Temp-Ordner kopiert und dann
 ///   entpackt, nie direkt vom Netzlaufwerk (siehe <see cref="FetchAsync"/>).
 /// </summary>
@@ -51,13 +51,13 @@ public sealed class UpdateService : IDisposable
 
     /// <param name="channel">
     /// Update-Quelle. Leer = <see cref="UpdateChannel.DefaultFolder"/>.
-    /// Wird ueblicherweise aus <c>AppSettingsStore.LoadFocSql().UpdateChannel</c>
-    /// gespeist; als Parameter, damit Tests einen Temp-Ordner setzen koennen.
+    /// Wird üblicherweise aus <c>AppSettingsStore.LoadFocSql().UpdateChannel</c>
+    /// gespeist; als Parameter, damit Tests einen Temp-Ordner setzen können.
     /// </param>
     /// <param name="isWindows">
     /// Bestimmt, nach welchem Paketformat gesucht wird. Injizierbar, damit
-    /// beide Plattform-Zweige unabhaengig vom Test-Host geprueft werden
-    /// koennen — dieselbe Ueberlegung wie bei <see cref="SelectAsset"/>.
+    /// beide Plattform-Zweige unabhängig vom Test-Host geprüft werden
+    /// können — dieselbe Überlegung wie bei <see cref="SelectAsset"/>.
     /// </param>
     public UpdateService(string? channel = null, bool? isWindows = null)
     {
@@ -65,9 +65,9 @@ public sealed class UpdateService : IDisposable
         _isWindows = isWindows ?? RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         // Lazy: der Ordner-Kanal braucht keinen HttpClient. Ihn trotzdem im
-        // Konstruktor zu bauen hiesse, bei jedem Start einen Proxy-Handler mit
+        // Konstruktor zu bauen hieße, bei jedem Start einen Proxy-Handler mit
         // Windows-Integrated-Credentials aufzusetzen — auf Nicht-Windows
-        // unnoetig und je nach Laufzeit nicht unterstuetzt.
+        // unnötig und je nach Laufzeit nicht unterstützt.
         _http = new Lazy<HttpClient>(() =>
         {
             var handler = new HttpClientHandler
@@ -85,7 +85,7 @@ public sealed class UpdateService : IDisposable
             UpdateChannel.LooksLikeFolder(_channel) ? "Ordner" : "GitHub");
     }
 
-    /// <summary>Der aktive Kanal — fuer Anzeige und Diagnose.</summary>
+    /// <summary>Der aktive Kanal — für Anzeige und Diagnose.</summary>
     public string Channel => _channel;
 
     /// <summary><c>true</c>, wenn der Kanal ein Ordner ist (kein GitHub).</summary>
@@ -95,7 +95,7 @@ public sealed class UpdateService : IDisposable
     /// Liest die laufende Version aus <c>AssemblyInformationalVersion</c>.
     /// MinVer erzeugt zwischen Tags Suffixe wie „2.0.1-alpha.0.5+sha" —
     /// die werden vor dem Parse abgeschnitten. Fehlende Build-Stelle wird
-    /// auf 0 normalisiert, damit „1.2" nicht faelschlich als aelter als
+    /// auf 0 normalisiert, damit „1.2" nicht fälschlich als älter als
     /// „1.2.0" gilt.
     /// </summary>
     public static Version CurrentVersion() =>
@@ -119,8 +119,8 @@ public sealed class UpdateService : IDisposable
     }
 
     /// <summary>
-    /// Prueft GitHub auf ein neueres Release. Bei <paramref name="forceRefresh"/>=true
-    /// wird der Cache umgangen — nutzt der manuelle "Auf Updates pruefen"-
+    /// Prüft GitHub auf ein neueres Release. Bei <paramref name="forceRefresh"/>=true
+    /// wird der Cache umgangen — nutzt der manuelle "Auf Updates prüfen"-
     /// Button aus dem AboutWindow. Bei false: max. 1 echter Check pro
     /// App-Start.
     /// </summary>
@@ -173,7 +173,7 @@ public sealed class UpdateService : IDisposable
     }
 
     /// <summary>
-    /// Prueft den Ordner-Kanal. Laeuft synchron — es sind ein
+    /// Prüft den Ordner-Kanal. Läuft synchron — es sind ein
     /// <c>Directory.Exists</c> und ein Verzeichnis-Listing, kein Netz-Roundtrip
     /// wie bei GitHub.
     /// </summary>
@@ -187,7 +187,7 @@ public sealed class UpdateService : IDisposable
         if (path is null || latest is null)
         {
             // Kein Paket oder Ordner nicht erreichbar — beides bereits in
-            // UpdateChannel geloggt (Debug). Kein Cache: beim naechsten
+            // UpdateChannel geloggt (Debug). Kein Cache: beim nächsten
             // manuellen Versuch soll erneut geschaut werden.
             return null;
         }
@@ -197,7 +197,7 @@ public sealed class UpdateService : IDisposable
 
         _cached = new UpdateCheckResult(
             current, latest, available,
-            // "Release-Seite oeffnen" oeffnet den Ordner im Explorer — der
+            // "Release-Seite öffnen" öffnet den Ordner im Explorer — der
             // sinnvollste Ersatz, wenn es keine Release-Seite gibt.
             ReleaseUrl: _channel,
             AssetName: Path.GetFileName(path),
@@ -209,7 +209,7 @@ public sealed class UpdateService : IDisposable
     }
 
     /// <summary>
-    /// Laedt <c>release-notes.json</c> und filtert die Eintraege im Bereich
+    /// Lädt <c>release-notes.json</c> und filtert die Einträge im Bereich
     /// (currentVersion, newVersion]. Sortiert absteigend. Leere Liste bei
     /// Fehler oder fehlender Datei — fehlende Notizen sind kein Grund, ein
     /// Update zu verschweigen.
@@ -259,23 +259,23 @@ public sealed class UpdateService : IDisposable
     }
 
     /// <summary>
-    /// Waehlt aus den Release-Assets das plattformpassende:
+    /// Wählt aus den Release-Assets das plattformpassende:
     /// .zip unter Windows, .AppImage bzw. .tar.gz unter Linux. Order:
     /// AppImage bevorzugt (inplace-Update), sonst tar.gz.
     ///
     /// Toleriert bewusst BEIDE Namensschemata: den Kroste-Standard
-    /// (<c>…-win-x64.zip</c> / <c>…-linux-x64.tar.gz</c>) UND die tatsaechlich
+    /// (<c>…-win-x64.zip</c> / <c>…-linux-x64.tar.gz</c>) UND die tatsächlich
     /// von DTMs release.yml erzeugten Namen (<c>…-windows.zip</c> /
-    /// <c>…-linux.tar.gz</c>). Frueher matchte der Selector nur die harten
+    /// <c>…-linux.tar.gz</c>). Früher matchte der Selector nur die harten
     /// Strings „win-x64"/„linux-x64" — dadurch fand er das real hochgeladene
     /// „DTM-vX.Y.Z-windows.zip" NICHT, <see cref="DownloadAndApplyAsync"/>
-    /// bekam kein Asset und Self-Update war unter Windows generell unmoeglich
-    /// (Statusleiste „Self-Update nicht moeglich"). AppImage matchte weiter,
+    /// bekam kein Asset und Self-Update war unter Windows generell unmöglich
+    /// (Statusleiste „Self-Update nicht möglich"). AppImage matchte weiter,
     /// weshalb es unter Linux nie auffiel.
     ///
     /// <paramref name="isWindows"/> wird injiziert (statt hier via
     /// <see cref="RuntimeInformation"/> ermittelt), damit beide
-    /// Plattform-Zweige deterministisch und OS-unabhaengig testbar sind.
+    /// Plattform-Zweige deterministisch und OS-unabhängig testbar sind.
     /// </summary>
     internal static (string? name, string? url) SelectAsset(JsonElement release, bool isWindows)
     {
@@ -320,17 +320,17 @@ public sealed class UpdateService : IDisposable
     }
 
     /// <summary>
-    /// Laedt das Update-Asset, entpackt es und startet einen Austausch-
+    /// Lädt das Update-Asset, entpackt es und startet einen Austausch-
     /// Prozess der die App beendet, Dateien ersetzt, neu startet.
-    /// Rueckgabe: <c>false</c> wenn kein Self-Update moeglich (dann sollte
-    /// der Aufrufer die Release-Seite oeffnen).
+    /// Rückgabe: <c>false</c> wenn kein Self-Update möglich (dann sollte
+    /// der Aufrufer die Release-Seite öffnen).
     /// </summary>
     public async Task<bool> DownloadAndApplyAsync(UpdateCheckResult update,
         IProgress<double>? progress = null, CancellationToken ct = default)
     {
         if (update.AssetUrl is null || update.AssetName is null)
         {
-            _logger.Warn("Kein passendes Update-Asset fuer diese Plattform — Self-Update nicht moeglich.");
+            _logger.Warn("Kein passendes Update-Asset für diese Plattform — Self-Update nicht möglich.");
             return false;
         }
 
@@ -360,7 +360,7 @@ public sealed class UpdateService : IDisposable
     /// das Austausch-Skript gestartet hat. Der Installer (Windows:
     /// <c>Wait-Process</c>, Linux: <c>kill -0</c>) wartet genau auf dieses
     /// Prozessende, um die Dateien zu ersetzen und neu zu starten — OHNE diesen
-    /// Aufruf laeuft die App weiter und bleibt bei „Update laedt: 100 %" haengen.
+    /// Aufruf läuft die App weiter und bleibt bei „Update lädt: 100 %" hängen.
     ///
     /// Bewusst <see cref="Process"/>.<c>Kill()</c> statt
     /// <see cref="Environment"/>.<c>Exit(0)</c>: Exit ruft die Finalizer des
@@ -374,13 +374,13 @@ public sealed class UpdateService : IDisposable
     {
         try
         {
-            _logger.Info("Update vorbereitet — Prozess wird fuer den Austausch beendet (Kill).");
+            _logger.Info("Update vorbereitet — Prozess wird für den Austausch beendet (Kill).");
             using var self = Process.GetCurrentProcess();
             self.Kill();
         }
         catch (Exception ex)
         {
-            _logger.Warn(ex, "Process.Kill fuer Self-Update fehlgeschlagen — Fallback Environment.Exit(0).");
+            _logger.Warn(ex, "Process.Kill für Self-Update fehlgeschlagen — Fallback Environment.Exit(0).");
             Environment.Exit(0);
         }
     }
@@ -389,8 +389,8 @@ public sealed class UpdateService : IDisposable
     /// Holt das Paket — per HTTP oder aus dem Ordner.
     ///
     /// <para><b>Auch vom Share wird kopiert, nicht direkt entpackt.</b> Zwei
-    /// Gruende: Das Paket koennte zwischen Pruefung und Entpacken ausgetauscht
-    /// werden, und ein Netzlaufwerk, das mitten im Entpacken wegbricht, wuerde
+    /// Gründe: Das Paket könnte zwischen Prüfung und Entpacken ausgetauscht
+    /// werden, und ein Netzlaufwerk, das mitten im Entpacken wegbricht, würde
     /// ein halb ersetztes Programmverzeichnis hinterlassen.</para>
     /// </summary>
     private async Task FetchAsync(string source, string dest,
@@ -440,11 +440,11 @@ public sealed class UpdateService : IDisposable
 
     /// <summary>
     /// Windows: ZIP daneben entpacken, .bat schreibt nach App-Ende die
-    /// Dateien um und startet neu. Wait-Process auf PID (zuverlaessiger
-    /// als tasklist-Schleife). Batch-Zeilen OHNE fuehrende Einrueckung —
-    /// eingerueckte Labels sind fuer cmd.exe kein gueltiges Sprungziel.
+    /// Dateien um und startet neu. Wait-Process auf PID (zuverlässiger
+    /// als tasklist-Schleife). Batch-Zeilen OHNE führende Einrückung —
+    /// eingerückte Labels sind für cmd.exe kein gültiges Sprungziel.
     ///
-    /// Environment.Exit(0) wuerde die Finalizer des eingebetteten PS-SDK-
+    /// Environment.Exit(0) würde die Finalizer des eingebetteten PS-SDK-
     /// Runspace aufrufen und damit unbegrenzt blockieren. Process.Kill()
     /// schickt direkt TerminateProcess/SIGKILL — kein Finalizer, kein Hang.
     /// </summary>
@@ -477,7 +477,7 @@ public sealed class UpdateService : IDisposable
             UseShellExecute = false,
             WorkingDirectory = work
         });
-        _logger.Info("Windows-Update vorbereitet ({0}) — App wird beendet fuer den Austausch.", bat);
+        _logger.Info("Windows-Update vorbereitet ({0}) — App wird beendet für den Austausch.", bat);
         return true;
     }
 
@@ -524,7 +524,7 @@ public sealed class UpdateService : IDisposable
 
         SystemFile.WriteAllText(sh, body);
         Process.Start(new ProcessStartInfo("/bin/sh", $"\"{sh}\"") { UseShellExecute = false });
-        _logger.Info("Linux-Update vorbereitet — App wird beendet fuer den Austausch.");
+        _logger.Info("Linux-Update vorbereitet — App wird beendet für den Austausch.");
         return true;
     }
 

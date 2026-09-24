@@ -67,7 +67,7 @@
                                    Foreground="{DynamicResource KrosteDangerBrush}" />
                         <TextBlock TextWrapping="Wrap" FontSize="12"
                                    Foreground="{DynamicResource KrosteTextBrush}"
-                                   Text="Restore-Snapshot faehrt die GESAMTE Container-DB herunter (SHUTDOWN IMMEDIATE) und stellt sie auf den gewaehlten Restore Point zurueck — ALLE PDBs sind betroffen, nicht nur die gewaehlte Datenbank." />
+                                   Text="Restore-Snapshot fährt die GESAMTE Container-DB herunter (SHUTDOWN IMMEDIATE) und stellt sie auf den gewählten Restore Point zurück — ALLE PDBs sind betroffen, nicht nur die gewählte Datenbank." />
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -121,7 +121,7 @@
             <StackPanel Grid.Row="4" Orientation="Horizontal"
                         HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
                 <Button x:Name="CancelButton" Content="Abbrechen" Click="OnCancel" MinWidth="100" />
-                <Button x:Name="RestoreButton" Content="Restore ausfuehren"
+                <Button x:Name="RestoreButton" Content="Restore ausführen"
                         Click="OnRestore"
                         MinWidth="160"
                         IsEnabled="{Binding HasRestorePoints}"

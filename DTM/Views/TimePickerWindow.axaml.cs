@@ -9,8 +9,8 @@ public partial class TimePickerWindow : ChromeWindow
     {
         InitializeComponent();
         // Hier ZWINGEND explizit: der Dialog liefert ein Objekt, nicht bool.
-        // Ohne CloseResult kaeme beim Klick auf "X" null zurueck, und
-        // RunDbActionAsync wuerde beim Zugriff auf pick.Cancelled knallen —
+        // Ohne CloseResult käme beim Klick auf "X" null zurück, und
+        // RunDbActionAsync würde beim Zugriff auf pick.Cancelled knallen —
         // statt die Aktion einfach abzubrechen.
         Bar.CloseResult = TimePickResult.Cancel();
     }

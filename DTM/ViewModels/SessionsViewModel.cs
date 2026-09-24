@@ -9,13 +9,13 @@ public sealed partial class SessionsViewModel : ViewModelBase
 {
     public ObservableCollection<Session> Sessions { get; } = new();
 
-    /// <summary>Bezeichner fuer FOC-SQL (MSSQL: DB-Name, Oracle: FQDN).</summary>
+    /// <summary>Bezeichner für FOC-SQL (MSSQL: DB-Name, Oracle: FQDN).</summary>
     [ObservableProperty] private string _focDatabaseId = string.Empty;
 
-    /// <summary>Anzeige-Name fuer den Confirm-Dialog/Footer.</summary>
+    /// <summary>Anzeige-Name für den Confirm-Dialog/Footer.</summary>
     [ObservableProperty] private string _databaseDisplayName = "—";
 
-    /// <summary>Zeigt an, ob die Kill-Session-Aktion verfuegbar ist.</summary>
+    /// <summary>Zeigt an, ob die Kill-Session-Aktion verfügbar ist.</summary>
     [ObservableProperty] private bool _canCloseSessions;
 
     /// <summary>Wenn gesetzt: OdbcDirect-Pfad; sonst FOC-SQL-Pfad.</summary>
@@ -38,7 +38,7 @@ public sealed partial class SessionsViewModel : ViewModelBase
     /// Vor dem Anzeigen vom MainWindowViewModel aufzurufen — setzt DB-Kontext,
     /// damit der „Alle Sessions beenden"-Button die richtige DB ansteuert.
     /// Wenn nicht gesetzt, bleibt der Button deaktiviert. Phase 10.4:
-    /// optionaler OdbcActionService fuer den OdbcDirect-Pfad.
+    /// optionaler OdbcActionService für den OdbcDirect-Pfad.
     /// </summary>
     public void Configure(string focDatabaseId, string displayName,
                           OdbcMssqlActionService? odbcActions = null,
@@ -53,8 +53,8 @@ public sealed partial class SessionsViewModel : ViewModelBase
 
     /// <summary>
     /// Schickt den eigentlichen Close-DbSessions-Aufruf an den pwsh-Tab.
-    /// Bestaetigung passiert im Code-Behind des SessionsWindow (ConfirmWindow);
-    /// diese Methode setzt die Aktion ohne weitere Rueckfrage ab.
+    /// Bestätigung passiert im Code-Behind des SessionsWindow (ConfirmWindow);
+    /// diese Methode setzt die Aktion ohne weitere Rückfrage ab.
     /// </summary>
     public void PerformCloseAllSessions()
     {
@@ -85,9 +85,9 @@ public sealed partial class SessionsViewModel : ViewModelBase
             onInfo => svc.KillUserSessionsAsync(FocDatabaseId, onInfo));
 
     /// <summary>
-    /// Fuehrt eine Aktion aus und spiegelt Start, Fortschritt und Ende als
+    /// Führt eine Aktion aus und spiegelt Start, Fortschritt und Ende als
     /// Notices in den pwsh-Tab — damit sieht der Nutzer bei allen Backends
-    /// dasselbe, egal ob die Arbeit ueber FOC-SQL, ODBC oder MariaDB laeuft.
+    /// dasselbe, egal ob die Arbeit über FOC-SQL, ODBC oder MariaDB läuft.
     /// </summary>
     private static async Task RunAsync(string label, Func<Action<string>, Task> action)
     {

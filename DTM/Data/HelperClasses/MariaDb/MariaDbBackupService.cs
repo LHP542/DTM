@@ -11,26 +11,26 @@ namespace DTM.Data.MariaDb;
 /// <param name="Path">Voller Pfad.</param>
 /// <param name="FileName">Dateiname zur Anzeige.</param>
 /// <param name="Created">Zeitpunkt der Erstellung.</param>
-/// <param name="SizeBytes">Groesse in Byte — die Aufbereitung fuer die
+/// <param name="SizeBytes">Größe in Byte — die Aufbereitung für die
 /// Anzeige macht die UI, damit hier nichts vorab gerundet wird.</param>
 public sealed record MariaDbBackupFile(string Path, string FileName, DateTime Created, long SizeBytes);
 
 /// <summary>
-/// Backup und Restore einer MariaDB-Datenbank ueber die externen Werkzeuge
+/// Backup und Restore einer MariaDB-Datenbank über die externen Werkzeuge
 /// <c>mariadb-dump</c> und <c>mariadb</c>.
 ///
-/// <para><b>Warum ueberhaupt externe Werkzeuge:</b> MariaDB kennt kein
-/// <c>BACKUP DATABASE</c> wie MSSQL. Ein vollstaendiger, wieder einspielbarer
-/// Dump entsteht nur ueber das Kommandozeilenwerkzeug — <c>SELECT … INTO
+/// <para><b>Warum überhaupt externe Werkzeuge:</b> MariaDB kennt kein
+/// <c>BACKUP DATABASE</c> wie MSSQL. Ein vollständiger, wieder einspielbarer
+/// Dump entsteht nur über das Kommandozeilenwerkzeug — <c>SELECT … INTO
 /// OUTFILE</c> schreibt serverseitig, pro Tabelle und ohne Schema und ist
 /// deshalb kein Ersatz.</para>
 ///
 /// <para><b>Das Passwort steht nie auf der Kommandozeile.</b> Argumente eines
-/// Prozesses sind auf dem Rechner fuer jeden lesbar, der die Prozessliste
-/// sehen darf — <c>--password=geheim</c> waere damit im Klartext sichtbar.
-/// DTM schreibt es stattdessen in eine temporaere Optionsdatei und uebergibt
+/// Prozesses sind auf dem Rechner für jeden lesbar, der die Prozessliste
+/// sehen darf — <c>--password=geheim</c> wäre damit im Klartext sichtbar.
+/// DTM schreibt es stattdessen in eine temporäre Optionsdatei und übergibt
 /// sie als <c>--defaults-extra-file</c>; die Datei wird unter Unix auf 0600
-/// gesetzt und in jedem Fall wieder geloescht. Das ist der von MariaDB dafuer
+/// gesetzt und in jedem Fall wieder gelöscht. Das ist der von MariaDB dafür
 /// vorgesehene Weg.</para>
 /// </summary>
 public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSettings settings)
@@ -40,14 +40,14 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
     private readonly MariaDb_Connector _connector = connector;
     private readonly MariaDbSettings _settings = settings;
 
-    /// <summary>Kandidaten fuer das Dump-Werkzeug, neuer Name zuerst.</summary>
+    /// <summary>Kandidaten für das Dump-Werkzeug, neuer Name zuerst.</summary>
     private static readonly string[] DumpCandidates = ["mariadb-dump", "mysqldump"];
 
-    /// <summary>Kandidaten fuer den Client (Restore), neuer Name zuerst.</summary>
+    /// <summary>Kandidaten für den Client (Restore), neuer Name zuerst.</summary>
     private static readonly string[] ClientCandidates = ["mariadb", "mysql"];
 
     /// <summary>
-    /// Zielverzeichnis fuer diese Datenbank:
+    /// Zielverzeichnis für diese Datenbank:
     /// <c>&lt;Wurzel&gt;\&lt;Server&gt;\&lt;Datenbank&gt;</c>. Pro Server ein
     /// eigener Zweig, damit gleichnamige Datenbanken auf verschiedenen Servern
     /// nicht im selben Ordner landen.
@@ -78,7 +78,7 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
     }
 
     /// <summary>
-    /// Schreibt einen vollstaendigen Dump und liefert den Pfad zurueck.
+    /// Schreibt einen vollständigen Dump und liefert den Pfad zurück.
     /// Fortschritt und Meldungen des Werkzeugs gehen laufend an
     /// <paramref name="onInfo"/>.
     /// </summary>
@@ -96,9 +96,9 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
         _logger.Info("MariaDB-Backup: {0} → {1}", database, target);
 
         // --single-transaction: konsistenter Stand ohne die Tabellen zu
-        // sperren (gilt fuer transaktionale Engines wie InnoDB).
+        // sperren (gilt für transaktionale Engines wie InnoDB).
         // --routines/--events/--triggers: sonst fehlen sie im Dump und der
-        // Restore liefert eine unvollstaendige Datenbank.
+        // Restore liefert eine unvollständige Datenbank.
         List<string> args =
         [
             $"--host={host}",
@@ -117,10 +117,10 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
         if (exitCode != 0)
         {
             // Eine halb geschriebene Datei ist schlimmer als keine: sie sieht
-            // aus wie ein Backup und laesst sich nicht einspielen.
+            // aus wie ein Backup und lässt sich nicht einspielen.
             TryDelete(target);
             throw new InvalidOperationException(
-                $"{Path.GetFileName(tool)} endete mit Code {exitCode}. Die unvollstaendige Datei wurde entfernt.");
+                $"{Path.GetFileName(tool)} endete mit Code {exitCode}. Die unvollständige Datei wurde entfernt.");
         }
 
         var info = new FileInfo(target);
@@ -129,8 +129,8 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
     }
 
     /// <summary>
-    /// Spielt einen Dump in die Datenbank zurueck. <b>Destruktiv</b> — der
-    /// Aufrufer muss vorher bestaetigen lassen.
+    /// Spielt einen Dump in die Datenbank zurück. <b>Destruktiv</b> — der
+    /// Aufrufer muss vorher bestätigen lassen.
     /// </summary>
     public async Task RestoreAsync(
         string database, string backupFile,
@@ -154,18 +154,18 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
             database,
         ];
 
-        // Der Client liest das Skript von stdin — es gibt keine Option dafuer.
+        // Der Client liest das Skript von stdin — es gibt keine Option dafür.
         int exitCode = await RunToolAsync(tool, args, onInfo, ct, stdinFile: backupFile);
         if (exitCode != 0)
             throw new InvalidOperationException(
-                $"{Path.GetFileName(tool)} endete mit Code {exitCode}. Die Datenbank kann unvollstaendig sein.");
+                $"{Path.GetFileName(tool)} endete mit Code {exitCode}. Die Datenbank kann unvollständig sein.");
 
         onInfo?.Invoke("Restore abgeschlossen.");
     }
 
     /// <summary>
     /// Startet ein Werkzeug, streamt dessen Ausgaben und wartet auf das Ende.
-    /// Das Passwort geht ueber eine temporaere Optionsdatei, nie als Argument.
+    /// Das Passwort geht über eine temporäre Optionsdatei, nie als Argument.
     /// </summary>
     private async Task<int> RunToolAsync(
         string tool, IReadOnlyList<string> args, Action<string>? onInfo,
@@ -185,15 +185,15 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
                 StandardErrorEncoding = Encoding.UTF8,
             };
 
-            // Muss das erste Argument sein — spaetere Optionen sollen die
-            // Datei ueberschreiben koennen, nicht umgekehrt.
+            // Muss das erste Argument sein — spätere Optionen sollen die
+            // Datei überschreiben können, nicht umgekehrt.
             psi.ArgumentList.Add($"--defaults-extra-file={optionsFile}");
             foreach (string a in args) psi.ArgumentList.Add(a);
 
             using Process process = new() { StartInfo = psi };
             process.Start();
 
-            // stderr traegt bei diesen Werkzeugen auch die Fortschritts- und
+            // stderr trägt bei diesen Werkzeugen auch die Fortschritts- und
             // Warnmeldungen, nicht nur Fehler.
             Task<string> stderr = process.StandardError.ReadToEndAsync(ct);
 
@@ -212,7 +212,7 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
                 string trimmed = line.Trim();
                 if (trimmed.Length == 0) continue;
                 // Der Hinweis auf die Passwortdatei ist erwartbar und kein
-                // Problem — er wuerde nur verunsichern.
+                // Problem — er würde nur verunsichern.
                 if (trimmed.Contains("Using a password on the command line", StringComparison.OrdinalIgnoreCase))
                     continue;
                 onInfo?.Invoke($"  {trimmed}");
@@ -223,8 +223,8 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
         catch (System.ComponentModel.Win32Exception ex)
         {
             throw new InvalidOperationException(
-                $"'{tool}' liess sich nicht starten: {ex.Message}. "
-                + "Pfad in den Einstellungen unter MariaDB pruefen.", ex);
+                $"'{tool}' ließ sich nicht starten: {ex.Message}. "
+                + "Pfad in den Einstellungen unter MariaDB prüfen.", ex);
         }
         finally
         {
@@ -233,8 +233,8 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
     }
 
     /// <summary>
-    /// Schreibt eine temporaere Optionsdatei mit dem Passwort und schuetzt sie
-    /// so weit die Plattform es zulaesst.
+    /// Schreibt eine temporäre Optionsdatei mit dem Passwort und schützt sie
+    /// so weit die Plattform es zulässt.
     /// </summary>
     private string WriteCredentialFile()
     {
@@ -297,7 +297,7 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
                 }
                 catch (ArgumentException)
                 {
-                    // Ungueltige Zeichen in einem PATH-Eintrag — ueberspringen
+                    // Ungültige Zeichen in einem PATH-Eintrag — überspringen
                     // statt die ganze Suche scheitern zu lassen.
                 }
             }
@@ -305,7 +305,7 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
         return null;
     }
 
-    /// <summary>Ersetzt alles, was in einem Pfadsegment stoeren koennte.</summary>
+    /// <summary>Ersetzt alles, was in einem Pfadsegment stören könnte.</summary>
     internal static string SanitizeForPath(string value)
     {
         char[] invalid = Path.GetInvalidFileNameChars();
@@ -322,7 +322,7 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
         }
         catch (Exception ex)
         {
-            _logger.Warn(ex, "Temporaere Datei {0} liess sich nicht entfernen.", path);
+            _logger.Warn(ex, "Temporäre Datei {0} ließ sich nicht entfernen.", path);
         }
     }
 }

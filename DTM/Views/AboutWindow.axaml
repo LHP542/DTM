@@ -82,7 +82,7 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
                         Spacing="10" Margin="0,16,0,0">
                 <Button Click="OnOpenGitHub"
-                        ToolTip.Tip="github.com/LHP542/DTM oeffnen"
+                        ToolTip.Tip="github.com/LHP542/DTM öffnen"
                         Padding="12,6" MinWidth="0" Height="32">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <TextBlock Text="&#x2756;" FontSize="13"
@@ -94,7 +94,7 @@
                 </Button>
 
                 <Button Click="OnOpenBuyMeCoffee"
-                        ToolTip.Tip="buymeacoffee.com/kroste oeffnen"
+                        ToolTip.Tip="buymeacoffee.com/kroste öffnen"
                         Padding="12,6" MinWidth="0" Height="32"
                         Background="{DynamicResource BmcBrandBrush}"
                         Foreground="{DynamicResource BmcBrandTextBrush}"

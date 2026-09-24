@@ -6,7 +6,7 @@ namespace DTM.Tests.Diagnostics;
 
 /// <summary>
 /// Der Guard arbeitet auf echten Named Pipes — die Tests belegen deshalb je
-/// einen eindeutigen App-Namen, damit parallele Testlaeufe und eine echte
+/// einen eindeutigen App-Namen, damit parallele Testläufe und eine echte
 /// laufende DTM-Instanz sich nicht in die Quere kommen.
 /// </summary>
 public class SingleInstanceGuardTests
@@ -29,7 +29,7 @@ public class SingleInstanceGuardTests
         first.TryClaim().Should().BeTrue();
 
         using var second = new SingleInstanceGuard(name);
-        second.TryClaim().Should().BeFalse("die erste Instanz haelt die Pipe");
+        second.TryClaim().Should().BeFalse("die erste Instanz hält die Pipe");
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class SingleInstanceGuardTests
     [Fact]
     public void TryClaim_AfterDispose_SucceedsAgain()
     {
-        // Wichtig fuer den Update-Pfad: DTM beendet sich, das Installer-Skript
+        // Wichtig für den Update-Pfad: DTM beendet sich, das Installer-Skript
         // startet die neue Version sofort — die Pipe muss dann frei sein.
         string name = UniqueName();
         var first = new SingleInstanceGuard(name);
@@ -94,7 +94,7 @@ public class SingleInstanceGuardTests
         using (var third = new SingleInstanceGuard(name)) third.NotifyPrimary();
 
         signal.Wait(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken)
-            .Should().BeTrue("beide Aktivierungen muessen ankommen");
+            .Should().BeTrue("beide Aktivierungen müssen ankommen");
     }
 
     [Fact]

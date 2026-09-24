@@ -6,11 +6,11 @@ namespace DTM.Views;
 /// <summary>
 /// Dialog zur Auswahl eines OLVM-VM-Snapshots (Phase 11.6).
 /// Restore + Löschen sind aktuell disabled — die Ansible-Playbooks
-/// dafuer werden noch gebaut (Phase 11.4/11.5).
+/// dafür werden noch gebaut (Phase 11.4/11.5).
 ///
-/// Result: <see cref="OlvmSnapshotSelectResult"/> mit gewaehlter Aktion
+/// Result: <see cref="OlvmSnapshotSelectResult"/> mit gewählter Aktion
 /// + Snapshot, oder <c>null</c> bei Abbruch bzw. wenn keine Aktion
-/// verfuegbar ist.
+/// verfügbar ist.
 /// </summary>
 public partial class OlvmSnapshotSelectWindow : ChromeWindow
 {

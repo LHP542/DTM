@@ -6,8 +6,8 @@ public class DTM_DATA : IDTM_DATA
 {
     private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
-    // O(1)-Lookup per ServerIdentity; bewahrt zusaetzlich die Insertion-Order
-    // ueber die separate Liste, damit der Tree-Aufbau im UI eine stabile
+    // O(1)-Lookup per ServerIdentity; bewahrt zusätzlich die Insertion-Order
+    // über die separate Liste, damit der Tree-Aufbau im UI eine stabile
     // Reihenfolge sieht (wichtig bei vielen Servern in derselben Gruppe).
     private readonly Dictionary<ServerIdentity, DB_SERVER> _byIdentity;
     private readonly IODBC_Factory _factory;
@@ -50,7 +50,7 @@ public class DTM_DATA : IDTM_DATA
             var result = _factory
                 .Get_DATA(server.Typ.ToString(), server.serverCredential!)!
                 .GetDatabase_Stats(database);
-            _logger.Info("get_Database_Stats: Stats fuer '{0}' geladen ({1}).", database.Name, identity);
+            _logger.Info("get_Database_Stats: Stats für '{0}' geladen ({1}).", database.Name, identity);
             return result;
         }
         catch (Exception ex)
@@ -65,8 +65,8 @@ public class DTM_DATA : IDTM_DATA
         if (_byIdentity.TryGetValue(identity, out DB_SERVER? server))
             return server;
         throw new KeyNotFoundException(
-            $"Kein registrierter Server mit Identitaet '{identity}'. "
-            + "Pruefe ConnectionStore / DI-Setup.");
+            $"Kein registrierter Server mit Identität '{identity}'. "
+            + "Prüfe ConnectionStore / DI-Setup.");
     }
 
     public DTM.Data.Mssql.OdbcMssqlActionService GetMssqlActions(ServerIdentity identity)
@@ -74,10 +74,10 @@ public class DTM_DATA : IDTM_DATA
         DB_SERVER server = ResolveServer(identity);
         if (server.Typ != DB_SERVER.ServerTyp.MSSQL)
             throw new InvalidOperationException(
-                $"OdbcMssqlActionService nur fuer MSSQL verfuegbar (Server '{identity}' ist {server.Typ}).");
+                $"OdbcMssqlActionService nur für MSSQL verfügbar (Server '{identity}' ist {server.Typ}).");
         var odbc = _factory.Get_DATA("MSSQL", server.serverCredential!) as DTM.MSSQL.MSSQL_ODBC
                    ?? throw new InvalidOperationException(
-                       $"Factory lieferte keine MSSQL_ODBC-Instanz fuer '{identity}'.");
+                       $"Factory lieferte keine MSSQL_ODBC-Instanz für '{identity}'.");
         return new DTM.Data.Mssql.OdbcMssqlActionService(odbc);
     }
 
@@ -92,11 +92,11 @@ public class DTM_DATA : IDTM_DATA
         DB_SERVER server = ResolveServer(identity);
         if (server.Typ != DB_SERVER.ServerTyp.MariaDB)
             throw new InvalidOperationException(
-                $"MariaDB-Dienste nur fuer MariaDB verfuegbar (Server '{identity}' ist {server.Typ}).");
+                $"MariaDB-Dienste nur für MariaDB verfügbar (Server '{identity}' ist {server.Typ}).");
 
         return _factory.Get_DATA("MariaDB", server.serverCredential!) as DTM.MariaDb.MariaDb_Connector
                ?? throw new InvalidOperationException(
-                   $"Factory lieferte keinen MariaDb_Connector fuer '{identity}'.");
+                   $"Factory lieferte keinen MariaDb_Connector für '{identity}'.");
     }
 
     public DTM.Data.Olvm.OlvmSnapshotService GetOlvmSnapshotService(ServerIdentity identity)
@@ -104,7 +104,7 @@ public class DTM_DATA : IDTM_DATA
         DB_SERVER server = ResolveServer(identity);
         if (server.Typ != DB_SERVER.ServerTyp.ORACLE)
             throw new InvalidOperationException(
-                $"OlvmSnapshotService nur fuer Oracle verfuegbar (Server '{identity}' ist {server.Typ}).");
+                $"OlvmSnapshotService nur für Oracle verfügbar (Server '{identity}' ist {server.Typ}).");
         // Frischer REST-Client pro Aufruf; der Service disposed ihn.
         // trustAllCertificates: true — gleiches Verhalten wie ORACLE_ODBC
         // (Self-signed OLVM-Zertifikate in typischen Setups).

@@ -6,8 +6,8 @@ using NLog;
 namespace DTM.ViewModels;
 
 /// <summary>
-/// ViewModel fuer den Oracle-Restore-Vorschau-Dialog. Laedt asynchron
-/// die Restore-Points und PDB-Liste der CDB ueber den
+/// ViewModel für den Oracle-Restore-Vorschau-Dialog. Lädt asynchron
+/// die Restore-Points und PDB-Liste der CDB über den
 /// <see cref="OracleRestoreService"/> und exposes sie ans UI.
 /// </summary>
 public sealed partial class OracleRestoreSelectViewModel : ViewModelBase
@@ -31,7 +31,7 @@ public sealed partial class OracleRestoreSelectViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Holt die Restore-Vorschau fuer <paramref name="database"/>. Bei Fehler
+    /// Holt die Restore-Vorschau für <paramref name="database"/>. Bei Fehler
     /// wird <see cref="ErrorMessage"/> gesetzt; das UI zeigt den Fehler an.
     /// </summary>
     public async Task LoadAsync(string database)
@@ -58,7 +58,7 @@ public sealed partial class OracleRestoreSelectViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Oracle-Restore-Vorschau fuer '{0}' fehlgeschlagen.", database);
+            _logger.Error(ex, "Oracle-Restore-Vorschau für '{0}' fehlgeschlagen.", database);
             ErrorMessage = ex.Message;
         }
         finally

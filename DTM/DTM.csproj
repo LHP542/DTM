@@ -4,21 +4,21 @@
     <!-- TargetFramework, Nullable, ImplicitUsings, LangVersion, Authors,
          RepositoryUrl, TreatWarningsAsErrors kommen aus Directory.Build.props.
          Version/AssemblyVersion/AssemblyInformationalVersion werden von MinVer
-         aus dem juengsten Git-Tag mit Prefix "v" berechnet (z.B. v1.1.0). -->
-    <!-- WinExe = GUI-App: Windows oeffnet KEIN Konsolenfenster. Bei Exe
-         (Console-App) haengt ein leeres Console-Window an der Exe und
+         aus dem jüngsten Git-Tag mit Prefix "v" berechnet (z.B. v1.1.0). -->
+    <!-- WinExe = GUI-App: Windows öffnet KEIN Konsolenfenster. Bei Exe
+         (Console-App) hängt ein leeres Console-Window an der Exe und
          zeigt NLog-coloredConsole-Ausgaben — bei einer Desktop-App
          unerwuenscht. Unter Linux hat das keinen Effekt. -->
     <OutputType>WinExe</OutputType>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <!-- App-Icon fuer die Windows-Exe (Explorer/Taskbar). Fenster-Icon
+    <!-- App-Icon für die Windows-Exe (Explorer/Taskbar). Fenster-Icon
          zieht ChromeWindow zur Laufzeit aus Assets/dtm.png. -->
     <ApplicationIcon>Assets\dtm.ico</ApplicationIcon>
   </PropertyGroup>
 
-  <!-- ASP.NET Core (Kestrel + Minimal-API) fuer die eingebaute REST-API unter
+  <!-- ASP.NET Core (Kestrel + Minimal-API) für die eingebaute REST-API unter
        Data/Api/. FrameworkReference statt PackageReference: das Runtime-Bundle
        steckt im .NET-10-SDK, es kommt kein NuGet-Paket dazu. -->
   <ItemGroup>
@@ -26,8 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Microsoft.Extensions.DependencyInjection kommt seit der REST-API ueber
-         den FrameworkReference Microsoft.AspNetCore.App mit. Ein zusaetzlicher
+    <!-- Microsoft.Extensions.DependencyInjection kommt seit der REST-API über
+         den FrameworkReference Microsoft.AspNetCore.App mit. Ein zusätzlicher
          PackageReference bricht den Build mit NU1510. -->
     <PackageReference Include="MinVer">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -57,10 +57,10 @@
 
   <ItemGroup>
     <!-- Nlog.config muss neben der Exe liegen (NLog liest ${basedir}/Nlog.config).
-         Assets/*.png werden ueber <AvaloniaResource> in die DLL eingebettet
-         (avares://DTM/Assets/*), kein zusaetzliches CopyToOutputDirectory noetig.
+         Assets/*.png werden über <AvaloniaResource> in die DLL eingebettet
+         (avares://DTM/Assets/*), kein zusätzliches CopyToOutputDirectory nötig.
          release-notes.json wird zur Laufzeit aus dem GitHub-Raw geladen
-         (Klemmbrett-Muster), keine lokale Kopie noetig. -->
+         (Klemmbrett-Muster), keine lokale Kopie nötig. -->
     <None Update="Nlog.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

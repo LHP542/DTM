@@ -51,9 +51,9 @@ public partial class AboutWindow : ChromeWindow
         }
     }
 
-    // Manueller "Auf Updates pruefen"-Button (Klemmbrett-Muster): forceRefresh=true
+    // Manueller "Auf Updates prüfen"-Button (Klemmbrett-Muster): forceRefresh=true
     // umgeht den Cache und macht einen frischen GitHub-API-Call. Der App-Start
-    // hat schon einen Check gemacht — dieser hier ist fuer "ich moechte JETZT
+    // hat schon einen Check gemacht — dieser hier ist für "ich möchte JETZT
     // nochmal nachschauen ob was Neues da ist".
     private async void OnCheckUpdate(object? _, RoutedEventArgs e)
     {
@@ -79,7 +79,7 @@ public partial class AboutWindow : ChromeWindow
                 return;
             }
 
-            // Update gefunden → UpdatePromptWindow oeffnen (mit release-notes.json
+            // Update gefunden → UpdatePromptWindow öffnen (mit release-notes.json
             // aus dem Repo-Raw).
             var notes = await updater.LoadReleaseNotesAsync(result.Current, result.Latest);
             var dlg = new UpdatePromptWindow(result.Latest.ToString(), result.Current.ToString(3), notes);
@@ -88,19 +88,19 @@ public partial class AboutWindow : ChromeWindow
             if (dlg.Result == UpdateDialogResult.ApplyNow)
             {
                 UpdateCheckButton.IsEnabled = false;
-                UpdateStatusText.Text = "Update laedt …";
+                UpdateStatusText.Text = "Update lädt …";
                 var progress = new Progress<double>(pct =>
-                    UpdateStatusText.Text = $"Update laedt: {pct:P0}");
+                    UpdateStatusText.Text = $"Update lädt: {pct:P0}");
                 bool ok = await updater.DownloadAndApplyAsync(result, progress);
                 if (ok)
                 {
-                    // Austausch-Skript laeuft und wartet auf das Prozessende —
-                    // App jetzt beenden, sonst haengt es bei „Update laedt: 100 %".
+                    // Austausch-Skript läuft und wartet auf das Prozessende —
+                    // App jetzt beenden, sonst hängt es bei „Update lädt: 100 %".
                     UpdateStatusText.Text = "Update wird installiert — Anwendung startet neu …";
                     UpdateService.TerminateForUpdate();
                 }
                 else
-                    UpdateStatusText.Text = "Self-Update nicht moeglich — Release-Seite oeffnen.";
+                    UpdateStatusText.Text = "Self-Update nicht möglich — Release-Seite öffnen.";
             }
             else if (dlg.Result == UpdateDialogResult.Later)
             {

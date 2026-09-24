@@ -39,7 +39,7 @@ public partial class FatalErrorWindow : ChromeWindow
         }
         catch
         {
-            // Wenn sich das Verzeichnis nicht oeffnen laesst (z.B. headless), ignorieren —
+            // Wenn sich das Verzeichnis nicht öffnen lässt (z.B. headless), ignorieren —
             // der Pfad steht ohnehin in den Logs selbst.
         }
     }

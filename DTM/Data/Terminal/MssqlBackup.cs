@@ -11,7 +11,7 @@ public sealed record MssqlBackup(
     long SizeBytes,
     string Path)
 {
-    /// <summary>Human-readable Groesse (z. B. „2.4 GB", „542 MB").</summary>
+    /// <summary>Human-readable Größe (z. B. „2.4 GB", „542 MB").</summary>
     public string SizeDisplay => FormatSize(SizeBytes);
 
     private static string FormatSize(long bytes)

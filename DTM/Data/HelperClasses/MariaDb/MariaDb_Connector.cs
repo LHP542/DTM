@@ -7,20 +7,20 @@ namespace DTM.MariaDb;
 
 /// <summary>
 /// Lesender Zugriff auf einen MariaDB-/MySQL-Server — Datenbankliste und
-/// Kennzahlen. Gegenstueck zu <see cref="DTM.MSSQL.MSSQL_ODBC"/>, aber ohne
+/// Kennzahlen. Gegenstück zu <see cref="DTM.MSSQL.MSSQL_ODBC"/>, aber ohne
 /// FOC-SQL und ohne PowerShell: MariaDB wird immer direkt angesprochen.
 ///
 /// <para><b>Warum MySqlConnector statt ODBC:</b> rein managed, es muss also
 /// auf keinem Client ein Treiber installiert werden. DTM wird als ZIP
-/// verteilt; ein zusaetzlich zu pflegender ODBC-Treiber waere bei jedem
-/// Nutzer eine Huerde. Das Interface <see cref="IDTM_ODBC"/> schreibt trotz
+/// verteilt; ein zusätzlich zu pflegender ODBC-Treiber wäre bei jedem
+/// Nutzer eine Hürde. Das Interface <see cref="IDTM_ODBC"/> schreibt trotz
 /// seines Namens keine ODBC-Technik vor — es verlangt nur die beiden
 /// Lesemethoden.</para>
 ///
 /// <para>Die Verbindung wird offen gehalten und von der
 /// <see cref="ODBC_Factory"/> pro Server gecacht (gleiches Muster wie MSSQL).
 /// Ein <see cref="SemaphoreSlim"/> serialisiert die Zugriffe, weil eine
-/// einzelne <see cref="MySqlConnection"/> nicht fuer parallele Kommandos
+/// einzelne <see cref="MySqlConnection"/> nicht für parallele Kommandos
 /// gedacht ist.</para>
 /// </summary>
 public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable, IDTM_ODBC
@@ -33,7 +33,7 @@ public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable
     /// <summary>
     /// Schemas, die der Server selbst mitbringt. Sie tauchen in der
     /// Datenbankliste nicht auf — es sind keine Nutzdaten, und ein
-    /// versehentliches Backup oder eine Wartung darauf waere bestenfalls
+    /// versehentliches Backup oder eine Wartung darauf wäre bestenfalls
     /// sinnlos.
     /// </summary>
     private static readonly string[] SystemSchemas =
@@ -48,12 +48,12 @@ public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable
         if (!string.IsNullOrWhiteSpace(Credential.ConnectionString))
             return Credential.ConnectionString;
 
-        // "host:3307" im Server-Feld erlauben — sonst muesste man fuer einen
+        // "host:3307" im Server-Feld erlauben — sonst müsste man für einen
         // abweichenden Port den ganzen ConnectionString von Hand schreiben.
         //
         // IPv6 braucht dabei die Klammer-Form "[fe80::1]:3307". Ohne diese
-        // Unterscheidung wuerde bei einer blanken IPv6-Adresse alles hinter
-        // dem letzten ":" als Port gelesen: aus "fe80::1" wuerde Host "fe80:"
+        // Unterscheidung würde bei einer blanken IPv6-Adresse alles hinter
+        // dem letzten ":" als Port gelesen: aus "fe80::1" würde Host "fe80:"
         // auf Port 1 — die Verbindung liefe gegen den falschen Rechner,
         // statt klar zu scheitern.
         string host = Credential.Server.Trim();
@@ -87,9 +87,9 @@ public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable
             Port = port,
             UserID = Credential.User,
             Password = Credential.Password,
-            // Kein Default-Schema: DTM wechselt ueber die Datenbankliste und
+            // Kein Default-Schema: DTM wechselt über die Datenbankliste und
             // qualifiziert jede Abfrage selbst. Ein fest gesetztes Schema
-            // wuerde die Verbindung scheitern lassen, sobald es fehlt.
+            // würde die Verbindung scheitern lassen, sobald es fehlt.
             ConnectionTimeout = 15,
         };
         return builder.ConnectionString;
@@ -108,7 +108,7 @@ public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable
     }
 
     /// <summary>
-    /// Fuehrt eine Abfrage aus und bildet jede Zeile ueber
+    /// Führt eine Abfrage aus und bildet jede Zeile über
     /// <paramref name="map"/> ab. Parameter werden immer gebunden, nie in den
     /// SQL-Text geschrieben.
     /// </summary>
@@ -130,7 +130,7 @@ public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable
         }
         catch (Exception ex)
         {
-            // Der ConnectionString enthaelt das Passwort — niemals roh ins Log.
+            // Der ConnectionString enthält das Passwort — niemals roh ins Log.
             _logger.Error(ex, "MariaDB-Abfrage fehlgeschlagen auf '{0}'.", Credential.Server);
             throw;
         }
@@ -160,7 +160,7 @@ public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable
             {
                 Name = r.GetString(0),
                 // MariaDB kennt keine numerische Datenbank-ID; der Name ist
-                // der Schluessel.
+                // der Schlüssel.
                 Id = r.GetString(0),
                 FQDN = string.Empty,
                 // Ein vorhandenes Schema ist erreichbar — ein Online/Offline
@@ -183,7 +183,7 @@ public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable
             State = "ONLINE",
         };
 
-        // --- Groesse, Tabellenzahl, Engines -------------------------------
+        // --- Größe, Tabellenzahl, Engines -------------------------------
         var size = Query(
             """
             SELECT COUNT(*)                     AS TableCount,
@@ -233,15 +233,15 @@ public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable
         stats.Sessions = GetSessions(database.Name);
         stats.ActiveConnections = stats.Sessions.Count;
 
-        _logger.Info("MariaDB: Stats fuer '{0}' geladen ({1} Tabellen, {2:N1} MB).",
+        _logger.Info("MariaDB: Stats für '{0}' geladen ({1} Tabellen, {2:N1} MB).",
             database.Name, stats.TableCount, stats.TotalSizeMB);
         return stats;
     }
 
     /// <summary>
     /// Verbindungen auf dieses Schema. Die eigene Verbindung wird
-    /// herausgefiltert — sie als „aktive Session" zu zaehlen waere irrefuehrend,
-    /// und ein Kill wuerde DTM die Verbindung unter den Fuessen wegziehen.
+    /// herausgefiltert — sie als „aktive Session" zu zählen wäre irreführend,
+    /// und ein Kill würde DTM die Verbindung unter den Füßen wegziehen.
     /// </summary>
     internal List<Session> GetSessions(string schema) => Query(
         """
@@ -266,9 +266,9 @@ public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable
     private static double BytesToMb(long bytes) => Math.Round(bytes / 1024d / 1024d, 2);
 
     /// <summary>
-    /// Fuer den Action-Service: eine frisch geoeffnete Verbindung. Bewusst
+    /// Für den Action-Service: eine frisch geöffnete Verbindung. Bewusst
     /// nicht die gecachte Leseverbindung — schreibende Aktionen laufen lang
-    /// (Backup, OPTIMIZE TABLE) und wuerden die Stats-Abfragen blockieren.
+    /// (Backup, OPTIMIZE TABLE) und würden die Stats-Abfragen blockieren.
     /// </summary>
     internal MySqlConnection CreateSeparateConnection()
     {
@@ -277,7 +277,7 @@ public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable
         return conn;
     }
 
-    /// <summary>Server-Adresse ohne Port — fuer externe Werkzeuge wie mariadb-dump.</summary>
+    /// <summary>Server-Adresse ohne Port — für externe Werkzeuge wie mariadb-dump.</summary>
     internal (string Host, uint Port) HostAndPort()
     {
         MySqlConnectionStringBuilder b = new(BuildConnectionString());

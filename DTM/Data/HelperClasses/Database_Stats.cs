@@ -71,7 +71,7 @@ public record Database_Stats_MSSQL : Database_Stats
 ///
 /// <para>Die Felder sind bewusst andere als bei MSSQL: ein Schema hat
 /// keine Dateien, keinen Recovery-Modus und keinen Online/Offline-Zustand.
-/// Was es gibt, kommt aus <c>information_schema</c> — Groesse getrennt
+/// Was es gibt, kommt aus <c>information_schema</c> — Größe getrennt
 /// nach Daten und Indizes, Zeichensatz, Sortierung und die verwendeten
 /// Storage-Engines.</para>
 /// </summary>
@@ -88,16 +88,16 @@ public record Database_Stats_MariaDb : Database_Stats
 
     public int TableCount { get; set; }
 
-    /// <summary>Summe <c>index_length</c> ueber alle Tabellen.</summary>
+    /// <summary>Summe <c>index_length</c> über alle Tabellen.</summary>
     public double IndexSizeMB { get; set; }
 
-    /// <summary>Daten + Indizes — das Gegenstueck zu MSSQLs TotalSizeMB.</summary>
+    /// <summary>Daten + Indizes — das Gegenstück zu MSSQLs TotalSizeMB.</summary>
     public double TotalSizeMB { get; set; }
 
     /// <summary>
     /// Verwendete Storage-Engines mit Tabellenzahl, z. B. „InnoDB (42)".
-    /// Gemischte Engines sind ein haeufiger Grund, warum ein Backup oder
-    /// eine Wartung sich anders verhaelt als erwartet — deshalb sichtbar.
+    /// Gemischte Engines sind ein häufiger Grund, warum ein Backup oder
+    /// eine Wartung sich anders verhält als erwartet — deshalb sichtbar.
     /// </summary>
     public string? Engines { get; set; }
 

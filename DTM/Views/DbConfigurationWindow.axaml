@@ -35,7 +35,7 @@
                         <TextBlock Classes="section-label" Text="QUERY-STORE" Margin="0" />
                         <TextBlock FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"
                                    TextWrapping="Wrap"
-                                   Text="Sammelt Query-Plaene und Laufzeit-Statistiken in der DB selbst (sys.query_store_*). Nuetzlich fuer Performance-Analysen." />
+                                   Text="Sammelt Query-Pläne und Laufzeit-Statistiken in der DB selbst (sys.query_store_*). Nützlich für Performance-Analysen." />
                         <Grid ColumnDefinitions="*,Auto">
                             <CheckBox Grid.Column="0" Content="Query-Store aktiviert"
                                       IsChecked="{Binding QueryStoreOn, Mode=TwoWay}" />
@@ -53,7 +53,7 @@
                         <TextBlock Classes="section-label" Text="PAGE-VERIFY" Margin="0" />
                         <TextBlock FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"
                                    TextWrapping="Wrap"
-                                   Text="Pruefmechanismus fuer Datenseiten. CHECKSUM ist Standard und empfohlen; NONE deaktiviert die Pruefung komplett (nur fuer alte DBs)." />
+                                   Text="Prüfmechanismus für Datenseiten. CHECKSUM ist Standard und empfohlen; NONE deaktiviert die Prüfung komplett (nur für alte DBs)." />
                         <Grid ColumnDefinitions="*,Auto">
                             <ComboBox Grid.Column="0"
                                       ItemsSource="{Binding PageVerifyOptions}"
@@ -73,14 +73,14 @@
                         <TextBlock Classes="section-label" Text="COMPATIBILITY-LEVEL" Margin="0" />
                         <TextBlock FontSize="11" Foreground="{DynamicResource KrosteMutedTextBrush}"
                                    TextWrapping="Wrap"
-                                   Text="Reset auf den MASTER-DB-Default des SQL-Servers (z. B. 150 = SQL 2019, 160 = SQL 2022). Aenderung kann das Query-Verhalten beeinflussen." />
+                                   Text="Reset auf den MASTER-DB-Default des SQL-Servers (z. B. 150 = SQL 2019, 160 = SQL 2022). Änderung kann das Query-Verhalten beeinflussen." />
                         <Grid ColumnDefinitions="*,Auto">
                             <TextBlock Grid.Column="0" VerticalAlignment="Center"
                                        FontSize="13" Foreground="{DynamicResource KrosteTextBrush}">
                                 <Run Text="Aktuell:" Foreground="{DynamicResource KrosteMutedTextBrush}" />
                                 <Run Text="{Binding CompatibilityLevel}" FontWeight="SemiBold" />
                             </TextBlock>
-                            <Button Grid.Column="1" Content="Auf MASTER zuruecksetzen"
+                            <Button Grid.Column="1" Content="Auf MASTER zurücksetzen"
                                     Click="OnResetCompatibility"
                                     Classes="action danger" MinWidth="180" />
                         </Grid>
@@ -89,7 +89,7 @@
 
                 <!-- Footer -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,6,0,0">
-                    <Button x:Name="CloseButton" Content="Schliessen" Click="OnCancel" MinWidth="100" />
+                    <Button x:Name="CloseButton" Content="Schließen" Click="OnCancel" MinWidth="100" />
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

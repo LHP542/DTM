@@ -26,9 +26,9 @@ public static class ConnectionStore
         }
         catch (JsonException ex)
         {
-            // Kaputtes JSON: Datei sichern statt sie beim naechsten Save
-            // endgueltig zu ueberschreiben — sonst sind alle Server samt
-            // DPAPI-Passwoertern unwiederbringlich weg.
+            // Kaputtes JSON: Datei sichern statt sie beim nächsten Save
+            // endgültig zu überschreiben — sonst sind alle Server samt
+            // DPAPI-Passwörtern unwiederbringlich weg.
             _logger.Error(ex, "Verbindungen in {0} sind defekt.", _path);
             JsonFileStore.Quarantine(_path);
             return [];
@@ -36,7 +36,7 @@ public static class ConnectionStore
         catch (Exception ex)
         {
             // IO-Fehler: Inhalt ist in Ordnung, nur gerade nicht lesbar —
-            // NICHT quarantaenisieren.
+            // NICHT quarantänisieren.
             _logger.Error(ex, "Fehler beim Laden der Verbindungen aus {0}", _path);
             return [];
         }

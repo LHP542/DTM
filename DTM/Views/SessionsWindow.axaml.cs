@@ -30,7 +30,7 @@ public partial class SessionsWindow : ChromeWindow
         if (!ok) return;
 
         vm.PerformCloseAllSessions();
-        // Fenster schliessen — Sessions-Liste wird beim naechsten DB-Select neu geladen.
+        // Fenster schließen — Sessions-Liste wird beim nächsten DB-Select neu geladen.
         Close();
     }
 }

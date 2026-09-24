@@ -12,24 +12,24 @@ namespace DTM.Views;
 /// System-Tray-Integration nach Kroste-Skill-Standard (Referenz:
 /// Checkmk Cockpit). Verhalten:
 /// - <b>Minimieren</b> → Fenster verschwindet in den Tray (<see cref="Window.Hide"/>).
-/// - <b>Schließen</b> → App beendet regulär (kein <c>ShutdownMode</c>-Umbau noetig).
-/// - Klick aufs Tray-Icon oder Menue "Anzeigen" → Fenster kommt zurueck.
-/// - Menue "Beenden" → sauberer Desktop-Shutdown.
+/// - <b>Schließen</b> → App beendet regulär (kein <c>ShutdownMode</c>-Umbau nötig).
+/// - Klick aufs Tray-Icon oder Menü "Anzeigen" → Fenster kommt zurück.
+/// - Menü "Beenden" → sauberer Desktop-Shutdown.
 ///
 /// Vier Fallen, die der Skill dokumentiert:
-/// - <b>GC-Referenz halten</b>: <see cref="App"/> haelt die Instanz in einem
+/// - <b>GC-Referenz halten</b>: <see cref="App"/> hält die Instanz in einem
 ///   privaten Feld, sonst wird das <c>TrayIcon</c> nach einiger Laufzeit vom
-///   GC eingesammelt und verschwindet "zufaellig".
+///   GC eingesammelt und verschwindet "zufällig".
 /// - <b>Restore-Guard</b>: Setzen von <see cref="WindowState.Normal"/> triggert
 ///   den Listener rekursiv → ohne <see cref="_restoreInProgress"/>-Flag
-///   entsteht eine Minimize/Restore-Schleife. Restore laeuft ausserdem ueber
+///   entsteht eine Minimize/Restore-Schleife. Restore läuft außerdem über
 ///   <see cref="Dispatcher.UIThread.Post"/>, damit das Fenster nicht mitten im
 ///   Listener-Callback flackert.
 /// - <b>Try/Catch mit Fallback</b>: Auf headless-Servern / kaputtem DBus ist
-///   <c>TrayIcon.SetIcons</c> nicht verfuegbar — dann verhaelt sich Minimieren
+///   <c>TrayIcon.SetIcons</c> nicht verfügbar — dann verhält sich Minimieren
 ///   normal (kein Hide), App bleibt nutzbar.
-/// - Unter Linux haengt der Tray an <c>Tmds.DBus.Protocol</c>, das Avalonia
-///   transitive mitzieht. Kein zusaetzliches Paket noetig.
+/// - Unter Linux hängt der Tray an <c>Tmds.DBus.Protocol</c>, das Avalonia
+///   transitive mitzieht. Kein zusätzliches Paket nötig.
 /// </summary>
 public sealed class TrayController
 {
@@ -75,9 +75,9 @@ public sealed class TrayController
         catch (Exception ex)
         {
             // Fallback ohne Tray: Fenster minimiert sich normal in die
-            // Taskleiste. App bleibt voll funktionsfaehig.
+            // Taskleiste. App bleibt voll funktionsfähig.
             _tray = null;
-            _logger.Warn(ex, "System-Tray nicht verfuegbar — Fallback: Standard-Minimieren.");
+            _logger.Warn(ex, "System-Tray nicht verfügbar — Fallback: Standard-Minimieren.");
         }
     }
 
@@ -105,21 +105,21 @@ public sealed class TrayController
         if (_window.WindowState != WindowState.Minimized) return;
 
         // Fenster verstecken statt in die Taskleiste zu minimieren. Hide()
-        // schliesst nicht — der Prozess bleibt am Leben, die Session
+        // schließt nicht — der Prozess bleibt am Leben, die Session
         // (PowerShell-Runspace, DB-Verbindungen) bleibt bestehen.
         _window.Hide();
     }
 
     /// <summary>
-    /// Holt das Fenster zurueck in den Vordergrund. Public, weil auch der
+    /// Holt das Fenster zurück in den Vordergrund. Public, weil auch der
     /// <see cref="Diagnostics.SingleInstanceGuard"/> das beim Zweitstart
-    /// ausloest.
+    /// auslöst.
     /// </summary>
     public void Restore()
     {
-        // Ueber den Dispatcher gepostet, damit der Restore auch dann sauber
-        // laeuft, wenn der Aufruf aus einem Nicht-UI-Kontext kommt (TrayIcon.
-        // Clicked oder Menue-Klick auf manchen Plattformen).
+        // Über den Dispatcher gepostet, damit der Restore auch dann sauber
+        // läuft, wenn der Aufruf aus einem Nicht-UI-Kontext kommt (TrayIcon.
+        // Clicked oder Menü-Klick auf manchen Plattformen).
         Dispatcher.UIThread.Post(() =>
         {
             _restoreInProgress = true;

@@ -28,7 +28,7 @@ public sealed partial class ConnectionManagerViewModel : ViewModelBase
         $"leer = {DTM.Updater.UpdateChannel.DefaultFolder}";
 
     // --- MariaDB-Werkzeuge -------------------------------------------------
-    // MariaDB kennt kein BACKUP DATABASE; Dump und Restore laufen ueber die
+    // MariaDB kennt kein BACKUP DATABASE; Dump und Restore laufen über die
     // externen Kommandozeilenwerkzeuge. Leer = im PATH suchen.
     [ObservableProperty] private string _mariaDbDumpPath = string.Empty;
     [ObservableProperty] private string _mariaDbClientPath = string.Empty;
@@ -53,8 +53,8 @@ public sealed partial class ConnectionManagerViewModel : ViewModelBase
     public void SaveFocSql()
     {
         // Bestehende Einstellungen laden und nur die Felder dieses Fensters
-        // ueberschreiben. Vorher wurde hier ein frisches FocSqlConfig gebaut —
-        // damit hat jedes Speichern im Verbindungsmanager alles zurueckgesetzt,
+        // überschreiben. Vorher wurde hier ein frisches FocSqlConfig gebaut —
+        // damit hat jedes Speichern im Verbindungsmanager alles zurückgesetzt,
         // was sonst noch in der settings.json steht (die REST-API-Optionen
         // etwa, samt Bearer-Token).
         FocSqlConfig config = AppSettingsStore.LoadFocSql();
@@ -69,7 +69,7 @@ public sealed partial class ConnectionManagerViewModel : ViewModelBase
         FocSqlRuntime.Current = config;
         TerminalBus.SendScript(FocSqlRuntime.BuildImportSnippet());
         // Der Kanal wird beim App-Start in den UpdateService gegeben — eine
-        // Aenderung greift daher erst beim naechsten Start.
+        // Änderung greift daher erst beim nächsten Start.
         _logger.Info("FOC-SQL: SambaSource={0}, ModulePath={1}, UpdateChannel={2}",
             SambaSource, ModulePath, string.IsNullOrWhiteSpace(UpdateChannel) ? "(Default)" : UpdateChannel);
     }
@@ -103,7 +103,7 @@ public sealed partial class ConnectionManagerViewModel : ViewModelBase
     private void Save()
     {
         ConnectionStore.Save([.. Connections]);
-        // Phase 9.5: PS-Remoting-Credentials koennen sich mit dem Save geaendert
+        // Phase 9.5: PS-Remoting-Credentials können sich mit dem Save geändert
         // haben (neuer DMZ-Server, Passwort-Rotation, …). $global:DtmCredMap
         // im Runspace muss synchron ziehen — sonst laufen laufende Sessions
         // gegen die alten Credentials.

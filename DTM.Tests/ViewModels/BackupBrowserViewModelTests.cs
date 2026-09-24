@@ -11,10 +11,10 @@ namespace DTM.Tests.ViewModels;
 
 /// <summary>
 /// Der Backup-Browser bedient drei Quellen mit einer Ansicht. Der
-/// MariaDB-Zweig ist der einzige, der sich ohne Server pruefen laesst — er
+/// MariaDB-Zweig ist der einzige, der sich ohne Server prüfen lässt — er
 /// liest nur das Dateisystem. Genau das macht ihn hier interessant: die
 /// Umrechnung auf die gemeinsame Anzeige-Struktur passiert in der Klasse und
-/// waere sonst nirgends abgedeckt.
+/// wäre sonst nirgends abgedeckt.
 /// </summary>
 public class BackupBrowserViewModelTests : IDisposable
 {
@@ -80,9 +80,9 @@ public class BackupBrowserViewModelTests : IDisposable
     }
 
     /// <summary>
-    /// Der Hinweis im Bestaetigungs-Dialog muss zur Quelle passen: MSSQL
-    /// beendet die Sessions vor dem Restore, der MariaDB-Client nicht. Stuende
-    /// dort derselbe Satz, waere er bei MariaDB schlicht falsch.
+    /// Der Hinweis im Bestätigungs-Dialog muss zur Quelle passen: MSSQL
+    /// beendet die Sessions vor dem Restore, der MariaDB-Client nicht. Stünde
+    /// dort derselbe Satz, wäre er bei MariaDB schlicht falsch.
     /// </summary>
     [Fact]
     public async Task RestoreNote_DependsOnSource()

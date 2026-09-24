@@ -1,12 +1,12 @@
-# DTM App-Icon-Generator (PowerShell-Port von build_icon.py).
+﻿# DTM App-Icon-Generator (PowerShell-Port von build_icon.py).
 #
 # Warum zwei Varianten: der Arbeitslaptop hat kein Python/Pillow, Bazzite
 # schon. Gleiche Geometrie, gleiche Farben, gleiches Ergebnis - bei
-# Design-Aenderungen BEIDE Skripte anpassen.
+# Design-Änderungen BEIDE Skripte anpassen.
 #
 # Erzeugt:
-#   DTM/Assets/dtm.png   (256x256, master fuer Fenster/Tray/AppImage)
-#   DTM/Assets/dtm.ico   (multi-res 16..256 fuer <ApplicationIcon>)
+#   DTM/Assets/dtm.png   (256x256, master für Fenster/Tray/AppImage)
+#   DTM/Assets/dtm.ico   (multi-res 16..256 für <ApplicationIcon>)
 #
 # Aufruf:  pwsh -File scripts/build_icon.ps1
 #
@@ -46,9 +46,9 @@ function Add-RoundedRect($g, [float]$x, [float]$y, [float]$w, [float]$h, [float]
 }
 
 function Add-Background($g, [int]$size, [double]$scale) {
-    # Radius IMMER gegen die Kantenlaenge deckeln. Ohne das Min traf bei der
-    # 48px-Variante ein Radius von 48 auf eine 48px-Flaeche: die vier Boegen
-    # ueberlappten sich, der Pfad degenerierte und das Icon zerfiel sichtbar
+    # Radius IMMER gegen die Kantenlänge deckeln. Ohne das Min traf bei der
+    # 48px-Variante ein Radius von 48 auf eine 48px-Fläche: die vier Bögen
+    # überlappten sich, der Pfad degenerierte und das Icon zerfiel sichtbar
     # an den Ecken (real im Windows-Explorer aufgefallen).
     $corner = [Math]::Max(2, [int][Math]::Min($CORNER * $scale, $size * 0.22))
     $b = New-Object System.Drawing.SolidBrush $BG
@@ -57,7 +57,7 @@ function Add-Background($g, [int]$size, [double]$scale) {
 }
 
 function New-IconLarge([int]$size) {
-    # Volles Design fuer >= 64px: Zylinder mit 3 Scheiben (2 Rillen),
+    # Volles Design für >= 64px: Zylinder mit 3 Scheiben (2 Rillen),
     # Akzent-Punkt oben rechts.
     $scale = $size / 256.0
     $bmp = New-Object System.Drawing.Bitmap $size, $size,
@@ -89,8 +89,8 @@ function New-IconLarge([int]$size) {
             $g.DrawEllipse($pBg, ($cx - $rX), ($y - $rY), (2 * $rX), (2 * $rY))
         } else {
             # Rille: nur den UNTEREN Halbbogen zeichnen (0..180 Grad). Der
-            # frueher genutzte Weg "volle Ellipse zeichnen, obere Haelfte mit
-            # einem Rechteck uebermalen" liess an den Zylinderkanten Reste der
+            # früher genutzte Weg "volle Ellipse zeichnen, obere Hälfte mit
+            # einem Rechteck übermalen" ließ an den Zylinderkanten Reste der
             # Umrisslinie stehen und sah bei 256px ausgefranst aus.
             $g.DrawArc($pBg, ($cx - $rX), ($y - $rY), (2 * $rX), (2 * $rY), 0, 180)
         }
@@ -111,11 +111,11 @@ function New-IconLarge([int]$size) {
 }
 
 function New-IconSmall([int]$size) {
-    # Vereinfachte Variante fuer 16..48px (Windows-Taskbar, Explorer, Alt-Tab).
-    # Nur Deckel + Koerper + Boden, keine Rillen, kein Akzent-Punkt.
+    # Vereinfachte Variante für 16..48px (Windows-Taskbar, Explorer, Alt-Tab).
+    # Nur Deckel + Körper + Boden, keine Rillen, kein Akzent-Punkt.
     #
-    # Proportionen sind der Knackpunkt: mit 28% Seitenpadding und 50% Hoehe war
-    # der Zylinder schmaler als hoch und las sich bei 16-32px als weisse Pille,
+    # Proportionen sind der Knackpunkt: mit 28% Seitenpadding und 50% Höhe war
+    # der Zylinder schmaler als hoch und las sich bei 16-32px als weiße Pille,
     # nicht als Datenbank. Ein Zylinder wird erst dann erkennbar, wenn er
     # deutlich BREITER als hoch ist und die Deckel-Ellipse sichtbar bleibt.
     $bmp = New-Object System.Drawing.Bitmap $size, $size,
@@ -128,14 +128,14 @@ function New-IconSmall([int]$size) {
 
     # Zwei Erkenntnisse aus dem 16px-Test:
     # (1) rY mindestens 2px — bei 1px verschwindet die Deckel-Ellipse und der
-    #     Koerper liest sich als Rechteck.
+    #     Körper liest sich als Rechteck.
     # (2) Der Zylinder muss deutlich BREITER als hoch sein. Mit gleicher Breite
-    #     und Hoehe entstand ein weisser Klotz mit runden Kanten; erst ein
-    #     gedrungenes Verhaeltnis (~3:2) liest sich als Datenbank.
-    # (3) Die Ellipsen duerfen den Koerper nicht dominieren: mit rY=0.12 und
-    #     nur 25% Koerperhoehe sah das Ergebnis aus wie eine Untertasse.
-    #     Faustregel, die sich bewaehrt hat — Koerper etwa doppelt so hoch wie
-    #     eine Ellipse, Gesamtbreite etwa das 1,4-fache der Gesamthoehe.
+    #     und Höhe entstand ein weißer Klotz mit runden Kanten; erst ein
+    #     gedrungenes Verhältnis (~3:2) liest sich als Datenbank.
+    # (3) Die Ellipsen dürfen den Körper nicht dominieren: mit rY=0.12 und
+    #     nur 25% Körperhöhe sah das Ergebnis aus wie eine Untertasse.
+    #     Faustregel, die sich bewährt hat — Körper etwa doppelt so hoch wie
+    #     eine Ellipse, Gesamtbreite etwa das 1,4-fache der Gesamthöhe.
     $cx   = $size / 2.0
     $padX = [Math]::Max(2, [int]($size * 0.15))
     $rX   = $size / 2.0 - $padX
@@ -181,7 +181,7 @@ function Save-Ico([System.Drawing.Bitmap[]]$images, [string]$path) {
         $bw.Write([uint16]1)                  # type: 1 = Icon
         $bw.Write([uint16]$images.Count)
 
-        # Directory-Eintraege sind je 16 Byte; Bilddaten folgen dahinter.
+        # Directory-Einträge sind je 16 Byte; Bilddaten folgen dahinter.
         $offset = 6 + 16 * $images.Count
         for ($i = 0; $i -lt $images.Count; $i++) {
             $w = $images[$i].Width

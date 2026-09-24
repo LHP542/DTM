@@ -6,11 +6,11 @@ using DTM.Views;
 namespace DTM.ViewModels;
 
 /// <summary>
-/// Backend-Dispatch und gemeinsame Ausfuehrungspfade.
+/// Backend-Dispatch und gemeinsame Ausführungspfade.
 ///
-/// DTM spricht Datenbanken auf zwei Wegen an: ueber das FOC-SQL-PowerShell-Modul
-/// (fire-and-forget im sichtbaren pwsh-Tab) und — seit Phase 10 fuer DMZ-Server
-/// ohne WinRM — direkt per ODBC. Die Wahl faellt pro Server ueber
+/// DTM spricht Datenbanken auf zwei Wegen an: über das FOC-SQL-PowerShell-Modul
+/// (fire-and-forget im sichtbaren pwsh-Tab) und — seit Phase 10 für DMZ-Server
+/// ohne WinRM — direkt per ODBC. Die Wahl fällt pro Server über
 /// <see cref="ServerBackend"/>. Bewusst KEIN gemeinsames Backend-Interface:
 /// die beiden Wege haben unvereinbare Signaturen (asynchrones SQL gegen
 /// abgesetztes Kommando), deshalb entscheidet jeder Aufrufer selbst per
@@ -47,7 +47,7 @@ public sealed partial class MainWindowViewModel
 
     // Phase 10.4: liefert den OdbcMssqlActionService, wenn der Server der
     // DB im OdbcDirect-Modus ist. Sonst null → Aufrufer geht den FOC-SQL-Weg.
-    // Fuer Oracle immer null (kein OdbcDirect fuer Oracle).
+    // Für Oracle immer null (kein OdbcDirect für Oracle).
     private DTM.Data.Mssql.OdbcMssqlActionService? TryGetOdbcActions(DatabaseNodeViewModel db)
     {
         var server = _data.Servers.FirstOrDefault(s => s.Identity == db.ServerIdentity);
@@ -56,7 +56,7 @@ public sealed partial class MainWindowViewModel
         return _data.GetMssqlActions(db.ServerIdentity);
     }
 
-    // Phase 10.4: einheitlicher Ausfuehrungspfad fuer OdbcDirect-Actions.
+    // Phase 10.4: einheitlicher Ausführungspfad für OdbcDirect-Actions.
     // Statusbar + Notice-Header/-Footer, Exception-Handling, Live-Output
     // per InjectNotice — der pwsh-Tab sieht die ODBC-Aktion wie eine
     // FOC-SQL-Aktion (nur ohne Live-Stream aus dem Modul).
@@ -74,7 +74,7 @@ public sealed partial class MainWindowViewModel
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "{0} fuer {1} fehlgeschlagen", label, dbName);
+            _logger.Error(ex, "{0} für {1} fehlgeschlagen", label, dbName);
             DTM.Data.Terminal.TerminalBus.InjectNotice($"[FEHLER: {ex.Message}]");
             await Dispatcher.UIThread.InvokeAsync(() =>
                 StatusBar = $"{label} fehlgeschlagen: {ex.Message}");
@@ -112,9 +112,9 @@ public sealed partial class MainWindowViewModel
             : (string.IsNullOrWhiteSpace(db.Database.FQDN) ? db.Database.Name : db.Database.FQDN!);
 
     /// <summary>
-    /// Liefert den Server-Hostname fuer den FOC-SQL -Server-Parameter:
+    /// Liefert den Server-Hostname für den FOC-SQL -Server-Parameter:
     /// MSSQL → konkreter Hostname (mehrere MSSQL-Server unterscheidbar).
-    /// Oracle → <c>null</c> (Oracle adressiert ueber FQDN im -Database-Param,
+    /// Oracle → <c>null</c> (Oracle adressiert über FQDN im -Database-Param,
     /// das -Server-Argument geht an die DTM-Wrapper, die es bei Oracle ignorieren).
     /// </summary>
     internal static string? ServerParamFor(DatabaseNodeViewModel db) =>

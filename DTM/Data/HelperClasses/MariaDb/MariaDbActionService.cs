@@ -5,15 +5,15 @@ using NLog;
 namespace DTM.Data.MariaDb;
 
 /// <summary>
-/// Schreibende Aktionen auf einer MariaDB-Datenbank. Gegenstueck zu
+/// Schreibende Aktionen auf einer MariaDB-Datenbank. Gegenstück zu
 /// <see cref="DTM.Data.Mssql.OdbcMssqlActionService"/>, aber mit dem, was
-/// MariaDB tatsaechlich hergibt:
+/// MariaDB tatsächlich hergibt:
 ///
 /// <list type="bullet">
 /// <item><b>Sessions beenden</b> — <c>KILL</c> pro Verbindung.</item>
 /// <item><b>Wartung</b> — <c>CHECK</c> / <c>OPTIMIZE</c> / <c>ANALYZE TABLE</c>
-///       als Gegenstueck zu DBCC CHECKDB und Index-Rebuild.</item>
-/// <item><b>Backup und Restore</b> — ueber die externen Werkzeuge
+///       als Gegenstück zu DBCC CHECKDB und Index-Rebuild.</item>
+/// <item><b>Backup und Restore</b> — über die externen Werkzeuge
 ///       <c>mariadb-dump</c> und <c>mariadb</c>, siehe
 ///       <see cref="MariaDbBackupService"/>.</item>
 /// </list>
@@ -21,11 +21,11 @@ namespace DTM.Data.MariaDb;
 /// <para><b>Was es bewusst nicht gibt:</b> Snapshots (kennt MariaDB nicht),
 /// Recovery-Modus und Archive-Log (das Binlog ist serverweit, nicht pro
 /// Datenbank) und Cluster-Health in der MSSQL-Form. Diese Aktions-Gruppen
-/// bleiben in der UI ausgeblendet, statt Knoepfe anzubieten, die nichts
-/// Sinnvolles tun koennen.</para>
+/// bleiben in der UI ausgeblendet, statt Knöpfe anzubieten, die nichts
+/// Sinnvolles tun können.</para>
 ///
 /// <para><b>Bezeichner werden gequotet, nicht gebunden.</b> Tabellen- und
-/// Datenbanknamen koennen in SQL nicht als Parameter uebergeben werden. Sie
+/// Datenbanknamen können in SQL nicht als Parameter übergeben werden. Sie
 /// gehen deshalb durch <see cref="QuoteIdentifier"/> — Backticks, mit
 /// Verdopplung eines im Namen enthaltenen Backticks. Werte sind weiterhin
 /// immer gebundene Parameter.</para>
@@ -39,11 +39,11 @@ public sealed class MariaDbActionService(MariaDb_Connector connector)
     /// <summary>Wartungsbefehle, die auf einzelne Tabellen wirken.</summary>
     public enum TableMaintenance
     {
-        /// <summary>Prueft auf Fehler — lesend.</summary>
+        /// <summary>Prüft auf Fehler — lesend.</summary>
         Check,
-        /// <summary>Raeumt auf und gibt Platz frei; schreibt die Tabelle neu.</summary>
+        /// <summary>Räumt auf und gibt Platz frei; schreibt die Tabelle neu.</summary>
         Optimize,
-        /// <summary>Aktualisiert die Index-Statistiken fuer den Optimizer.</summary>
+        /// <summary>Aktualisiert die Index-Statistiken für den Optimizer.</summary>
         Analyze,
     }
 
@@ -51,7 +51,7 @@ public sealed class MariaDbActionService(MariaDb_Connector connector)
     /// Setzt einen Bezeichner in Backticks. Ein im Namen enthaltener Backtick
     /// wird verdoppelt — das ist die von MariaDB vorgesehene Escape-Regel und
     /// der einzige sichere Weg, weil Bezeichner nicht als Parameter gebunden
-    /// werden koennen.
+    /// werden können.
     /// </summary>
     public static string QuoteIdentifier(string name)
     {
@@ -61,8 +61,8 @@ public sealed class MariaDbActionService(MariaDb_Connector connector)
 
     /// <summary>
     /// Beendet alle fremden Verbindungen auf diese Datenbank. Die eigene
-    /// Verbindung ist ausgenommen — sie zu beenden wuerde DTM den Boden
-    /// unter den Fuessen wegziehen.
+    /// Verbindung ist ausgenommen — sie zu beenden würde DTM den Boden
+    /// unter den Füßen wegziehen.
     /// </summary>
     public async Task<int> KillSessionsAsync(
         string database, Action<string>? onInfo = null, CancellationToken ct = default)
@@ -94,7 +94,7 @@ public sealed class MariaDbActionService(MariaDb_Connector connector)
             try
             {
                 // KILL nimmt keinen Parameter; die ID kommt aus der Abfrage
-                // oben und ist ein long — kein Platz fuer Einschleusung.
+                // oben und ist ein long — kein Platz für Einschleusung.
                 await using MySqlCommand kill = new($"KILL {id}", conn);
                 await kill.ExecuteNonQueryAsync(ct);
                 killed++;
@@ -113,9 +113,9 @@ public sealed class MariaDbActionService(MariaDb_Connector connector)
     }
 
     /// <summary>
-    /// Fuehrt einen Wartungsbefehl ueber alle Basistabellen der Datenbank aus,
+    /// Führt einen Wartungsbefehl über alle Basistabellen der Datenbank aus,
     /// eine Tabelle nach der anderen. Der Fortschritt geht laufend an
-    /// <paramref name="onInfo"/> — bei grossen Datenbanken laeuft das sonst
+    /// <paramref name="onInfo"/> — bei großen Datenbanken läuft das sonst
     /// minutenlang ohne jedes Lebenszeichen.
     /// </summary>
     public async Task RunTableMaintenanceAsync(
@@ -147,11 +147,11 @@ public sealed class MariaDbActionService(MariaDb_Connector connector)
 
         if (tables.Count == 0)
         {
-            onInfo?.Invoke($"'{database}' enthaelt keine Basistabellen — nichts zu tun.");
+            onInfo?.Invoke($"'{database}' enthält keine Basistabellen — nichts zu tun.");
             return;
         }
 
-        onInfo?.Invoke($"{verb} fuer {tables.Count} Tabellen in '{database}' …");
+        onInfo?.Invoke($"{verb} für {tables.Count} Tabellen in '{database}' …");
         string quotedDb = QuoteIdentifier(database);
         int index = 0;
 
@@ -181,7 +181,7 @@ public sealed class MariaDbActionService(MariaDb_Connector connector)
             onInfo?.Invoke($"  [{index}/{tables.Count}] {table} — {summary}");
         }
 
-        _logger.Info("MariaDB: {0} auf {1} Tabellen in '{2}' ausgefuehrt.", verb, tables.Count, database);
+        _logger.Info("MariaDB: {0} auf {1} Tabellen in '{2}' ausgeführt.", verb, tables.Count, database);
         onInfo?.Invoke($"{verb} abgeschlossen ({tables.Count} Tabellen).");
     }
 }

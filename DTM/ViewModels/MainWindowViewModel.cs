@@ -13,11 +13,11 @@ namespace DTM.ViewModels;
 
 /// <summary>
 /// ViewModel des Hauptfensters. Aufgeteilt in partial classes, damit die
-/// Datei nicht wieder auf ~1000 Zeilen anwaechst:
+/// Datei nicht wieder auf ~1000 Zeilen anwächst:
 /// <list type="bullet">
 /// <item><c>MainWindowViewModel.cs</c> (hier) — Zustand, Server-Baum, Stats.</item>
 /// <item><c>.Dispatch.cs</c> — Backend-Wahl (FOC-SQL vs. OdbcDirect) und die
-///       gemeinsamen Ausfuehrungspfade aller Aktionen.</item>
+///       gemeinsamen Ausführungspfade aller Aktionen.</item>
 /// <item><c>.Backup.cs</c> — Aktions-Gruppe SICHERUNG.</item>
 /// <item><c>.Snapshots.cs</c> — Aktions-Gruppen SNAPSHOTS und OLVM.</item>
 /// <item><c>.Maintenance.cs</c> — ARCHIVE-LOG, WARTUNG, Recovery-Mode,
@@ -31,7 +31,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private IDTM_DATA _data;
 
     // Optional: wird von der App via DI gesetzt; in Tests bleibt es null und die
-    // Dialog-Aufrufe fallen auf direktes "new" zurueck (Tests stossen die UI-
+    // Dialog-Aufrufe fallen auf direktes "new" zurück (Tests stoßen die UI-
     // Befehle nicht an, daher reicht das).
     private readonly IServiceProvider? _services;
 
@@ -56,14 +56,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     [ObservableProperty] private string _versionLabel = "Comp. Level";
 
-    // Freier Slot in der Info-Card fuer Angaben, die es nur bei einem Backend
+    // Freier Slot in der Info-Card für Angaben, die es nur bei einem Backend
     // gibt — aktuell MariaDB (Tabellenzahl und Storage-Engines).
     [ObservableProperty] private bool _extraInfoVisible;
     [ObservableProperty] private string _extraInfoLabel = string.Empty;
     [ObservableProperty] private string _extraInfoValue = string.Empty;
 
     /// <summary>
-    /// Wartungs-Gruppe fuer MariaDB (CHECK / OPTIMIZE / ANALYZE TABLE).
+    /// Wartungs-Gruppe für MariaDB (CHECK / OPTIMIZE / ANALYZE TABLE).
     /// Eigene Gruppe statt der MSSQL-Wartung, weil die Befehle andere sind
     /// und pro Tabelle statt pro Datenbank laufen.
     /// </summary>
@@ -85,7 +85,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private bool _backupBrowserVisible;
 
     // Wartungs-Gruppe (DBCC CHECKDB / Index-Rebuild / Shrink-Log) ist
-    // T-SQL-spezifisch und nur fuer MSSQL sichtbar.
+    // T-SQL-spezifisch und nur für MSSQL sichtbar.
     [ObservableProperty] private bool _maintenanceVisible;
 
     // Recovery-Mode-Dropdown im Info-Card (MSSQL-only). Oracle zeigt
@@ -93,10 +93,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private bool _recoveryModeVisible;
     [ObservableProperty] private string _recoveryModeSelected = "FULL";
 
-    // Phase 10.5: die zwei bei OdbcDirect nicht verfuegbaren Actions —
+    // Phase 10.5: die zwei bei OdbcDirect nicht verfügbaren Actions —
     // Copy-Database-ToSamba (FS-Operation) und Sync-Database-ToTest
     // (Multi-Step-PS-Orchestrierung). Default true, damit bestehende
-    // FocSql-Server unveraendert alles sehen; bei OdbcDirect-Server-
+    // FocSql-Server unverändert alles sehen; bei OdbcDirect-Server-
     // Auswahl setzt der ApplyStats-Pfad die Flags auf false.
     [ObservableProperty] private bool _copyToSambaVisible = true;
     [ObservableProperty] private bool _syncToTestVisible = true;
@@ -162,7 +162,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             return;
         var m = _versionMismatchRx.Match(e.Line);
         string text = m.Success
-            ? $"⚠ MSSQL-Modul auf '{m.Groups["host"].Value}' veraltet ({m.Groups["found"].Value}). Bitte PS-Sitzung auf dem Server oeffnen."
+            ? $"⚠ MSSQL-Modul auf '{m.Groups["host"].Value}' veraltet ({m.Groups["found"].Value}). Bitte PS-Sitzung auf dem Server öffnen."
             : "⚠ MSSQL-Versionskonflikt — siehe pwsh-Tab.";
         Dispatcher.UIThread.Post(() => StatusBar = text);
     }
@@ -207,7 +207,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             case ServerGroupNodeViewModel:
                 // Statische Gruppen-Container — Selektion macht nichts (Children
-                // sind beim Aufbau bereits eingehaengt; IsExpanded steuert Anzeige).
+                // sind beim Aufbau bereits eingehängt; IsExpanded steuert Anzeige).
                 break;
             case ServerNodeViewModel server:
                 _ = LoadServerAsync(server);
@@ -299,7 +299,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
         else if (stats is Database_Stats_MariaDb maria)
         {
-            // MariaDB laeuft immer direkt — es gibt keinen FOC-SQL-Weg und
+            // MariaDB läuft immer direkt — es gibt keinen FOC-SQL-Weg und
             // damit auch keine Backend-Wahl.
             BackupButtonText = "Dump";
             DbName = maria.Name ?? "—";
@@ -309,9 +309,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             DbVersion = maria.ServerVersion ?? "—";
             DbSize = $"{maria.TotalSizeMB.ToString("N2", new CultureInfo("de-DE"))} MB";
 
-            // Die Recovery-Zeile traegt hier den Zeichensatz: einen
+            // Die Recovery-Zeile trägt hier den Zeichensatz: einen
             // Recovery-Modus gibt es nicht, und die Sortierung entscheidet
-            // bei MariaDB ueber Vergleiche und Sortierreihenfolge — das ist
+            // bei MariaDB über Vergleiche und Sortierreihenfolge — das ist
             // die Angabe, die man an dieser Stelle wirklich braucht.
             RecoveryLabel = "Zeichensatz";
             RecoveryOrArchiveMode = string.IsNullOrWhiteSpace(maria.Collation)
@@ -326,7 +326,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
             // Nur Backup, Backup-Browser und Tabellen-Wartung. Snapshots,
             // Recovery-Modus, Archive-Log und Cluster-Health haben in MariaDB
-            // kein Gegenstueck und bleiben aus (siehe MariaDbActionService).
+            // kein Gegenstück und bleiben aus (siehe MariaDbActionService).
             BackupBrowserVisible = true;
             MariaDbMaintenanceVisible = true;
             CopyToSambaVisible = false;
@@ -335,7 +335,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Nach dem Schliessen des Verbindungsmanagers: Server-Liste und
+    /// Nach dem Schließen des Verbindungsmanagers: Server-Liste und
     /// Datenschicht komplett neu aufbauen und die Info-Card leeren.
     /// </summary>
     private void ReloadFromStores()

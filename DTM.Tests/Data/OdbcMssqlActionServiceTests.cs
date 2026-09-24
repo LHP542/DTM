@@ -5,9 +5,9 @@ using Xunit;
 namespace DTM.Tests.Data;
 
 /// <summary>
-/// Whitelist-Validierung fuer die 10.3b-Actions. Die eigentliche SQL-
-/// Ausfuehrung braucht einen echten SQL Server (Integration-Test, laeuft
-/// bei Lars auf dem Test-Container). Fuer Unit-Tests exposed der Service
+/// Whitelist-Validierung für die 10.3b-Actions. Die eigentliche SQL-
+/// Ausführung braucht einen echten SQL Server (Integration-Test, läuft
+/// bei Lars auf dem Test-Container). Für Unit-Tests exposed der Service
 /// die Whitelist als statische Predicates — kein Async-Roundtrip, kein
 /// versehentlicher ODBC-Connect-Timeout in der Test-Suite.
 /// </summary>
@@ -88,7 +88,7 @@ public class OdbcMssqlActionServiceTests
         var path = OdbcMssqlActionService.BuildBackupPath(@"C:\Backups", "MyDb", ts);
 
         // Flach: <root>\<db>\<db>-<yyyyMMdd_HHmm>.bak.
-        // Kein "01 Taeglich"-Unterordner mehr (unterschiedlich zum
+        // Kein "01 Täglich"-Unterordner mehr (unterschiedlich zum
         // FOC-SQL-Layout).
         path.Should().EndWith("MyDb-20260703_1522.bak");
         path.Should().Contain("MyDb");

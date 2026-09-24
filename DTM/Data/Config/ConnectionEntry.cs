@@ -11,13 +11,13 @@ public sealed class ConnectionEntry
     public string Database { get; set; } = "Master";
     public string ConnectionString { get; set; } = string.Empty;
 
-    // Phase 9: optionale abweichende PS-Remoting-Credentials. Bestandseintraege
+    // Phase 9: optionale abweichende PS-Remoting-Credentials. Bestandseinträge
     // ohne diese Felder deserialisieren mit Default = leer und laufen wie
     // vorher gegen das globale credential.xml.
     public string RemoteUser { get; set; } = string.Empty;
     public string RemotePasswordProtected { get; set; } = string.Empty;
 
-    // Phase 10: Ausfuehrungspfad pro Server (FocSql vs. OdbcDirect). Legacy-JSON
+    // Phase 10: Ausführungspfad pro Server (FocSql vs. OdbcDirect). Legacy-JSON
     // ohne das Feld → Default = FocSql (Bestandsverhalten). JsonStringEnumConverter,
     // damit die Datei lesbar bleibt.
     [JsonConverter(typeof(JsonStringEnumConverter))]

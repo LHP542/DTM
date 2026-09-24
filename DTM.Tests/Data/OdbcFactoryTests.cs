@@ -70,7 +70,7 @@ public class OdbcFactoryTests
     [Fact]
     public void Get_DATA_UnknownType_ThrowsWithClearMessage()
     {
-        // Frueher kam hier null zurueck — die Aufrufer in DTM_DATA
+        // Früher kam hier null zurück — die Aufrufer in DTM_DATA
         // dereferenzieren das Ergebnis aber mit "!", also gab es eine
         // NullReferenceException ohne jeden Hinweis auf die Ursache.
         // (Das Beispiel war bis Phase 16 "MARIADB" — inzwischen implementiert.)

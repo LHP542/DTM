@@ -29,7 +29,7 @@ public class ChromeWindow : Window
         ExtendClientAreaTitleBarHeightHint = -1;
         CanResize = true;
 
-        // App-Icon fuer Fenster (Taskbar/Alt-Tab/Wayland-Header). Try/Catch:
+        // App-Icon für Fenster (Taskbar/Alt-Tab/Wayland-Header). Try/Catch:
         // fehlt das Asset (z.B. beim Design-Runtime), lauft die App
         // weiter — nur ohne Icon.
         try
@@ -39,7 +39,7 @@ public class ChromeWindow : Window
         }
         catch
         {
-            // Icon ist Kosmetik — nicht kritisch fuer die App-Funktion.
+            // Icon ist Kosmetik — nicht kritisch für die App-Funktion.
         }
     }
 

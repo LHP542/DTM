@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace DTM.ViewModels;
 
 /// <summary>
-/// Fenster-uebergreifende Dialoge, die an keiner Aktions-Gruppe haengen:
+/// Fenster-übergreifende Dialoge, die an keiner Aktions-Gruppe hängen:
 /// Verbindungsverwaltung, Sessions-Liste und der Update-Ablauf.
 /// </summary>
 public sealed partial class MainWindowViewModel
@@ -33,7 +33,7 @@ public sealed partial class MainWindowViewModel
         vm.SetSessions(_currentSessions);
         if (SelectedNode is DatabaseNodeViewModel db)
         {
-            // MariaDB beendet Verbindungen ueber KILL, nicht ueber FOC-SQL
+            // MariaDB beendet Verbindungen über KILL, nicht über FOC-SQL
             // oder T-SQL — der Dialog bekommt deshalb den passenden Dienst.
             var maria = db.ServerTyp == DB_SERVER.ServerTyp.MariaDB
                 ? _data.GetMariaDbActions(db.ServerIdentity)
@@ -46,7 +46,7 @@ public sealed partial class MainWindowViewModel
 
     // Update-Check gegen GitHub Releases (Klemmbrett-Muster, seit v2.3.0).
     // Wird beim App-Start aufgerufen — der UpdateService cached das Ergebnis,
-    // damit der spaetere "Auf Updates pruefen"-Klick im AboutWindow keinen
+    // damit der spätere "Auf Updates prüfen"-Klick im AboutWindow keinen
     // zweiten API-Call macht (dort wird via forceRefresh=true umgangen).
     public async Task CheckForUpdateAsync()
     {
@@ -68,7 +68,7 @@ public sealed partial class MainWindowViewModel
 
         // release-notes.json wird vom UpdateService selbst aus dem Repo-Raw
         // geladen (kein Samba mehr). Der Bereich (current, latest] filtert
-        // Eintraege — release-notes-Redaktion ist deshalb unabhaengig vom
+        // Einträge — release-notes-Redaktion ist deshalb unabhängig vom
         // Release-Bundle.
         var notes = await updater.LoadReleaseNotesAsync(update.Current, update.Latest);
 
@@ -80,18 +80,18 @@ public sealed partial class MainWindowViewModel
             case UpdateDialogResult.ApplyNow:
                 _logger.Info("Update wird jetzt angewendet: {0}", update.Latest);
                 var applyProgress = new Progress<double>(pct =>
-                    StatusBar = $"Update laedt: {pct:P0}");
+                    StatusBar = $"Update lädt: {pct:P0}");
                 bool ok = await updater.DownloadAndApplyAsync(update, applyProgress);
                 if (ok)
                 {
-                    // Austausch-Skript laeuft und wartet auf das Prozessende —
-                    // App jetzt beenden, sonst haengt es bei „Update laedt: 100 %".
+                    // Austausch-Skript läuft und wartet auf das Prozessende —
+                    // App jetzt beenden, sonst hängt es bei „Update lädt: 100 %".
                     StatusBar = "Update wird installiert — Anwendung startet neu …";
-                    _logger.Info("Update {0} vorbereitet — App wird beendet, der Installer uebernimmt.", update.Latest);
+                    _logger.Info("Update {0} vorbereitet — App wird beendet, der Installer übernimmt.", update.Latest);
                     DTM.Updater.UpdateService.TerminateForUpdate();
                 }
                 else
-                    StatusBar = "Self-Update nicht moeglich — bitte Release-Seite im Browser oeffnen.";
+                    StatusBar = "Self-Update nicht möglich — bitte Release-Seite im Browser öffnen.";
                 break;
             case UpdateDialogResult.Later:
                 _logger.Info("Update auf {0} auf später verschoben (30 min).", update.Latest);

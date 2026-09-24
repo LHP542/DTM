@@ -9,7 +9,7 @@ namespace DTM.Tests.Data;
 
 /// <summary>
 /// Das Quoten von Bezeichnern ist die einzige Stelle, an der ein Name
-/// ungeprueft in den SQL-Text wandert — Tabellen- und Datenbanknamen lassen
+/// ungeprüft in den SQL-Text wandert — Tabellen- und Datenbanknamen lassen
 /// sich nicht als Parameter binden. Entsprechend genau getestet.
 /// </summary>
 public class MariaDbQuotingTests
@@ -26,8 +26,8 @@ public class MariaDbQuotingTests
     [Fact]
     public void QuoteIdentifier_DoublesEmbeddedBacktick()
     {
-        // Die von MariaDB vorgesehene Escape-Regel. Ohne sie koennte ein Name
-        // mit Backtick aus dem Bezeichner ausbrechen und eigenes SQL anhaengen.
+        // Die von MariaDB vorgesehene Escape-Regel. Ohne sie könnte ein Name
+        // mit Backtick aus dem Bezeichner ausbrechen und eigenes SQL anhängen.
         MariaDbActionService.QuoteIdentifier("bo`se").Should().Be("`bo``se`");
     }
 
@@ -39,7 +39,7 @@ public class MariaDbQuotingTests
         string quoted = MariaDbActionService.QuoteIdentifier(evil);
 
         quoted.Should().StartWith("`").And.EndWith("`");
-        // Entscheidend: kein unmaskierter Backtick im Inneren — sonst waere
+        // Entscheidend: kein unmaskierter Backtick im Inneren — sonst wäre
         // der Bezeichner vorzeitig zu Ende.
         quoted[1..^1].Replace("``", string.Empty, StringComparison.Ordinal)
             .Should().NotContain("`");
@@ -101,7 +101,7 @@ public class MariaDbBackupServiceTests : IDisposable
     [Fact]
     public void ResolveTool_NotFoundAnywhere_NamesTheCandidates()
     {
-        // Die Meldung muss sagen, wonach gesucht wurde — sonst raet der
+        // Die Meldung muss sagen, wonach gesucht wurde — sonst rät der
         // Nutzer, welches Werkzeug er installieren soll.
         Action act = () => MariaDbBackupService.ResolveTool(
             string.Empty, ["gibt-es-nicht-xyz", "auch-nicht-abc"], "mariadb-dump");
@@ -115,8 +115,8 @@ public class MariaDbBackupServiceTests : IDisposable
     [Fact]
     public void BackupDirectory_SeparatesByServerAndDatabase()
     {
-        // Gleichnamige Datenbanken auf verschiedenen Servern duerfen sich
-        // nicht im selben Ordner ueberschreiben.
+        // Gleichnamige Datenbanken auf verschiedenen Servern dürfen sich
+        // nicht im selben Ordner überschreiben.
         string dir = Service().BackupDirectoryFor("kunden");
 
         dir.Should().StartWith(_dir);
@@ -185,9 +185,9 @@ public class MariaDbBackupServiceTests : IDisposable
     [Fact]
     public void ListBackups_ReportsExactByteSize()
     {
-        // Die Groesse wird hier bewusst nicht in MB vorgerundet: der
+        // Die Größe wird hier bewusst nicht in MB vorgerundet: der
         // Backup-Browser bereitet sie selbst auf, und eine vorab gerundete
-        // Zahl liesse sich nicht mehr exakt zurueckrechnen.
+        // Zahl ließe sich nicht mehr exakt zurückrechnen.
         MariaDbBackupService svc = Service();
         string dir = svc.BackupDirectoryFor("kunden");
         Directory.CreateDirectory(dir);

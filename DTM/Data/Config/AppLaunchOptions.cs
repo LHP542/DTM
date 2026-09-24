@@ -9,7 +9,7 @@ namespace DTM.Config;
 /// <c>StartWithClassicDesktopLifetime</c>, damit Avalonia seine eigenen Flags
 /// noch sieht.
 ///
-/// <para>Unterstuetzt:
+/// <para>Unterstützt:
 /// <c>--api-port &lt;n&gt;</c>, <c>--api-token &lt;s&gt;</c>,
 /// <c>--api-allow-destructive</c>, <c>--auto-shutdown-after &lt;dauer&gt;</c>.</para>
 /// </summary>
@@ -21,11 +21,11 @@ public sealed class AppLaunchOptions
     public string? ApiTokenOverride { get; init; }
 
     /// <summary><c>true</c> nur wenn das Flag explizit gesetzt wurde;
-    /// <c>null</c> = keine Aussage, dann zaehlt die Einstellung.</summary>
+    /// <c>null</c> = keine Aussage, dann zählt die Einstellung.</summary>
     public bool? ApiAllowDestructiveOverride { get; init; }
 
-    /// <summary>Beendet die App nach dieser Zeit von selbst. Gedacht fuer
-    /// automatisierte Laeufe, damit keine Instanz stehen bleibt.</summary>
+    /// <summary>Beendet die App nach dieser Zeit von selbst. Gedacht für
+    /// automatisierte Läufe, damit keine Instanz stehen bleibt.</summary>
     public TimeSpan? AutoShutdownAfter { get; init; }
 
     public string[] RemainingArgs { get; init; } = [];
@@ -53,7 +53,7 @@ public sealed class AppLaunchOptions
                     }
                     else
                     {
-                        log.Warn("--api-port ohne gueltigen Wert (1-65535) — ignoriert.");
+                        log.Warn("--api-port ohne gültigen Wert (1-65535) — ignoriert.");
                     }
                     break;
 
@@ -81,7 +81,7 @@ public sealed class AppLaunchOptions
                     }
                     else
                     {
-                        log.Warn("--auto-shutdown-after ohne gueltigen Wert (z.B. 30s, 5m, 1h) — ignoriert.");
+                        log.Warn("--auto-shutdown-after ohne gültigen Wert (z.B. 30s, 5m, 1h) — ignoriert.");
                     }
                     break;
 

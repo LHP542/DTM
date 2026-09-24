@@ -32,7 +32,7 @@ public class UpdateChannelTests : IDisposable
     [InlineData(@"\\samba01\542$\5424_IT-Basis-Dienste\MS-SQL\DTM")]
     [InlineData(@"C:\Rollout\DTM")]
     [InlineData("//samba01/share/DTM")]
-    // Absolute Unix-Pfade: DTM laeuft als AppImage auch unter Linux. Fehlte
+    // Absolute Unix-Pfade: DTM läuft als AppImage auch unter Linux. Fehlte
     // dieser Fall, galt dort jeder lokale Ordner als Adresse und der Check
     // lief still gegen GitHub — im CI so aufgeschlagen, weil die Tests mit
     // /tmp/… arbeiten.
@@ -92,7 +92,7 @@ public class UpdateChannelTests : IDisposable
     public void Normalize_PadsToFourSegments()
     {
         // Ohne das gilt 2.3.11 (Revision -1) als kleiner als 2.3.11.0 und ein
-        // Gleichstand wuerde faelschlich als Update angeboten.
+        // Gleichstand würde fälschlich als Update angeboten.
         UpdateChannel.Normalize(new Version(2, 3, 11))
             .Should().Be(new Version(2, 3, 11, 0));
     }
@@ -115,9 +115,9 @@ public class UpdateChannelTests : IDisposable
     [Fact]
     public void FindNewestPackage_IgnoresTimestamps()
     {
-        // Der Kern der Regel: kopiert jemand ein aelteres Paket zurueck in den
-        // Ordner, ist es die juengste Datei. Nach Zeitstempel sortiert waere
-        // das ein "Update" auf eine aeltere Version.
+        // Der Kern der Regel: kopiert jemand ein älteres Paket zurück in den
+        // Ordner, ist es die jüngste Datei. Nach Zeitstempel sortiert wäre
+        // das ein "Update" auf eine ältere Version.
         Touch("DTM-v2.3.11-windows.zip", new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc));
         Touch("DTM-v2.3.9-windows.zip", DateTime.UtcNow);
 

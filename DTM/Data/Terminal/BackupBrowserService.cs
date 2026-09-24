@@ -6,11 +6,11 @@ using NLog;
 namespace DTM.Data.Terminal;
 
 /// <summary>
-/// Holt die Backup-Datei-Liste einer MSSQL-DB ueber einen eigenen
-/// In-Process-PowerShell-Runspace (Get-DbBackups). Komplementaer zum
+/// Holt die Backup-Datei-Liste einer MSSQL-DB über einen eigenen
+/// In-Process-PowerShell-Runspace (Get-DbBackups). Komplementär zum
 /// <see cref="TerminalBus"/>: der TerminalBus streamt Text in den pwsh-Tab,
-/// fuer einen strukturierten DataGrid-Dialog brauchen wir aber das
-/// PSCustomObject mit Name/Datum/Groesse.
+/// für einen strukturierten DataGrid-Dialog brauchen wir aber das
+/// PSCustomObject mit Name/Datum/Größe.
 ///
 /// Gleiches Pattern wie <see cref="OracleRestoreService"/>; Modul-Import
 /// teilt sich beim ersten Aufruf die Samba-Copy-Zeit, Folgeaufrufe sind
@@ -37,24 +37,24 @@ public sealed class BackupBrowserService
             ps.AddScript(FocSqlRuntime.BuildImportSnippet()).Invoke();
 
             // Wichtig: Streams.Error nach dem Import kann nicht-fatale Fehler
-            // enthalten (z.B. Copy-Item schlaegt fehl wegen Datei-Lock vom
-            // parallelen pwsh-Tab — Modul ist trotzdem ueber den PSModulePath
-            // erreichbar). Daher hier NICHT direkt werfen, sondern pruefen ob
-            // das Cmdlet wirklich verfuegbar ist.
+            // enthalten (z.B. Copy-Item schlägt fehl wegen Datei-Lock vom
+            // parallelen pwsh-Tab — Modul ist trotzdem über den PSModulePath
+            // erreichbar). Daher hier NICHT direkt werfen, sondern prüfen ob
+            // das Cmdlet wirklich verfügbar ist.
             string importDiag = PowerShellDiagnostics.FormatDiagnostics(ps, "FOC-SQL Modul-Import");
             ps.Streams.ClearStreams();
 
             if (!PowerShellDiagnostics.CommandExists(ps, "Get-DbBackups"))
             {
                 throw new InvalidOperationException(
-                    "FOC-SQL Modul ist nicht geladen oder Get-DbBackups fehlt — pruefe "
+                    "FOC-SQL Modul ist nicht geladen oder Get-DbBackups fehlt — prüfe "
                     + "ModulePath/SambaSource in den Einstellungen und stelle sicher, dass "
                     + "das aktuelle FOC-SQL-Modul (mit Get-DbBackups) auf der Samba-Quelle "
                     + "liegt.\n\nDiagnose des Import-Versuchs:\n" + importDiag);
             }
 
             if (ps.HadErrors)
-                _logger.Warn("FOC-SQL Modul-Import hatte nicht-fatale Fehler (Cmdlet trotzdem verfuegbar): {0}", importDiag);
+                _logger.Warn("FOC-SQL Modul-Import hatte nicht-fatale Fehler (Cmdlet trotzdem verfügbar): {0}", importDiag);
 
             ct.ThrowIfCancellationRequested();
             ps.Commands.Clear();

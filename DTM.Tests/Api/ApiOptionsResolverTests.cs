@@ -32,7 +32,7 @@ public class ApiOptionsResolverTests
     [Fact]
     public void CliPort_TurnsApiOn_EvenWhenSettingsDisabled()
     {
-        // Sonst muesste man fuer einen automatisierten Lauf immer zusaetzlich
+        // Sonst müsste man für einen automatisierten Lauf immer zusätzlich
         // die settings.json anfassen — genau das soll der CLI-Weg ersparen.
         var opts = ApiOptionsResolver.Resolve(
             new ApiSettings { Enabled = false },

@@ -15,17 +15,17 @@ using NLog;
 namespace DTM.Data.Api;
 
 /// <summary>
-/// Saemtliche Zugriffe der REST-API auf die Avalonia-Oberflaeche laufen hier
-/// durch. Jede Methode marshalt ueber <see cref="Dispatcher.UIThread"/> und
-/// kehrt erst zurueck, wenn die UI-Aktion abgeschlossen ist — der HTTP-Handler
+/// Sämtliche Zugriffe der REST-API auf die Avalonia-Oberfläche laufen hier
+/// durch. Jede Methode marshalt über <see cref="Dispatcher.UIThread"/> und
+/// kehrt erst zurück, wenn die UI-Aktion abgeschlossen ist — der HTTP-Handler
 /// kann danach direkt antworten.
 ///
-/// <para><b>Warum das der richtige Weg fuer automatisierte UI-Pruefungen ist:</b>
-/// Screenshots entstehen ueber Avalonias eigenes
-/// <see cref="RenderTargetBitmap"/> und Klicks ueber
+/// <para><b>Warum das der richtige Weg für automatisierte UI-Prüfungen ist:</b>
+/// Screenshots entstehen über Avalonias eigenes
+/// <see cref="RenderTargetBitmap"/> und Klicks über
 /// <see cref="ICommand.Execute"/> — alles innerhalb des Prozesses. Der Weg
-/// von aussen (SetForegroundWindow, mouse_event, PrintWindow, UI-Automation)
-/// sieht fuer verhaltensbasierte Virenscanner wie Fernsteuerungs-Schadsoftware
+/// von außen (SetForegroundWindow, mouse_event, PrintWindow, UI-Automation)
+/// sieht für verhaltensbasierte Virenscanner wie Fernsteuerungs-Schadsoftware
 /// aus und wird auf verwalteten Rechnern blockiert — real passiert am
 /// 2026-08-19 mit Trend Micro auf dem Arbeitslaptop.</para>
 /// </summary>
@@ -51,9 +51,9 @@ internal sealed class DtmUiActions
     /// Momentaufnahme des App-Zustands. Wird komplett <b>innerhalb</b> des
     /// Dispatchers gebaut: die ViewModels und ihre
     /// <see cref="System.Collections.ObjectModel.ObservableCollection{T}"/>
-    /// gehoeren dem UI-Thread. Wer sie vom HTTP-Thread aus liest, bekommt
+    /// gehören dem UI-Thread. Wer sie vom HTTP-Thread aus liest, bekommt
     /// bestenfalls einen veralteten Stand — real passiert: der Baum meldete
-    /// "keine Datenbanken", waehrend im Log 136 geladene standen.
+    /// "keine Datenbanken", während im Log 136 geladene standen.
     /// </summary>
     public Task<StateSnapshot> GetStateAsync() =>
         Dispatcher.UIThread.InvokeAsync(() =>
@@ -91,7 +91,7 @@ internal sealed class DtmUiActions
         }).GetTask();
 
     /// <summary>
-    /// Momentaufnahme des Server-/Datenbank-Baums — ebenfalls vollstaendig im
+    /// Momentaufnahme des Server-/Datenbank-Baums — ebenfalls vollständig im
     /// Dispatcher, siehe <see cref="GetStateAsync"/>.
     /// </summary>
     public Task<IReadOnlyList<ServerGroupSnapshot>?> GetTreeAsync() =>
@@ -105,9 +105,9 @@ internal sealed class DtmUiActions
                     Name: s.Header,
                     Host: s.ServerHost,
                     // Kinder werden beim Aufklappen nachgeladen; solange sie
-                    // fehlen, heisst das "noch nicht geladen", nicht "keine da".
+                    // fehlen, heißt das "noch nicht geladen", nicht "keine da".
                     DatabasesLoaded: s.Children.Count > 0,
-                    // Nur der Name — die Beschriftung im Baum haengt zusaetzlich
+                    // Nur der Name — die Beschriftung im Baum hängt zusätzlich
                     // den Status an ("ALKIS (up)"), und genau der Name ist es,
                     // den /select-node erwartet.
                     Databases: s.Children.OfType<DatabaseNodeViewModel>()
@@ -127,9 +127,9 @@ internal sealed class DtmUiActions
         }).GetTask();
 
     /// <summary>
-    /// PNG-Abzug eines Fensters ueber <see cref="RenderTargetBitmap"/>.
+    /// PNG-Abzug eines Fensters über <see cref="RenderTargetBitmap"/>.
     /// <paramref name="target"/>: "main" (Default) oder "active".
-    /// Rendern laeuft auf dem UI-Thread — bei einem selten gerufenen Endpoint
+    /// Rendern läuft auf dem UI-Thread — bei einem selten gerufenen Endpoint
     /// lohnt das Auslagern des Encodings nicht.
     /// </summary>
     public Task<byte[]?> ScreenshotAsync(string target) =>
@@ -158,25 +158,25 @@ internal sealed class DtmUiActions
 
     /// <summary>
     /// Klickt ein benanntes Control. Bei einem <see cref="Button"/> mit
-    /// gebundenem Command wird dieser direkt ausgefuehrt (zuverlaessiger als
-    /// ein Event, und <c>CanExecute</c> laesst sich vorher pruefen); bei
+    /// gebundenem Command wird dieser direkt ausgeführt (zuverlässiger als
+    /// ein Event, und <c>CanExecute</c> lässt sich vorher prüfen); bei
     /// Buttons mit Click-Handler wird das <see cref="Button.ClickEvent"/>
-    /// ausgeloest. Beides bleibt innerhalb des Prozesses.
+    /// ausgelöst. Beides bleibt innerhalb des Prozesses.
     /// </summary>
     public Task<ActionResult> ClickAsync(string elementId) =>
         Dispatcher.UIThread.InvokeAsync(() =>
         {
             if (!_allowDestructive && DestructiveGuard.IsDestructiveElement(elementId))
                 return ActionResult.Blocked(
-                    $"'{elementId}' loest eine Aktion aus, die Datenbanken veraendert. "
-                    + "Die API laeuft im Nur-Beobachten-Modus (Api.AllowDestructive=false).");
+                    $"'{elementId}' löst eine Aktion aus, die Datenbanken verändert. "
+                    + "Die API läuft im Nur-Beobachten-Modus (Api.AllowDestructive=false).");
 
             (Control? control, IReadOnlyList<string> available) = FindNamed(elementId);
             if (control is null) return ActionResult.NotFound(available);
 
             // Reihenfolge beachten: In Avalonia erbt CheckBox von ToggleButton
-            // und das von Button — die spezielleren Faelle muessen zuerst
-            // stehen, sonst faengt der Button-Zweig sie ab.
+            // und das von Button — die spezielleren Fälle müssen zuerst
+            // stehen, sonst fängt der Button-Zweig sie ab.
             switch (control)
             {
                 case CheckBox cb:
@@ -191,16 +191,16 @@ internal sealed class DtmUiActions
                     if (btn.Command is not null)
                     {
                         if (!btn.Command.CanExecute(btn.CommandParameter))
-                            return ActionResult.Conflict($"'{elementId}' ist derzeit nicht ausfuehrbar.");
+                            return ActionResult.Conflict($"'{elementId}' ist derzeit nicht ausführbar.");
                         btn.Command.Execute(btn.CommandParameter);
                         return ActionResult.Ok;
                     }
 
-                    // Die Dialog-Buttons (Abbrechen, Speichern, Schliessen)
-                    // haengen an Click-Handlern im Code-Behind statt an
-                    // Commands. Ohne diesen Zweig liessen sich Dialoge zwar
-                    // oeffnen, aber nicht wieder schliessen — womit die API
-                    // fuer Bildschirmfotos von Dialogen unbrauchbar waere.
+                    // Die Dialog-Buttons (Abbrechen, Speichern, Schließen)
+                    // hängen an Click-Handlern im Code-Behind statt an
+                    // Commands. Ohne diesen Zweig ließen sich Dialoge zwar
+                    // öffnen, aber nicht wieder schließen — womit die API
+                    // für Bildschirmfotos von Dialogen unbrauchbar wäre.
                     if (!btn.IsEffectivelyEnabled)
                         return ActionResult.Conflict($"'{elementId}' ist derzeit deaktiviert.");
                     btn.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
@@ -208,25 +208,25 @@ internal sealed class DtmUiActions
 
                 default:
                     return ActionResult.Unsupported(
-                        $"'{elementId}' ist ein {control.GetType().Name} — dafuer ist keine Klick-Semantik hinterlegt.");
+                        $"'{elementId}' ist ein {control.GetType().Name} — dafür ist keine Klick-Semantik hinterlegt.");
             }
         }).GetTask();
 
     /// <summary>
-    /// Fuehrt einen Command des <c>MainWindowViewModel</c> ueber seinen Namen
-    /// aus (mit oder ohne "Command"-Suffix). Zuverlaessiger als ein Klick, weil
-    /// er nicht davon abhaengt, ob ein Button gerade im Visual Tree haengt.
+    /// Führt einen Command des <c>MainWindowViewModel</c> über seinen Namen
+    /// aus (mit oder ohne "Command"-Suffix). Zuverlässiger als ein Klick, weil
+    /// er nicht davon abhängt, ob ein Button gerade im Visual Tree hängt.
     /// </summary>
     public Task<ActionResult> ExecuteCommandAsync(string commandName) =>
         Dispatcher.UIThread.InvokeAsync(() =>
         {
             if (!_allowDestructive && DestructiveGuard.IsDestructiveCommand(commandName))
                 return ActionResult.Blocked(
-                    $"Command '{commandName}' veraendert Datenbanken. "
-                    + "Die API laeuft im Nur-Beobachten-Modus (Api.AllowDestructive=false).");
+                    $"Command '{commandName}' verändert Datenbanken. "
+                    + "Die API läuft im Nur-Beobachten-Modus (Api.AllowDestructive=false).");
 
             if (Lifetime?.MainWindow?.DataContext is not MainWindowViewModel vm)
-                return ActionResult.Conflict("MainWindow-ViewModel ist nicht verfuegbar.");
+                return ActionResult.Conflict("MainWindow-ViewModel ist nicht verfügbar.");
 
             string wanted = commandName.EndsWith("Command", StringComparison.OrdinalIgnoreCase)
                 ? commandName
@@ -245,7 +245,7 @@ internal sealed class DtmUiActions
             if (match.GetValue(vm) is not ICommand cmd)
                 return ActionResult.Conflict($"'{match.Name}' liefert keinen Command.");
             if (!cmd.CanExecute(null))
-                return ActionResult.Conflict($"'{match.Name}' ist derzeit nicht ausfuehrbar (CanExecute=false).");
+                return ActionResult.Conflict($"'{match.Name}' ist derzeit nicht ausführbar (CanExecute=false).");
 
             cmd.Execute(null);
             return ActionResult.Ok;
@@ -265,15 +265,15 @@ internal sealed class DtmUiActions
         }).GetTask();
 
     /// <summary>
-    /// Waehlt einen Knoten im Datenbank-Baum. <paramref name="path"/> ist
+    /// Wählt einen Knoten im Datenbank-Baum. <paramref name="path"/> ist
     /// entweder "&lt;Server&gt;" oder "&lt;Server&gt;/&lt;Datenbank&gt;";
-    /// die Auswahl einer Datenbank stoesst wie in der UI das Laden der Stats an.
+    /// die Auswahl einer Datenbank stößt wie in der UI das Laden der Stats an.
     /// </summary>
     public Task<ActionResult> SelectNodeAsync(string path) =>
         Dispatcher.UIThread.InvokeAsync(() =>
         {
             if (Lifetime?.MainWindow?.DataContext is not MainWindowViewModel vm)
-                return ActionResult.Conflict("MainWindow-ViewModel ist nicht verfuegbar.");
+                return ActionResult.Conflict("MainWindow-ViewModel ist nicht verfügbar.");
 
             string[] parts = path.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             if (parts.Length is 0 or > 2)
@@ -298,10 +298,10 @@ internal sealed class DtmUiActions
                 return ActionResult.Ok;
             }
 
-            // Datenbank-Ebene: Kinder muessen geladen sein. Der Server-Knoten
-            // laedt sie beim Selektieren nach, deshalb erst selektieren und
-            // dann in einem zweiten Aufruf die Datenbank waehlen — ein
-            // synchrones Warten wuerde hier den UI-Thread blockieren.
+            // Datenbank-Ebene: Kinder müssen geladen sein. Der Server-Knoten
+            // lädt sie beim Selektieren nach, deshalb erst selektieren und
+            // dann in einem zweiten Aufruf die Datenbank wählen — ein
+            // synchrones Warten würde hier den UI-Thread blockieren.
             if (server.Children.Count == 0)
             {
                 vm.SelectedNode = server;
@@ -309,9 +309,9 @@ internal sealed class DtmUiActions
                     $"Datenbanken von '{parts[0]}' werden geladen. Den Aufruf mit dem vollen Pfad kurz danach wiederholen.");
             }
 
-            // Der Baum zeigt "<Name> (<Status>)" an. Fuer die API waere es
-            // laestig, den Status mittippen zu muessen — deshalb matcht sowohl
-            // der reine Datenbankname als auch die vollstaendige Beschriftung.
+            // Der Baum zeigt "<Name> (<Status>)" an. Für die API wäre es
+            // lästig, den Status mittippen zu müssen — deshalb matcht sowohl
+            // der reine Datenbankname als auch die vollständige Beschriftung.
             List<string> dbs = [];
             foreach (NodeViewModelBase child in server.Children)
             {
@@ -328,13 +328,13 @@ internal sealed class DtmUiActions
         }).GetTask();
 
     /// <summary>Alle benannten Controls der offenen Fenster — Hilfe beim
-    /// Herausfinden, was <c>/click</c> und <c>/text</c> ansprechen koennen.</summary>
+    /// Herausfinden, was <c>/click</c> und <c>/text</c> ansprechen können.</summary>
     public Task<IReadOnlyList<string>> ListElementsAsync() =>
         Dispatcher.UIThread.InvokeAsync<IReadOnlyList<string>>(() => FindNamed(null).Available).GetTask();
 
     /// <summary>
-    /// Sucht ein benanntes Control ueber alle offenen Fenster — aktives Fenster
-    /// zuerst, dann das Hauptfenster, dann der Rest. Liefert zusaetzlich alle
+    /// Sucht ein benanntes Control über alle offenen Fenster — aktives Fenster
+    /// zuerst, dann das Hauptfenster, dann der Rest. Liefert zusätzlich alle
     /// gefundenen Namen, damit ein 404 gleich sagt, was es stattdessen gibt.
     /// <paramref name="elementId"/> = <c>null</c> sammelt nur die Namen.
     /// </summary>
@@ -361,7 +361,7 @@ internal sealed class DtmUiActions
         return (found, names.ToList());
     }
 
-    /// <summary>Zustands-Momentaufnahme fuer <c>GET /state</c>.</summary>
+    /// <summary>Zustands-Momentaufnahme für <c>GET /state</c>.</summary>
     internal sealed record StateSnapshot(
         string? SelectedNode,
         string? StatusBar,
@@ -382,7 +382,7 @@ internal sealed class DtmUiActions
     internal sealed record ServerSnapshot(
         string Name, string Host, bool DatabasesLoaded, IReadOnlyList<string> Databases);
 
-    /// <summary>Ergebnis einer UI-Aktion, uebersetzt in ApiEndpoints zu HTTP-Status.</summary>
+    /// <summary>Ergebnis einer UI-Aktion, übersetzt in ApiEndpoints zu HTTP-Status.</summary>
     internal sealed record ActionResult(
         bool Success,
         string? Error,

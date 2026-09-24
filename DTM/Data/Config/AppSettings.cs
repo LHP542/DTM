@@ -19,12 +19,12 @@ public sealed class FocSqlConfig
     public string SambaSource { get; set; } = string.Empty;
 
     /// <summary>
-    /// Quelle fuer Updates. Zwei Schreibweisen sind moeglich, der Typ wird
+    /// Quelle für Updates. Zwei Schreibweisen sind möglich, der Typ wird
     /// daran erkannt (siehe <see cref="DTM.Updater.UpdateChannel"/>):
     /// <list type="bullet">
     /// <item>UNC-Pfad oder Laufwerk → Ordner im Netz (Regelweg im Firmennetz,
-    ///       kein Proxy und kein Internetzugang noetig).</item>
-    /// <item><c>https://…</c> → GitHub-Releases-API (Entwicklung ausserhalb
+    ///       kein Proxy und kein Internetzugang nötig).</item>
+    /// <item><c>https://…</c> → GitHub-Releases-API (Entwicklung außerhalb
     ///       des Firmennetzes).</item>
     /// </list>
     ///
@@ -33,11 +33,11 @@ public sealed class FocSqlConfig
     /// <para><b>Warum ein neues Feld statt des alten <c>UpdateSource</c>:</b>
     /// Bis v2.2.0 gab es schon einmal einen Samba-Update-Weg, dessen Pfad in
     /// <c>UpdateSource</c> stand — bei Bestandsnutzern zeigt der auf das
-    /// inzwischen abgeloeste Verzeichnis <c>…\MS-SQL\DTM_Update\AktuelleVersion</c>.
-    /// Haette man das Feld wiederverwendet, wuerden genau die Nutzer mit
+    /// inzwischen abgelöste Verzeichnis <c>…\MS-SQL\DTM_Update\AktuelleVersion</c>.
+    /// Hätte man das Feld wiederverwendet, würden genau die Nutzer mit
     /// Altbestand auf dem falschen Ordner landen, und zwar unbemerkt. Der neue
-    /// Name faengt bei allen mit dem Default an; <c>UpdateSource</c> faellt
-    /// beim naechsten Speichern aus der Datei (unbekannte Felder werden beim
+    /// Name fängt bei allen mit dem Default an; <c>UpdateSource</c> fällt
+    /// beim nächsten Speichern aus der Datei (unbekannte Felder werden beim
     /// Lesen ignoriert).</para>
     /// </summary>
     public string UpdateChannel { get; set; } = string.Empty;
@@ -45,25 +45,25 @@ public sealed class FocSqlConfig
     /// <summary>
     /// Einstellungen der lokalen REST-API. Eigenes Unterobjekt, damit die
     /// settings.json lesbar bleibt und nicht alles flach im Wurzelobjekt
-    /// haengt. Fehlt der Block in einer bestehenden Datei, greifen die
+    /// hängt. Fehlt der Block in einer bestehenden Datei, greifen die
     /// Defaults (API aus).
     /// </summary>
     public ApiSettings Api { get; set; } = new();
 
     /// <summary>
-    /// Einstellungen fuer die MariaDB-Werkzeuge. Fehlt der Block, greifen
+    /// Einstellungen für die MariaDB-Werkzeuge. Fehlt der Block, greifen
     /// die Defaults.
     /// </summary>
     public MariaDbSettings MariaDb { get; set; } = new();
 }
 
 /// <summary>
-/// Pfade fuer die externen MariaDB-Kommandozeilenwerkzeuge und das
+/// Pfade für die externen MariaDB-Kommandozeilenwerkzeuge und das
 /// Backup-Ziel.
 ///
 /// <para><b>Warum externe Werkzeuge:</b> MariaDB kennt kein
-/// <c>BACKUP DATABASE</c> wie MSSQL. Ein vollstaendiger, wieder einspielbarer
-/// Dump entsteht nur ueber <c>mariadb-dump</c> (frueher <c>mysqldump</c>);
+/// <c>BACKUP DATABASE</c> wie MSSQL. Ein vollständiger, wieder einspielbarer
+/// Dump entsteht nur über <c>mariadb-dump</c> (früher <c>mysqldump</c>);
 /// <c>SELECT … INTO OUTFILE</c> schreibt serverseitig und pro Tabelle und ist
 /// kein Ersatz. DTM startet das Werkzeug deshalb lokal als Prozess.</para>
 /// </summary>
@@ -76,13 +76,13 @@ public sealed class MariaDbSettings
     public string DumpPath { get; set; } = string.Empty;
 
     /// <summary>
-    /// Voller Pfad zum Client <c>mariadb</c> — fuer das Zurueckspielen eines
+    /// Voller Pfad zum Client <c>mariadb</c> — für das Zurückspielen eines
     /// Dumps. Leer = in <c>PATH</c> suchen (<c>mariadb</c>, dann <c>mysql</c>).
     /// </summary>
     public string ClientPath { get; set; } = string.Empty;
 
     /// <summary>
-    /// Wurzelverzeichnis fuer Dumps. Leer =
+    /// Wurzelverzeichnis für Dumps. Leer =
     /// <c>%USERPROFILE%\DTM-Backups\MariaDB</c>. DTM legt darunter je Server
     /// und Datenbank einen Unterordner an.
     /// </summary>
@@ -95,7 +95,7 @@ public sealed class MariaDbSettings
 /// <para><b>Standard ist AUS.</b> DTM ist ein Datenbank-Administrationswerkzeug —
 /// ein offener Steuerkanal ist hier deutlich heikler als bei einer
 /// Endanwender-App. Die API muss bewusst eingeschaltet werden, bindet
-/// ausschliesslich an Loopback und verlangt ein Bearer-Token.</para>
+/// ausschließlich an Loopback und verlangt ein Bearer-Token.</para>
 /// </summary>
 public sealed class ApiSettings
 {
@@ -111,10 +111,10 @@ public sealed class ApiSettings
     public string BearerToken { get; set; } = string.Empty;
 
     /// <summary>
-    /// Erlaubt der API, auch destruktive Commands auszuloesen (Restore,
+    /// Erlaubt der API, auch destruktive Commands auszulösen (Restore,
     /// Snapshot-Drop, Shrink-Log, Sessions-Kill …). Default <c>false</c>:
     /// die API ist als Beobachtungs- und Navigationskanal gedacht, nicht
-    /// als Fernbedienung fuer Aktionen, die Datenbanken veraendern.
+    /// als Fernbedienung für Aktionen, die Datenbanken verändern.
     /// </summary>
     public bool AllowDestructive { get; set; }
 }

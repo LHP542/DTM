@@ -25,7 +25,7 @@ public static class AppSettingsStore
         }
         catch (JsonException ex)
         {
-            // Kaputtes JSON: sichern statt beim naechsten Save zu ueberschreiben.
+            // Kaputtes JSON: sichern statt beim nächsten Save zu überschreiben.
             _logger.Error(ex, "Einstellungen in {0} sind defekt.", _path);
             JsonFileStore.Quarantine(_path);
             return new FocSqlConfig();

@@ -5,9 +5,9 @@ using Xunit;
 namespace DTM.Tests.Diagnostics;
 
 /// <summary>
-/// Regex-Regeln des masked-LayoutRenderers pruefen. Wir testen direkt
+/// Regex-Regeln des masked-LayoutRenderers prüfen. Wir testen direkt
 /// gegen die statische Mask-Methode, damit das Verhalten nicht vom
-/// NLog-Rendering-Pipeline abhaengt (die kann Sonderzeichen im Message-
+/// NLog-Rendering-Pipeline abhängt (die kann Sonderzeichen im Message-
 /// String eigenwillig interpretieren).
 /// </summary>
 public class MaskingLayoutRendererTests
@@ -30,8 +30,8 @@ public class MaskingLayoutRendererTests
     [Fact]
     public void Mask_LeavesNonSecretsUntouched()
     {
-        MaskingLayoutRenderer.Mask("Verbindung ok fuer Server=DBSRV01 Datenbank=FOC")
-            .Should().Be("Verbindung ok fuer Server=DBSRV01 Datenbank=FOC");
+        MaskingLayoutRenderer.Mask("Verbindung ok für Server=DBSRV01 Datenbank=FOC")
+            .Should().Be("Verbindung ok für Server=DBSRV01 Datenbank=FOC");
     }
 
     [Fact]

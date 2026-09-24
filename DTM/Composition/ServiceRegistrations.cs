@@ -6,17 +6,17 @@ using Microsoft.Extensions.DependencyInjection;
 namespace DTM.Composition;
 
 /// <summary>
-/// Composition-Root fuer DTM. Buendelt die Service- und ViewModel-
+/// Composition-Root für DTM. Bündelt die Service- und ViewModel-
 /// Registrierungen an einer Stelle und wird in <see cref="App.Initialize"/>
 /// einmal aufgerufen.
 ///
 /// Bewusste Abweichung von der Roadmap-Formulierung („+ Hosting"):
-/// Microsoft.Extensions.Hosting wuerde IHost/IConfiguration/ILogger
+/// Microsoft.Extensions.Hosting würde IHost/IConfiguration/ILogger
 /// mitbringen. Davon nutzt DTM nichts (NLog konfiguriert sich selbst,
 /// die JSON-Stores haben ihr eigenes Schema, ein BackgroundService-
 /// Lifecycle kollidiert mit Avalonias eigenem Lifecycle). Daher nur
 /// das schlanke <c>Microsoft.Extensions.DependencyInjection</c>-Paket.
-/// Falls spaeter Config/Logging via DI kommen, kann <c>HostBuilder</c>
+/// Falls später Config/Logging via DI kommen, kann <c>HostBuilder</c>
 /// jederzeit nachgezogen werden.
 /// </summary>
 internal static class ServiceRegistrations
@@ -27,7 +27,7 @@ internal static class ServiceRegistrations
         services.AddSingleton<ODBC_Factory>();
 
         // Multi-Server: aus jedem ConnectionEntry wird ein DB_SERVER. Mehrere
-        // Eintraege mit gleichem Typ (z. B. zwei MSSQL-Hosts) sind erlaubt;
+        // Einträge mit gleichem Typ (z. B. zwei MSSQL-Hosts) sind erlaubt;
         // die Composite-Identity (Typ, Hostname) macht sie unterscheidbar.
         services.AddSingleton<IReadOnlyList<DB_SERVER>>(_ =>
         {
@@ -45,7 +45,7 @@ internal static class ServiceRegistrations
                 sp.GetRequiredService<IReadOnlyList<DB_SERVER>>(),
                 sp.GetRequiredService<ODBC_Factory>()));
 
-        // Strukturierte FOC-SQL-Aufrufe ueber eigenen PS-Runspace (komplementaer
+        // Strukturierte FOC-SQL-Aufrufe über eigenen PS-Runspace (komplementär
         // zum TerminalBus, der Text in den pwsh-Tab schreibt).
         services.AddSingleton<OracleRestoreService>();
         services.AddSingleton<BackupBrowserService>();
@@ -53,16 +53,16 @@ internal static class ServiceRegistrations
         // Update-Check. Der Kanal kommt aus den Einstellungen: leer bedeutet
         // das Rollout-Verzeichnis im Firmennetz, eine https-Adresse schaltet
         // auf GitHub Releases um (siehe UpdateChannel).
-        // Singleton, weil der Service pro App-Start einen Cache haelt — sonst
-        // laeuft der zweite Check erneut ins Netz.
+        // Singleton, weil der Service pro App-Start einen Cache hält — sonst
+        // läuft der zweite Check erneut ins Netz.
         services.AddSingleton(_ =>
             new DTM.Updater.UpdateService(
                 DTM.Config.AppSettingsStore.LoadFocSql().UpdateChannel));
 
-        // --- ViewModels (Transient — neue Instanz pro Aufloesung) ---
+        // --- ViewModels (Transient — neue Instanz pro Auflösung) ---
         // MainWindowViewModel braucht den IServiceProvider, um untergeordnete
         // VMs (ConnectionManager, Sessions, TimePicker) zur Laufzeit aufzu-
-        // loesen. Daher explizite Factory statt Default-Activator.
+        // lösen. Daher explizite Factory statt Default-Activator.
         services.AddTransient<MainWindowViewModel>(sp => new MainWindowViewModel(
             sp.GetRequiredService<IDTM_DATA>(),
             sp.GetRequiredService<IReadOnlyList<DB_SERVER>>(),

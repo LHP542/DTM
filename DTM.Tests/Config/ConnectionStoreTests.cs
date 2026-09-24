@@ -20,7 +20,7 @@ public class ConnectionStoreTests : IDisposable
 
     public void Dispose()
     {
-        // .broken/.tmp mit aufraeumen — die Quarantaene-Tests lassen sonst
+        // .broken/.tmp mit aufräumen — die Quarantäne-Tests lassen sonst
         // Dateien im Temp-Verzeichnis liegen.
         foreach (string p in new[] { _tmp, _tmp + ".broken", _tmp + ".tmp" })
         {
@@ -115,14 +115,14 @@ public class ConnectionStoreTests : IDisposable
     public void Load_CorruptJson_QuarantinesFileAsBroken()
     {
         // Kernschutz gegen Totalverlust: die kaputte Datei darf nicht einfach
-        // liegen bleiben und beim naechsten Save ueberschrieben werden — sonst
-        // sind alle Server samt DPAPI-Passwoertern unwiederbringlich weg.
+        // liegen bleiben und beim nächsten Save überschrieben werden — sonst
+        // sind alle Server samt DPAPI-Passwörtern unwiederbringlich weg.
         Directory.CreateDirectory(Path.GetDirectoryName(_tmp)!);
         SystemFile.WriteAllText(_tmp, "{ not valid json [[[");
 
         ConnectionStore.Load().Should().BeEmpty();
 
-        SystemFile.Exists(_tmp).Should().BeFalse("die defekte Datei wurde weggeraeumt");
+        SystemFile.Exists(_tmp).Should().BeFalse("die defekte Datei wurde weggeräumt");
         SystemFile.Exists(_tmp + ".broken").Should().BeTrue();
         SystemFile.ReadAllText(_tmp + ".broken").Should().Be("{ not valid json [[[");
     }
@@ -139,8 +139,8 @@ public class ConnectionStoreTests : IDisposable
     [Fact]
     public void Save_OverwritesExistingFileCompletely()
     {
-        // File.Move(overwrite: true) darf keine Reste der laengeren Vorgaenger-
-        // Datei stehen lassen (waere bei einem In-Place-Write moeglich).
+        // File.Move(overwrite: true) darf keine Reste der längeren Vorgänger-
+        // Datei stehen lassen (wäre bei einem In-Place-Write möglich).
         ConnectionStore.Save([
             new ConnectionEntry { Key = "MSSQL", Server = "srv1" },
             new ConnectionEntry { Key = "ORACLE", Server = "srv2" }
@@ -157,7 +157,7 @@ public class ConnectionStoreTests : IDisposable
     {
         // Bestandssetups (vor Phase 9) haben keine RemoteUser/RemotePasswordProtected-
         // Felder. System.Text.Json muss fehlende Properties still auf leer setzen —
-        // sonst reisst der Update die connections.json bei bestehenden Nutzern auf.
+        // sonst reißt der Update die connections.json bei bestehenden Nutzern auf.
         Directory.CreateDirectory(Path.GetDirectoryName(_tmp)!);
         string legacyJson = """
         [

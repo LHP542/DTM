@@ -3,10 +3,10 @@ namespace DTM.Updater;
 /// <summary>
 /// Eintrag aus <c>release-notes.json</c> auf der Update-Quelle. Wird im
 /// UpdatePromptWindow als Versionshistorie zwischen aktueller und neuer
-/// Version angezeigt (oeffnet sich beim Update-Check).
+/// Version angezeigt (öffnet sich beim Update-Check).
 ///
-/// ModulesChanged enthaelt Tags wie "FOC-SQL" oder "MSSQL". FOC-SQL wird
-/// vom DTM-Update automatisch nachgezogen (gruener Banner), MSSQL liegt
+/// ModulesChanged enthält Tags wie "FOC-SQL" oder "MSSQL". FOC-SQL wird
+/// vom DTM-Update automatisch nachgezogen (grüner Banner), MSSQL liegt
 /// auf jedem Server in einem User-Profil — es muss dort manuell aktualisiert
 /// werden (roter Banner, deutlicher Warnhinweis).
 /// </summary>

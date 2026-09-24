@@ -4,11 +4,11 @@ using System.Text;
 namespace DTM.Data.Terminal;
 
 /// <summary>
-/// Helfer fuer In-Process-PowerShell-Aufrufe — formatiert die Fehler-,
-/// Warnung- und Info-Streams zu einer aussagekraeftigen Diagnose-Nachricht,
+/// Helfer für In-Process-PowerShell-Aufrufe — formatiert die Fehler-,
+/// Warnung- und Info-Streams zu einer aussagekräftigen Diagnose-Nachricht,
 /// damit ein <see cref="InvalidOperationException"/> nicht nur „… fehlgeschlagen"
 /// sagt, sondern auch den ScriptName/Linenumber/FullyQualifiedErrorId der
-/// urspruenglichen PowerShell-Fehler enthaelt.
+/// ursprünglichen PowerShell-Fehler enthält.
 /// </summary>
 internal static class PowerShellDiagnostics
 {
@@ -20,7 +20,7 @@ internal static class PowerShellDiagnostics
 
     /// <summary>
     /// Formatiert den aktuellen Stream-Stand zu einer Diagnose-Nachricht.
-    /// Trennt Errors, Warnungen und Information-Stream-Eintraege.
+    /// Trennt Errors, Warnungen und Information-Stream-Einträge.
     /// </summary>
     public static string FormatDiagnostics(PowerShell ps, string stage)
     {
@@ -45,13 +45,13 @@ internal static class PowerShellDiagnostics
                 sb.Append("\n  - ").Append(w.Message);
         }
 
-        // Information-Stream (Write-Host / Write-Information) kann zusaetzlich
-        // Kontext liefern, der ohne Fehler-Position waere — z.B. „Baue
+        // Information-Stream (Write-Host / Write-Information) kann zusätzlich
+        // Kontext liefern, der ohne Fehler-Position wäre — z.B. „Baue
         // Verbindung zum Server X auf" direkt vor dem Crash.
         if (ps.Streams.Information.Count > 0)
         {
             int lastN = Math.Min(ps.Streams.Information.Count, 5);
-            sb.Append("\nLetzte Information-Stream-Eintraege (max ").Append(lastN).Append("):");
+            sb.Append("\nLetzte Information-Stream-Einträge (max ").Append(lastN).Append("):");
             for (int i = ps.Streams.Information.Count - lastN; i < ps.Streams.Information.Count; i++)
                 sb.Append("\n  - ").Append(ps.Streams.Information[i].MessageData?.ToString() ?? "");
         }
@@ -60,7 +60,7 @@ internal static class PowerShellDiagnostics
     }
 
     /// <summary>
-    /// Prueft, ob ein Cmdlet im aktuellen Runspace bekannt ist. Macht eine
+    /// Prüft, ob ein Cmdlet im aktuellen Runspace bekannt ist. Macht eine
     /// kurze Get-Command-Abfrage. State des PowerShell-Objekts (Commands/Streams)
     /// wird vorher gesichert und nachher wiederhergestellt — bzw. die
     /// Streams werden geleert.

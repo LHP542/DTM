@@ -20,11 +20,11 @@ public class REST : IDisposable
 
         // Kein Proxy: der OLVM-Manager ist immer ein interner Host, oft
         // sogar nur als Kurzname (z. B. 'olvm-mgmt'). Ohne diese Zeile
-        // uebernimmt SocketsHttpHandler automatisch HttpClient.DefaultProxy,
+        // übernimmt SocketsHttpHandler automatisch HttpClient.DefaultProxy,
         // also HTTP_PROXY/HTTPS_PROXY aus der Umgebung — was lokale
         // NTLM-Proxies wie px setzen. NO_PROXY greift dabei nicht, weil
         // .NET Kurznamen ohne Domain nicht als "lokal" behandelt: der
-        // Request landet beim Firmen-Upstream und laeuft ins Timeout.
+        // Request landet beim Firmen-Upstream und läuft ins Timeout.
         _handler = new SocketsHttpHandler { UseProxy = false };
 
         if (trustAllCertificates)
@@ -116,13 +116,13 @@ public class REST : IDisposable
             throw new ArgumentException("vmId darf nicht leer sein.", nameof(vmId));
 
         string url = $"vms/{Uri.EscapeDataString(vmId)}/snapshots";
-        _logger.Debug("Oracle REST: Lade Snapshots fuer VM {0}", vmId);
+        _logger.Debug("Oracle REST: Lade Snapshots für VM {0}", vmId);
         try
         {
             SnapshotListResponse? response =
                 await _http.GetFromJsonAsync<SnapshotListResponse>(url, ct);
             var result = response?.Snapshots ?? [];
-            _logger.Info("Oracle REST: {0} Snapshots fuer VM {1} geladen.", result.Count, vmId);
+            _logger.Info("Oracle REST: {0} Snapshots für VM {1} geladen.", result.Count, vmId);
             return result;
         }
         catch (Exception ex)

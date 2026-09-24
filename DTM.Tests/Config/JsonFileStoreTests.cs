@@ -6,8 +6,8 @@ using SystemFile = System.IO.File;
 namespace DTM.Tests.Config;
 
 /// <summary>
-/// Direkte Tests der Datei-Primitiven. Die Store-Tests decken den Weg ueber
-/// Load/Save ab; hier geht es um die Randfaelle des Helpers selbst.
+/// Direkte Tests der Datei-Primitiven. Die Store-Tests decken den Weg über
+/// Load/Save ab; hier geht es um die Randfälle des Helpers selbst.
 /// </summary>
 public class JsonFileStoreTests : IDisposable
 {
@@ -59,8 +59,8 @@ public class JsonFileStoreTests : IDisposable
     [Fact]
     public void WriteAtomic_OverwritesShorterContent_WithoutLeftovers()
     {
-        // Der eigentliche Grund fuer tmp+Move statt In-Place-Write: die neue
-        // Datei ersetzt die alte vollstaendig, statt sie zu ueberschreiben.
+        // Der eigentliche Grund für tmp+Move statt In-Place-Write: die neue
+        // Datei ersetzt die alte vollständig, statt sie zu überschreiben.
         string target = PathIn("data.json");
         JsonFileStore.WriteAtomic(target, "AAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 
@@ -87,7 +87,7 @@ public class JsonFileStoreTests : IDisposable
     {
         // Zweiter Defekt in Folge darf nicht an einer bereits existierenden
         // .broken-Datei scheitern — sonst bliebe die kaputte Datei liegen und
-        // der naechste Save wuerde sie doch noch ueberschreiben.
+        // der nächste Save würde sie doch noch überschreiben.
         string target = PathIn("data.json");
         Directory.CreateDirectory(_dir);
         SystemFile.WriteAllText(target + ".broken", "alt");

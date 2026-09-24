@@ -6,10 +6,10 @@ using NLog;
 namespace DTM.Data.Terminal;
 
 /// <summary>
-/// Holt die Oracle-Restore-Vorschau (<see cref="OracleRestoreInfo"/>) ueber
-/// einen eigenen In-Process-PowerShell-Runspace. Komplementaer zum
+/// Holt die Oracle-Restore-Vorschau (<see cref="OracleRestoreInfo"/>) über
+/// einen eigenen In-Process-PowerShell-Runspace. Komplementär zum
 /// <see cref="TerminalBus"/>: der TerminalBus sendet Befehle in den
-/// sichtbaren pwsh-Tab und gibt nur Text zurueck — fuer einen strukturierten
+/// sichtbaren pwsh-Tab und gibt nur Text zurück — für einen strukturierten
 /// Dialog brauchen wir aber das PSCustomObject. Daher ein eigener,
 /// kurzlebiger Runspace pro Aufruf.
 /// </summary>
@@ -36,21 +36,21 @@ public sealed class OracleRestoreService
             ps.AddScript(FocSqlRuntime.BuildImportSnippet()).Invoke();
 
             // Streams.Error nach dem Import kann nicht-fatale Fehler enthalten
-            // (Datei-Lock vom parallelen pwsh-Tab) — pruefen ob das Cmdlet
-            // verfuegbar ist statt direkt zu werfen.
+            // (Datei-Lock vom parallelen pwsh-Tab) — prüfen ob das Cmdlet
+            // verfügbar ist statt direkt zu werfen.
             string importDiag = PowerShellDiagnostics.FormatDiagnostics(ps, "FOC-SQL Modul-Import");
             ps.Streams.ClearStreams();
 
             if (!PowerShellDiagnostics.CommandExists(ps, "Get-OracleRestoreInfo"))
             {
                 throw new InvalidOperationException(
-                    "FOC-SQL Modul ist nicht geladen oder Get-OracleRestoreInfo fehlt — pruefe "
+                    "FOC-SQL Modul ist nicht geladen oder Get-OracleRestoreInfo fehlt — prüfe "
                     + "ModulePath/SambaSource in den Einstellungen.\n\nDiagnose des Import-Versuchs:\n"
                     + importDiag);
             }
 
             if (ps.HadErrors)
-                _logger.Warn("FOC-SQL Modul-Import hatte nicht-fatale Fehler (Cmdlet trotzdem verfuegbar): {0}", importDiag);
+                _logger.Warn("FOC-SQL Modul-Import hatte nicht-fatale Fehler (Cmdlet trotzdem verfügbar): {0}", importDiag);
 
             ct.ThrowIfCancellationRequested();
             ps.Commands.Clear();
@@ -64,7 +64,7 @@ public sealed class OracleRestoreService
 
             if (results.Count == 0 || results[0] is null)
             {
-                _logger.Warn("Get-OracleRestoreInfo lieferte kein Ergebnis fuer '{0}'.", database);
+                _logger.Warn("Get-OracleRestoreInfo lieferte kein Ergebnis für '{0}'.", database);
                 return new OracleRestoreInfo(Array.Empty<OraclePdb>(), Array.Empty<OracleRestorePoint>());
             }
 

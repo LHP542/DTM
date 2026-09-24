@@ -4,7 +4,7 @@ namespace DTM.Views;
 
 /// <summary>
 /// Generischer Confirm-Dialog im DTM-Stil. Result: <c>true</c> = bestätigt,
-/// <c>false</c> = abgebrochen (auch ueber X / Esc).
+/// <c>false</c> = abgebrochen (auch über X / Esc).
 ///
 /// Beispiel:
 ///   var dlg = new ConfirmWindow {
@@ -19,8 +19,8 @@ public partial class ConfirmWindow : ChromeWindow
     public ConfirmWindow()
     {
         InitializeComponent();
-        // Klick auf "X" verhaelt sich wie "Abbrechen". Ohne das liefert
-        // ShowDialog<bool> zwar auch false (default(bool)), aber nur zufaellig —
+        // Klick auf "X" verhält sich wie "Abbrechen". Ohne das liefert
+        // ShowDialog<bool> zwar auch false (default(bool)), aber nur zufällig —
         // explizit gesetzt bleibt es richtig, falls der Result-Typ mal wechselt.
         Bar.CloseResult = false;
     }

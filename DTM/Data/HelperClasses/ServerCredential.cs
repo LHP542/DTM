@@ -15,9 +15,9 @@ public class ServerCredential(
     public string Datenbank { get; set; } = Datenbank;
     public string ConnectionString { get; set; } = ConnectionString;
 
-    // Phase 9: optionale abweichende Windows-Credentials fuer PowerShell-
+    // Phase 9: optionale abweichende Windows-Credentials für PowerShell-
     // Remoting (WinRM/PSSession) auf diesen Server. Leer = FOC-SQL nimmt
-    // sein globales credential.xml wie bisher. Genutzt fuer DMZ-Server
+    // sein globales credential.xml wie bisher. Genutzt für DMZ-Server
     // in fremden AD-Zonen.
     public string RemoteUser { get; set; } = RemoteUser;
     public string RemotePassword { get; set; } = RemotePassword;

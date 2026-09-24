@@ -46,11 +46,11 @@ public class UpdateServiceTests
     }
 
     // --- SelectAsset ---------------------------------------------------------
-    // Regressionsschutz fuer den Windows-Self-Update-Bug: release.yml liefert
-    // „DTM-vX.Y.Z-windows.zip" / „-linux.tar.gz", der Selector erwartete frueher
+    // Regressionsschutz für den Windows-Self-Update-Bug: release.yml liefert
+    // „DTM-vX.Y.Z-windows.zip" / „-linux.tar.gz", der Selector erwartete früher
     // hart „win-x64"/„linux-x64" → unter Windows kein Asset → Self-Update
-    // unmoeglich (AppImage matchte weiter, daher unter Linux nie aufgefallen).
-    // Diese Tests decken BEIDE Namensschemata ab und laufen OS-unabhaengig,
+    // unmöglich (AppImage matchte weiter, daher unter Linux nie aufgefallen).
+    // Diese Tests decken BEIDE Namensschemata ab und laufen OS-unabhängig,
     // weil die Plattform als Parameter injiziert wird.
 
     private static JsonElement Release(params string[] assetNames)
@@ -59,7 +59,7 @@ public class UpdateServiceTests
             "{\"name\":\"" + n + "\",\"browser_download_url\":\"https://example.invalid/" + n + "\"}");
         var json = "{\"assets\":[" + string.Join(",", items) + "]}";
         using var doc = JsonDocument.Parse(json);
-        return doc.RootElement.Clone(); // Clone: ueberlebt das Dispose des Documents
+        return doc.RootElement.Clone(); // Clone: überlebt das Dispose des Documents
     }
 
     [Theory]

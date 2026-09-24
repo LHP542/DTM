@@ -10,7 +10,7 @@ public interface IDTM_DATA
     public IReadOnlyList<DB_SERVER> Servers { get; }
 
     /// <summary>
-    /// Datenbank-Liste eines konkreten Servers (identifiziert ueber
+    /// Datenbank-Liste eines konkreten Servers (identifiziert über
     /// <see cref="ServerIdentity"/>, also Typ + Hostname).
     /// </summary>
     public List<Database_Info> get_Database_Names(ServerIdentity identity);
@@ -22,7 +22,7 @@ public interface IDTM_DATA
 
     /// <summary>
     /// Phase 10.4: liefert den <see cref="Data.Mssql.OdbcMssqlActionService"/>
-    /// fuer den benannten Server. Nutzt die interne <see cref="IODBC_Factory"/>
+    /// für den benannten Server. Nutzt die interne <see cref="IODBC_Factory"/>
     /// (dieselbe Cache-Instanz wie Stats/Namen-Abfragen — kein Doppel-Connect).
     /// Wirft <see cref="InvalidOperationException"/> wenn der Server nicht
     /// MSSQL ist (Oracle hat keinen ODBC-Direct-Weg).
@@ -31,7 +31,7 @@ public interface IDTM_DATA
 
     /// <summary>
     /// Phase 11.3: liefert den <see cref="Data.Olvm.OlvmSnapshotService"/>
-    /// fuer den benannten Oracle-Server. Baut intern einen frischen
+    /// für den benannten Oracle-Server. Baut intern einen frischen
     /// <see cref="ORACLE.REST"/>-Client — der Service disposed ihn selbst.
     /// Wirft <see cref="InvalidOperationException"/> wenn der Server nicht
     /// Oracle ist.
@@ -39,7 +39,7 @@ public interface IDTM_DATA
     public Data.Olvm.OlvmSnapshotService GetOlvmSnapshotService(ServerIdentity identity);
 
     /// <summary>
-    /// Phase 16: Sessions beenden und Tabellen-Wartung fuer den benannten
+    /// Phase 16: Sessions beenden und Tabellen-Wartung für den benannten
     /// MariaDB-Server. Nutzt dieselbe gecachte Verbindung wie Stats und
     /// Namen. Wirft <see cref="InvalidOperationException"/>, wenn der
     /// Server nicht MariaDB ist.
@@ -47,7 +47,7 @@ public interface IDTM_DATA
     public Data.MariaDb.MariaDbActionService GetMariaDbActions(ServerIdentity identity);
 
     /// <summary>
-    /// Phase 16: Backup und Restore fuer den benannten MariaDB-Server ueber
+    /// Phase 16: Backup und Restore für den benannten MariaDB-Server über
     /// die externen Werkzeuge <c>mariadb-dump</c> und <c>mariadb</c>. Die
     /// Pfade kommen aus den Einstellungen.
     /// </summary>

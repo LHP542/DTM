@@ -114,7 +114,7 @@ public class EditConnectionViewModelTests
     [Fact]
     public void ToEntry_Oracle_DropsRemoteCredentials()
     {
-        // Auch wenn im VM die Remote-Felder gefuellt sind (z. B. Typ-Wechsel
+        // Auch wenn im VM die Remote-Felder gefüllt sind (z. B. Typ-Wechsel
         // von MSSQL nach Oracle): Oracle nutzt SSH-Keys, DPAPI-Blob soll
         // nicht "vergessen" persistiert bleiben.
         var vm = new EditConnectionViewModel
@@ -171,10 +171,10 @@ public class EditConnectionViewModelTests
     [Fact]
     public void ToEntry_Oracle_ForcesBackendToFocSql()
     {
-        // Selbst wenn der User zuvor OdbcDirect gewaehlt hat und dann
-        // auf Oracle umschaltet: fuer Oracle gibt es keinen ODBC-Direct-
+        // Selbst wenn der User zuvor OdbcDirect gewählt hat und dann
+        // auf Oracle umschaltet: für Oracle gibt es keinen ODBC-Direct-
         // Weg. Persistiere immer FocSql, damit der DMZ-Weg nicht
-        // versehentlich fuer Oracle aktiv wird.
+        // versehentlich für Oracle aktiv wird.
         var vm = new EditConnectionViewModel
         {
             SelectedServerType = DB_SERVER.ServerTyp.ORACLE,

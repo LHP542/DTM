@@ -55,9 +55,9 @@ public class DbServerTests
 
     /// <summary>
     /// Der Typ-Dropdown im EditConnectionWindow speist sich direkt aus diesem
-    /// Enum. Jeder Wert darin ist also waehlbar und muss ein Backend haben —
+    /// Enum. Jeder Wert darin ist also wählbar und muss ein Backend haben —
     /// deshalb steht hier eine feste Zahl und nicht „mindestens". Kommt ein
-    /// Typ dazu, ohne dass er implementiert ist, faellt dieser Test um.
+    /// Typ dazu, ohne dass er implementiert ist, fällt dieser Test um.
     /// (PostgreSQL stand genau so jahrelang drin und lief in der Factory ins
     /// Leere.)
     /// </summary>

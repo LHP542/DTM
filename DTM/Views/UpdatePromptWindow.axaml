@@ -23,7 +23,7 @@
             <StackPanel Spacing="14">
                 <TextBlock x:Name="MessageText" TextWrapping="Wrap" FontSize="14" />
 
-                <!-- Banner: MSSQL-Modul geaendert (manueller Server-Eingriff noetig). -->
+                <!-- Banner: MSSQL-Modul geändert (manueller Server-Eingriff nötig). -->
                 <Border x:Name="MssqlBanner" IsVisible="False"
                         Background="{DynamicResource DangerSurfaceBrush}" BorderBrush="{DynamicResource DangerBorderBrush}" BorderThickness="1"
                         CornerRadius="4" Padding="10">
@@ -35,7 +35,7 @@
                     </StackPanel>
                 </Border>
 
-                <!-- Banner: FOC-SQL geaendert (DTM zieht es automatisch). -->
+                <!-- Banner: FOC-SQL geändert (DTM zieht es automatisch). -->
                 <Border x:Name="FocSqlBanner" IsVisible="False"
                         Background="{DynamicResource OkSurfaceBrush}" BorderBrush="{DynamicResource OkBorderBrush}" BorderThickness="1"
                         CornerRadius="4" Padding="10">

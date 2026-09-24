@@ -8,12 +8,12 @@ using NLog;
 namespace DTM.Diagnostics;
 
 /// <summary>
-/// Zentraler Catch-All fuer unbehandelte Exceptions:
+/// Zentraler Catch-All für unbehandelte Exceptions:
 /// AppDomain (Hintergrund-Thread, terminiert Prozess), TaskScheduler
-/// (vergessene async-Pfade, GC findet sie spaeter), Dispatcher (UI-Thread).
+/// (vergessene async-Pfade, GC findet sie später), Dispatcher (UI-Thread).
 ///
 /// AppDomain-Exceptions beenden den Prozess sowieso — dort nur loggen.
-/// TaskScheduler/Dispatcher koennen ueberlebt werden — dort zusaetzlich
+/// TaskScheduler/Dispatcher können überlebt werden — dort zusätzlich
 /// einen freundlichen FatalErrorWindow-Dialog anzeigen.
 /// </summary>
 internal static class FatalErrorHandler

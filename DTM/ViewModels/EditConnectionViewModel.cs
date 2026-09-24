@@ -22,13 +22,13 @@ public sealed partial class EditConnectionViewModel : ViewModelBase
     [ObservableProperty] private string _connectionString = string.Empty;
 
     // Phase 9.3: optionale PS-Remoting-Credentials, nur MSSQL — Oracle geht
-    // ueber SSH-Keys, MariaDB ganz ohne PowerShell. Leer = FOC-SQL nimmt sein
+    // über SSH-Keys, MariaDB ganz ohne PowerShell. Leer = FOC-SQL nimmt sein
     // globales credential.xml.
     [ObservableProperty] private string _remoteUser = string.Empty;
     [ObservableProperty] private string _remotePassword = string.Empty;
 
     // Phase 10.2: Backend-Wahl pro MSSQL-Server. Default FocSql; OdbcDirect
-    // fuer DMZ-Server ohne WinRM. Oracle ignoriert das Feld.
+    // für DMZ-Server ohne WinRM. Oracle ignoriert das Feld.
     [ObservableProperty] private ServerBackend _selectedBackend = ServerBackend.FocSql;
 
     public bool IsMssql => SelectedServerType == DB_SERVER.ServerTyp.MSSQL;
@@ -60,12 +60,12 @@ public sealed partial class EditConnectionViewModel : ViewModelBase
             ConnectionString = ConnectionString,
             RemoteUser = IsMssql ? RemoteUser : string.Empty,
             // Nur MSSQL kennt die Backend-Wahl: Oracle hat keinen
-            // OdbcDirect-Weg (siehe Phase 10 Design-Doc), MariaDB laeuft
-            // ohnehin immer direkt. Alles andere faellt auf den Default.
+            // OdbcDirect-Weg (siehe Phase 10 Design-Doc), MariaDB läuft
+            // ohnehin immer direkt. Alles andere fällt auf den Default.
             Backend = IsMssql ? SelectedBackend : ServerBackend.FocSql
         };
         e.PlainPassword = Password;
-        // Fuer Nicht-MSSQL die Remote-Felder bewusst leer speichern —
+        // Für Nicht-MSSQL die Remote-Felder bewusst leer speichern —
         // verhindert "vergessene" DPAPI-Blobs, falls der User den Typ von
         // MSSQL auf Oracle oder MariaDB wechselt.
         e.PlainRemotePassword = IsMssql ? RemotePassword : string.Empty;

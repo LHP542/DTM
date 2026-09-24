@@ -11,8 +11,8 @@ namespace DTM.ViewModels;
 ///
 /// Drei Snapshot-Welten treffen hier aufeinander:
 /// <list type="bullet">
-/// <item>MSSQL ueber FOC-SQL — interaktiv im pwsh-Tab (Read-Host im Modul).</item>
-/// <item>MSSQL ueber OdbcDirect — Auswahl im <see cref="MssqlSnapshotSelectWindow"/>,
+/// <item>MSSQL über FOC-SQL — interaktiv im pwsh-Tab (Read-Host im Modul).</item>
+/// <item>MSSQL über OdbcDirect — Auswahl im <see cref="MssqlSnapshotSelectWindow"/>,
 ///       weil es im DMZ-Modus keinen interaktiven Prompt gibt.</item>
 /// <item>Oracle — Restore-Points mit vorgeschalteter Vorschau (Multi-PDB-Warnung)
 ///       sowie OLVM-VM-Snapshots per Ansible-Playbook auf DBMANAGER01.</item>
@@ -45,8 +45,8 @@ public sealed partial class MainWindowViewModel
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
 
-        // OdbcDirect: MssqlSnapshotSelectWindow zeigt die Liste; User waehlt
-        // Snapshot und Aktion. Bei Restore hier, bei Drop faellt in denselben
+        // OdbcDirect: MssqlSnapshotSelectWindow zeigt die Liste; User wählt
+        // Snapshot und Aktion. Bei Restore hier, bei Drop fällt in denselben
         // Dispatcher-Zweig.
         var odbc = TryGetOdbcActions(db);
         if (odbc is not null)
@@ -56,7 +56,7 @@ public sealed partial class MainWindowViewModel
         }
 
         // Oracle: Vorab Restore-Vorschau-Dialog mit Restore-Points und
-        // PDB-Liste + Multi-PDB-Warnung. MSSQL ueberspringt das.
+        // PDB-Liste + Multi-PDB-Warnung. MSSQL überspringt das.
         if (db.ServerTyp == DB_SERVER.ServerTyp.ORACLE)
         {
             Window? owner = GetMainWindow();
@@ -125,7 +125,7 @@ public sealed partial class MainWindowViewModel
     // Phase 11.3/11.6: Snapshot-Liste via OLVM-REST anzeigen.
     // Restore- und Löschen-Buttons im Dialog sind disabled, bis
     // 11.4/11.5 Ansible-Playbooks bereit sind — dann aktivierbar,
-    // Command bleibt unveraendert.
+    // Command bleibt unverändert.
     [RelayCommand]
     private Task OlvmRestoreSnapshot() => ShowOlvmSnapshotDialogAsync(MssqlSnapshotAction.Restore);
 
@@ -146,7 +146,7 @@ public sealed partial class MainWindowViewModel
         string vmId = db.Database.Id ?? string.Empty;
         if (string.IsNullOrWhiteSpace(vmId))
         {
-            StatusBar = $"Keine VM-UUID fuer '{db.Database.Name}' bekannt — Snapshot-Liste nicht ladbar.";
+            StatusBar = $"Keine VM-UUID für '{db.Database.Name}' bekannt — Snapshot-Liste nicht ladbar.";
             return;
         }
 
@@ -161,14 +161,14 @@ public sealed partial class MainWindowViewModel
 
         // Restore/Delete werden erst mit 11.4/11.5 verkabelt — die Buttons
         // im Dialog sind aktuell disabled, wir werden hier nie ein Ergebnis
-        // ausser null bekommen. Guard trotzdem als Safety-Net.
+        // außer null bekommen. Guard trotzdem als Safety-Net.
         if (result is null) return;
         DTM.Data.Terminal.TerminalBus.InjectNotice(
             $"[OLVM Snapshot {result.Action}: '{result.Snapshot.Description}' — Ansible-Playbook noch nicht implementiert (Phase 11.4/11.5).]");
     }
 
-    // Phase 10.4d: OdbcDirect-Weg fuer Snapshot-Restore + Snapshot-Drop.
-    // Ein Dialog fuer beide Aktionen — der Aufrufer gibt an, was
+    // Phase 10.4d: OdbcDirect-Weg für Snapshot-Restore + Snapshot-Drop.
+    // Ein Dialog für beide Aktionen — der Aufrufer gibt an, was
     // initial im Fokus stehen soll, der User kann per Button-Klick am
     // Ende immer noch zwischen Restore und Drop entscheiden.
     private async Task ShowMssqlSnapshotDialogAsync(

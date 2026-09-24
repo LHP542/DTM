@@ -37,7 +37,7 @@ public class DtmCredMapBuilderTests
     [Fact]
     public void Build_Oracle_AlwaysIgnored()
     {
-        // Oracle geht ueber SSH-Keys, kein WinRM/PSCredential — auch mit
+        // Oracle geht über SSH-Keys, kein WinRM/PSCredential — auch mit
         // gesetztem RemoteUser darf Oracle NIE in der Map landen.
         var map = DtmCredMapBuilder.Build(new[] { OracleWithRemote("oravm.dmz") });
         map.Count.Should().Be(0);
@@ -58,7 +58,7 @@ public class DtmCredMapBuilderTests
         var cred = map["dmz-sql01"] as PSCredential;
         cred.Should().NotBeNull();
         cred!.UserName.Should().Be("DMZ\\svc-dtm");
-        // SecureString darf nicht als Klartext gelesen werden — nur Laenge prueft die Integritaet.
+        // SecureString darf nicht als Klartext gelesen werden — nur Länge prüft die Integrität.
         cred.Password.Length.Should().Be("DmzP@ss!".Length);
     }
 

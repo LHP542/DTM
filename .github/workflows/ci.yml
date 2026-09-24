@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # external/FOC-SQL ist ein Dev-Submodul und wird zur Laufzeit/zum Build
-      # nicht referenziert -> kein submodules: true noetig.
+      # nicht referenziert -> kein submodules: true nötig.
       - uses: actions/checkout@v7
 
       - uses: actions/setup-dotnet@v6
@@ -39,27 +39,27 @@ jobs:
       - name: Build DTM (Release)
         run: dotnet build DTM.slnx -c Release
 
-      # KEINE VSTest-Flags. Seit DTM ueber die Microsoft.Testing.Platform
-      # laeuft, kennt der Runner "--logger" und "--results-directory" nicht:
-      # er meldet "Unknown option", fuehrt NULL Tests aus und endet mit
+      # KEINE VSTest-Flags. Seit DTM über die Microsoft.Testing.Platform
+      # läuft, kennt der Runner "--logger" und "--results-directory" nicht:
+      # er meldet "Unknown option", führt NULL Tests aus und endet mit
       # "Zero tests ran" / Exitcode 5. Der Lauf ist dann rot, OHNE dass ein
-      # Test fehlschlaegt.
+      # Test fehlschlägt.
       #
-      # Den TRX-Report bringt xunit selbst mit, er heisst --report-xunit-trx
-      # (nicht --report-trx, das gehoert zu einer separaten
-      # Testing-Platform-Erweiterung). Optionen fuer die Test-App stehen
+      # Den TRX-Report bringt xunit selbst mit, er heißt --report-xunit-trx
+      # (nicht --report-trx, das gehört zu einer separaten
+      # Testing-Platform-Erweiterung). Optionen für die Test-App stehen
       # hinter dem "--"-Separator.
-      - name: Tests ausfuehren
+      - name: Tests ausführen
         run: >
           dotnet test DTM.Tests/DTM.Tests.csproj --no-build -c Release --
           --report-xunit-trx --report-xunit-trx-filename test-results.trx
 
       # Ohne diesen Schritt steht bei einem roten Lauf nur "Process completed
       # with exit code 1" in der Job-Zusammenfassung — die eigentliche
-      # Fehlermeldung liegt im Job-Log, und das laesst sich ueber die API nur
+      # Fehlermeldung liegt im Job-Log, und das lässt sich über die API nur
       # mit Admin-Rechten am Repo herunterladen. Mit angemeldetem gh geht
       # "gh run view <ID> --log-failed", aber die Annotation steht direkt am
-      # Lauf und ist auch ohne gh ueber die oeffentliche API lesbar.
+      # Lauf und ist auch ohne gh über die öffentliche API lesbar.
       #
       # Die TRX schreibt xunit neben die Test-Assembly, nicht nach
       # TestResults/ im Repo-Root — deshalb rekursiv suchen.
@@ -82,7 +82,7 @@ jobs:
               msg = r.findtext(".//t:Message", default="", namespaces=ns).strip()
               trace = r.findtext(".//t:StackTrace", default="", namespaces=ns).strip()
               first_frame = next((l.strip() for l in trace.splitlines() if l.strip()), "")
-              # Zeilenumbrueche escapen, sonst bricht die Annotation nach der
+              # Zeilenumbrüche escapen, sonst bricht die Annotation nach der
               # ersten Zeile ab.
               body = f"{msg}\n{first_frame}".replace("%", "%25").replace("\r", "").replace("\n", "%0A")
               print(f"::error title={name}::{body}")

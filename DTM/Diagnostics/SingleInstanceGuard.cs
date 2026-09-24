@@ -5,28 +5,28 @@ using SystemFile = System.IO.File;
 namespace DTM.Diagnostics;
 
 /// <summary>
-/// Verhindert Zweitstarts (Kroste-Skill-Standard, Pflicht fuer Tray-Apps —
+/// Verhindert Zweitstarts (Kroste-Skill-Standard, Pflicht für Tray-Apps —
 /// Referenz: Klemmbrett). Ohne Guard laufen bei DTM zwei Prozesse mit je
 /// einem eigenen PowerShell-Runspace, zwei Tray-Icons konkurrieren um
 /// dieselbe Position, und beide schreiben auf dieselbe
 /// <c>connections.json</c> — der letzte Save gewinnt und verwirft die
-/// Aenderungen des anderen.
+/// Änderungen des anderen.
 ///
 /// Erwartetes Verhalten: der zweite Start holt die bestehende Instanz in den
 /// Vordergrund und beendet sich selbst.
 ///
-/// Umsetzung ueber eine Named Pipe, die .NET auf Linux/macOS als
+/// Umsetzung über eine Named Pipe, die .NET auf Linux/macOS als
 /// Unix-Domain-Socket unter <c>/tmp/CoreFxPipe_&lt;name&gt;</c> abbildet —
-/// damit cross-platform ohne Extracode. Der Pipe-Name enthaelt den
+/// damit cross-platform ohne Extracode. Der Pipe-Name enthält den
 /// Benutzernamen, sonst blockieren sich verschiedene Benutzer auf einem
 /// Terminalserver gegenseitig.
 ///
 /// <b>Stale-Socket-Recovery:</b> DTM beendet sich in manchen Pfaden per
-/// <c>Process.Kill()</c> (PowerShell-SDK-Finalizer-Haenger, siehe
-/// <c>UpdateService</c>) — dabei laeuft kein <see cref="Dispose"/>. Windows
-/// raeumt Named Pipes selbst auf; auf Linux bleibt die Socket-Datei liegen
-/// und wuerde jeden weiteren Start dauerhaft blockieren. Deshalb wird bei
-/// belegter Pipe geprueft, ob sich wirklich jemand verbinden laesst — wenn
+/// <c>Process.Kill()</c> (PowerShell-SDK-Finalizer-Hänger, siehe
+/// <c>UpdateService</c>) — dabei läuft kein <see cref="Dispose"/>. Windows
+/// räumt Named Pipes selbst auf; auf Linux bleibt die Socket-Datei liegen
+/// und würde jeden weiteren Start dauerhaft blockieren. Deshalb wird bei
+/// belegter Pipe geprüft, ob sich wirklich jemand verbinden lässt — wenn
 /// nicht, ist der Socket verwaist und wird entfernt.
 /// </summary>
 public sealed class SingleInstanceGuard : IDisposable
@@ -43,7 +43,7 @@ public sealed class SingleInstanceGuard : IDisposable
 
     /// <summary>
     /// Feuert, wenn ein Zweitstart die Aktivierung anfordert. Wird auf einem
-    /// ThreadPool-Thread ausgeloest — der Abonnent muss selbst auf den
+    /// ThreadPool-Thread ausgelöst — der Abonnent muss selbst auf den
     /// UI-Thread dispatchen.
     /// </summary>
     public event EventHandler? ActivationRequested;
@@ -55,16 +55,16 @@ public sealed class SingleInstanceGuard : IDisposable
 
     /// <summary>
     /// Versucht, die Rolle der Erstinstanz zu belegen. <c>true</c> = wir sind
-    /// die Erstinstanz und lauschen ab jetzt auf Aktivierungswuensche.
-    /// <c>false</c> = es laeuft bereits eine Instanz.
+    /// die Erstinstanz und lauschen ab jetzt auf Aktivierungswünsche.
+    /// <c>false</c> = es läuft bereits eine Instanz.
     /// </summary>
     public bool TryClaim()
     {
         if (TryCreateServer()) return true;
 
         // Belegt — aber lebt da wirklich jemand? Auf Windows ja (das OS
-        // raeumt Pipes beim Prozessende auf), auf Linux kann die Socket-Datei
-        // von einem gekillten Vorgaenger stammen.
+        // räumt Pipes beim Prozessende auf), auf Linux kann die Socket-Datei
+        // von einem gekillten Vorgänger stammen.
         if (!OperatingSystem.IsWindows() && !CanReachPrimary())
         {
             _logger.Warn("Verwaister Single-Instance-Socket erkannt — wird entfernt.");
@@ -72,7 +72,7 @@ public sealed class SingleInstanceGuard : IDisposable
             if (TryCreateServer()) return true;
         }
 
-        _logger.Info("DTM laeuft bereits — dieser Start meldet sich bei der bestehenden Instanz ab.");
+        _logger.Info("DTM läuft bereits — dieser Start meldet sich bei der bestehenden Instanz ab.");
         return false;
     }
 
@@ -121,7 +121,7 @@ public sealed class SingleInstanceGuard : IDisposable
         }
     }
 
-    /// <summary>Prueft, ob hinter der belegten Pipe eine lebende Instanz sitzt.</summary>
+    /// <summary>Prüft, ob hinter der belegten Pipe eine lebende Instanz sitzt.</summary>
     private bool CanReachPrimary()
     {
         try
@@ -185,7 +185,7 @@ public sealed class SingleInstanceGuard : IDisposable
         }
     }
 
-    /// <summary>Ersetzt alles, was in einem Pipe-/Dateinamen stoeren koennte.</summary>
+    /// <summary>Ersetzt alles, was in einem Pipe-/Dateinamen stören könnte.</summary>
     private static string Sanitize(string value)
     {
         if (string.IsNullOrWhiteSpace(value)) return "default";

@@ -6,12 +6,12 @@ using NLog;
 namespace DTM.ViewModels;
 
 /// <summary>
-/// Auswahl-Dialog fuer OLVM-VM-Snapshots (Phase 11.3/11.6). Analog zu
+/// Auswahl-Dialog für OLVM-VM-Snapshots (Phase 11.3/11.6). Analog zu
 /// <see cref="MssqlSnapshotSelectViewModel"/>. Listing kommt aus dem
 /// oVirt-REST-API (<see cref="OlvmSnapshotService.ListAsync"/>).
 ///
 /// Restore und Delete sind aktuell disabled — die Ansible-Playbooks
-/// dafuer stehen noch nicht (Phase 11.4/11.5). Der Dialog dient bis
+/// dafür stehen noch nicht (Phase 11.4/11.5). Der Dialog dient bis
 /// dahin als reine Anzeige.
 /// </summary>
 public sealed partial class OlvmSnapshotSelectViewModel : ViewModelBase
@@ -54,7 +54,7 @@ public sealed partial class OlvmSnapshotSelectViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "OLVM ListSnapshots fuer '{0}' fehlgeschlagen.", database);
+            _logger.Error(ex, "OLVM ListSnapshots für '{0}' fehlgeschlagen.", database);
             ErrorMessage = ex.Message;
         }
         finally
@@ -64,7 +64,7 @@ public sealed partial class OlvmSnapshotSelectViewModel : ViewModelBase
     }
 }
 
-/// <summary>Rueckgabe des OLVM-Snapshot-Dialogs.</summary>
+/// <summary>Rückgabe des OLVM-Snapshot-Dialogs.</summary>
 public sealed record OlvmSnapshotSelectResult(
     MssqlSnapshotAction Action,
     OlvmSnapshotInfo Snapshot);

@@ -51,7 +51,7 @@
                                 <!-- FontSize passend zum 38px-Button. Stand hier
                                      lange auf 60 — das Zahnrad wurde dadurch
                                      abgeschnitten und sah aus wie ein leeres
-                                     graues Kaestchen. -->
+                                     graues Kästchen. -->
                                 <TextBlock Classes="glyph" Text="&#x2699;" Margin="0"
                                            FontSize="16" HorizontalAlignment="Center" />
                             </Button>
@@ -111,7 +111,7 @@
                             <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="0,4,0,0">
                                 <TextBlock Grid.Row="0" Grid.Column="0" Classes="infoLabel" Text="Host" />
                                 <TextBlock Grid.Row="0" Grid.Column="1" Classes="infoValue" Text="{Binding DbHost}" />
-                                <!-- Beschriftung haengt am DB-Typ: MSSQL zeigt den
+                                <!-- Beschriftung hängt am DB-Typ: MSSQL zeigt den
                                      Compatibility-Level, Oracle und MariaDB die
                                      Server-Version. -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Classes="infoLabel" Text="{Binding VersionLabel}" Margin="0,4,0,0" />
@@ -119,19 +119,19 @@
                                 <TextBlock Grid.Row="2" Grid.Column="0" Classes="infoLabel" Text="Größe" Margin="0,4,0,0" />
                                 <TextBlock Grid.Row="2" Grid.Column="1" Classes="infoValue" Text="{Binding DbSize}" Margin="0,4,0,0" />
                                 <TextBlock Grid.Row="3" Grid.Column="0" Classes="infoLabel" Text="{Binding RecoveryLabel}" Margin="0,4,0,0" />
-                                <!-- Read-only TextBlock fuer Oracle (oder solange RecoveryModeVisible=false) -->
+                                <!-- Read-only TextBlock für Oracle (oder solange RecoveryModeVisible=false) -->
                                 <TextBlock Grid.Row="3" Grid.Column="1" Classes="infoValue"
                                            Text="{Binding RecoveryOrArchiveMode}" Margin="0,4,0,0"
                                            IsVisible="{Binding !RecoveryModeVisible}" />
-                                <!-- Dropdown fuer MSSQL: Recovery-Mode FULL/SIMPLE/BULK_LOGGED setzen -->
+                                <!-- Dropdown für MSSQL: Recovery-Mode FULL/SIMPLE/BULK_LOGGED setzen -->
                                 <ComboBox Grid.Row="3" Grid.Column="1"
                                           ItemsSource="{Binding RecoveryModeOptions}"
                                           SelectedItem="{Binding RecoveryModeSelected, Mode=TwoWay}"
                                           IsVisible="{Binding RecoveryModeVisible}"
                                           MinWidth="140" Padding="8,2" Margin="0,4,0,0"
-                                          ToolTip.Tip="Recovery-Modus aendern (Set-DbRecoveryMode). Wechsel zu SIMPLE bricht die Log-Chain!" />
+                                          ToolTip.Tip="Recovery-Modus ändern (Set-DbRecoveryMode). Wechsel zu SIMPLE bricht die Log-Chain!" />
 
-                                <!-- Freier Slot fuer typspezifische Angaben, die
+                                <!-- Freier Slot für typspezifische Angaben, die
                                      es nur bei einem Backend gibt (MariaDB:
                                      Tabellenzahl und Storage-Engines). -->
                                 <TextBlock Grid.Row="4" Grid.Column="0" Classes="infoLabel"
@@ -251,7 +251,7 @@
                             <TextBlock Classes="section-label" Text="BACKUPS" />
                             <StackPanel Orientation="Horizontal">
                                 <Button Classes="action" Command="{Binding OpenBackupBrowserCommand}"
-                                        ToolTip.Tip="Vorhandene .bak-Dateien anzeigen und Restore ausfuehren">
+                                        ToolTip.Tip="Vorhandene .bak-Dateien anzeigen und Restore ausführen">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Classes="glyph" Text="&#x1F4C2;" />
                                         <TextBlock Text="Browser" VerticalAlignment="Center" />
@@ -294,7 +294,7 @@
                             <TextBlock Classes="section-label" Text="WARTUNG" />
                             <StackPanel Orientation="Horizontal">
                                 <Button Classes="action" Command="{Binding RunCheckDbCommand}"
-                                        ToolTip.Tip="DBCC CHECKDB — Integritaetspruefung der Datenbank">
+                                        ToolTip.Tip="DBCC CHECKDB — Integritätsprüfung der Datenbank">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Classes="glyph" Text="&#x2714;" />
                                         <TextBlock Text="CHECKDB" VerticalAlignment="Center" />

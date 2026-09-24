@@ -5,25 +5,25 @@ using DTM.Data.Terminal;
 namespace DTM.ViewModels;
 
 /// <summary>
-/// ViewModel fuer den DB-Konfigurations-Dialog (Phase 5.1/5.3, MSSQL-only).
+/// ViewModel für den DB-Konfigurations-Dialog (Phase 5.1/5.3, MSSQL-only).
 /// Drei selten gebrauchte Settings auf einer Stelle:
 /// - Query-Store ON/OFF
 /// - Page-Verify CHECKSUM / TORN_PAGE_DETECTION / NONE
-/// - Compatibility-Level auf MASTER-Default zuruecksetzen
+/// - Compatibility-Level auf MASTER-Default zurücksetzen
 ///
-/// Bestaetigungs-Dialoge passieren im Code-Behind des Windows
+/// Bestätigungs-Dialoge passieren im Code-Behind des Windows
 /// (analog SessionsWindow/BackupBrowserWindow); dieses VM stellt nur die
 /// „Perform*"-Methoden bereit, die den eigentlichen Aufruf abschicken.
 ///
 /// Phase 10.4: wenn das VM einen <see cref="OdbcMssqlActionService"/>
 /// bekommt (via <see cref="Configure"/>), laufen die drei Actions direkt
-/// ueber ODBC statt ueber FOC-SQL. Fuer DMZ-Server.
+/// über ODBC statt über FOC-SQL. Für DMZ-Server.
 /// </summary>
 public sealed partial class DbConfigurationViewModel : ViewModelBase
 {
     [ObservableProperty] private string _databaseName = string.Empty;
 
-    /// <summary>MSSQL-Host fuer -Server-Parameter (Multi-Server-Support Phase 6).</summary>
+    /// <summary>MSSQL-Host für -Server-Parameter (Multi-Server-Support Phase 6).</summary>
     public string? ServerHost { get; set; }
 
     /// <summary>Wenn gesetzt: OdbcDirect-Pfad; sonst FOC-SQL-Pfad.</summary>
@@ -41,7 +41,7 @@ public sealed partial class DbConfigurationViewModel : ViewModelBase
     [ObservableProperty] private int _compatibilityLevel;
 
     /// <summary>
-    /// Vor dem Anzeigen vom MainWindowViewModel aufzurufen — uebergibt
+    /// Vor dem Anzeigen vom MainWindowViewModel aufzurufen — übergibt
     /// Kontext (DB-Name, Server-Host) und aktuelle Werte aus den Stats
     /// als Vorauswahl/Anzeige.
     /// </summary>

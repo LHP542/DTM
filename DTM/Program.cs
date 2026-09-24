@@ -11,7 +11,7 @@ internal static class Program
     /// <summary>
     /// Ergebnis des CLI-Parsers, von <see cref="App"/> beim Startup abgeholt.
     /// Statisch, weil der Avalonia-Lifecycle keine Stelle bietet, an der sich
-    /// Argumente sauber in die App-Instanz reichen liessen.
+    /// Argumente sauber in die App-Instanz reichen ließen.
     /// </summary>
     public static DTM.Config.AppLaunchOptions LaunchOptions { get; private set; } = new();
 
@@ -25,7 +25,7 @@ internal static class Program
         //   DOTNET_CLI_TELEMETRY_OPTOUT  - .NET CLI/Runtime-Telemetrie
         DisableThirdPartyTelemetry();
 
-        // Catch-All fuer Exceptions abseits des UI-Threads. Den UI-Handler
+        // Catch-All für Exceptions abseits des UI-Threads. Den UI-Handler
         // registriert App.OnFrameworkInitializationCompleted, sobald der
         // Dispatcher existiert.
         FatalErrorHandler.Install();
@@ -35,7 +35,7 @@ internal static class Program
         // irgendetwas anderes passiert.
         LaunchOptions = DTM.Config.AppLaunchOptions.Parse(args);
 
-        // Single-Instance-Guard VOR Avalonia: laeuft schon eine Instanz, wird
+        // Single-Instance-Guard VOR Avalonia: läuft schon eine Instanz, wird
         // sie nach vorn geholt und dieser Prozess beendet sich, ohne dass ein
         // zweiter PowerShell-Runspace oder ein zweites Tray-Icon entsteht.
         var guard = new SingleInstanceGuard();
@@ -46,7 +46,7 @@ internal static class Program
             return 0;
         }
 
-        // Uebergabe an die App, die den Guard verkabelt und beim Beenden
+        // Übergabe an die App, die den Guard verkabelt und beim Beenden
         // freigibt.
         App.PendingGuard = guard;
 

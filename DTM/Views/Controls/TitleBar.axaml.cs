@@ -8,7 +8,7 @@ using Avalonia.VisualTree;
 namespace DTM.Views.Controls;
 
 /// <summary>
-/// Wiederverwendbare Titelleiste fuer DTM-Dialoge (ChromeWindow-Basis).
+/// Wiederverwendbare Titelleiste für DTM-Dialoge (ChromeWindow-Basis).
 /// Drag/Move via PointerPressed, Doppelklick maximiert (falls
 /// ShowMaximize=true), Close-Button ruft Host-Window.Close.
 /// </summary>
@@ -28,7 +28,7 @@ public partial class TitleBar : UserControl
         AvaloniaProperty.Register<TitleBar, IBrush?>(nameof(GlyphBrush));
 
     // Fensterspezifische Chrome-Buttons links von Min/Max/Close.
-    // MainWindow haengt hier seinen "Ueber"-Button ein.
+    // MainWindow hängt hier seinen "Über"-Button ein.
     public static readonly StyledProperty<object?> ExtraContentProperty =
         AvaloniaProperty.Register<TitleBar, object?>(nameof(ExtraContent));
 
@@ -39,7 +39,7 @@ public partial class TitleBar : UserControl
         AvaloniaProperty.Register<TitleBar, bool>(nameof(ShowMaximize));
 
     // Dialog-Result, das beim Klick auf "X" per Close(object?) mitgesendet wird.
-    // Fuer ShowDialog<TResult>: TimePickerWindow braucht z.B. TimePickResult.Cancel(),
+    // Für ShowDialog<TResult>: TimePickerWindow braucht z.B. TimePickResult.Cancel(),
     // EditConnectionWindow braucht "false". Bleibt null -> Close() ohne Argument
     // (bei ShowDialog<bool> liefert das default(bool)=false, bei Objekt-Types null).
     public static readonly StyledProperty<object?> CloseResultProperty =
@@ -93,7 +93,7 @@ public partial class TitleBar : UserControl
     }
 
     // Avalonia 12: VisualRoot ist nicht mehr das Window selbst — TopLevel.GetTopLevel
-    // liefert das Window ueber den internen TopLevelHost.
+    // liefert das Window über den internen TopLevelHost.
     private Window? Host => TopLevel.GetTopLevel(this) as Window;
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

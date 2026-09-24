@@ -5,8 +5,8 @@ public sealed class DatabaseNodeViewModel : NodeViewModelBase
     public Database_Info Database { get; }
 
     /// <summary>
-    /// Identitaet des Servers, auf dem diese DB liegt — enthaelt Typ + Hostname.
-    /// Wird vom MainWindowViewModel fuer FOC-SQL-Aufrufe verwendet, damit die
+    /// Identität des Servers, auf dem diese DB liegt — enthält Typ + Hostname.
+    /// Wird vom MainWindowViewModel für FOC-SQL-Aufrufe verwendet, damit die
     /// richtige MSSQL-Instanz / der richtige Oracle-Host angesteuert wird.
     /// </summary>
     public ServerIdentity ServerIdentity { get; }
@@ -22,7 +22,7 @@ public sealed class DatabaseNodeViewModel : NodeViewModelBase
     }
 
     /// <summary>
-    /// Convenience-Konstruktor fuer Tests: legt eine synthetische Identitaet
+    /// Convenience-Konstruktor für Tests: legt eine synthetische Identität
     /// mit leerem Server-Hostname an. Produktion nutzt immer die Variante mit
     /// echtem <see cref="ServerIdentity"/>.
     /// </summary>

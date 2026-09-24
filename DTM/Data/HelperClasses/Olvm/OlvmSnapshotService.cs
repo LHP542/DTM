@@ -31,7 +31,7 @@ public sealed class OlvmSnapshotService : IDisposable
         string vmId, CancellationToken ct = default)
     {
         IReadOnlyList<SnapshotInfo> raw = await _rest.GetSnapshotsAsync(vmId, ct).ConfigureAwait(false);
-        _logger.Debug("OlvmSnapshotService: {0} Rohsnapshots gelesen fuer VM {1}", raw.Count, vmId);
+        _logger.Debug("OlvmSnapshotService: {0} Rohsnapshots gelesen für VM {1}", raw.Count, vmId);
 
         return raw
             .Where(s => !string.Equals(s.SnapshotType, "active", StringComparison.OrdinalIgnoreCase))

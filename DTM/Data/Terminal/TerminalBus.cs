@@ -20,14 +20,14 @@ public static class TerminalBus
 
     // Phase 9.5: gecachete Server-Liste, damit die $global:DtmCredMap injiziert
     // werden kann sobald die pwsh-Session registriert wird — die Server-Liste
-    // ist beim App-Start bekannt, die Session laeuft aber erst wenn das
+    // ist beim App-Start bekannt, die Session läuft aber erst wenn das
     // ConsoleControl attached. Bei ConnectionManager-Save wird SetCredMap
     // erneut aufgerufen und (falls Session aktiv) sofort re-injiziert.
     private static IReadOnlyList<DB_SERVER>? _servers;
 
     /// <summary>
-    /// Wird fuer jede Output-/Error-Zeile gefeuert, die durch die aktuell
-    /// registrierte Session laeuft. Erlaubt der UI (MainWindowViewModel),
+    /// Wird für jede Output-/Error-Zeile gefeuert, die durch die aktuell
+    /// registrierte Session läuft. Erlaubt der UI (MainWindowViewModel),
     /// nach bestimmten Patterns zu lauschen (z. B. VERSION_MISMATCH aus
     /// FOC-SQL) und im StatusBar zu spiegeln, ohne dass der User das
     /// pwsh-Log selbst durchscrollen muss.
@@ -60,7 +60,7 @@ public static class TerminalBus
     /// Phase 9.5: setzt / aktualisiert die Server-Liste, aus der
     /// <c>$global:DtmCredMap</c> gebaut wird. Beim App-Start einmal, beim
     /// Connection-Manager-Save nach dem Reload. Injiziert sofort, wenn eine
-    /// pwsh-Session bereits laeuft — sonst passiert die Injektion sobald die
+    /// pwsh-Session bereits läuft — sonst passiert die Injektion sobald die
     /// Session registriert wird.
     /// </summary>
     public static void SetCredMap(IReadOnlyList<DB_SERVER> servers)
@@ -131,10 +131,10 @@ public static class TerminalBus
     /// <param name="title">Header-Zeile im Tab.</param>
     /// <param name="server">
     /// Optional: Hostname des MSSQL-Servers (-Server &lt;host&gt; ans Cmdlet
-    /// anhaengen). Bei null bleibt der Modul-Default ($global:Server) — fuer
-    /// Oracle-Aufrufe irrelevant (Oracle bekommt das Ziel ueber den FQDN
+    /// anhängen). Bei null bleibt der Modul-Default ($global:Server) — für
+    /// Oracle-Aufrufe irrelevant (Oracle bekommt das Ziel über den FQDN
     /// im -Database-Parameter mit). Wird in Phase 6 (Multi-Server-Support)
-    /// benoetigt, damit DTM mehrere MSSQL-Hosts unterscheiden kann.
+    /// benötigt, damit DTM mehrere MSSQL-Hosts unterscheiden kann.
     /// </param>
     /// <param name="onUnavailable">Fallback wenn kein pwsh-Tab aktiv ist.</param>
     public static void RunFocSqlAction(
@@ -182,7 +182,7 @@ public static class TerminalBus
     /// <param name="title">Header im Tab.</param>
     /// <param name="server">
     /// Optional: MSSQL-Host (-Server &lt;host&gt; ans Cmdlet). Siehe
-    /// <see cref="RunFocSqlAction"/> fuer Details.
+    /// <see cref="RunFocSqlAction"/> für Details.
     /// </param>
     /// <param name="onUnavailable">Fallback wenn kein pwsh-Tab aktiv.</param>
     public static void RunFocSqlSimple(
@@ -234,12 +234,12 @@ public static class TerminalBus
 
         if (sess is null || !sess.IsRunning)
         {
-            _logger.Warn("TerminalBus: keine aktive pwsh-Session fuer {0}", functionName);
+            _logger.Warn("TerminalBus: keine aktive pwsh-Session für {0}", functionName);
             onUnavailable?.Invoke();
             return;
         }
 
-        _logger.Info("TerminalBus: {0} fuer Server '{1}'", functionName, server);
+        _logger.Info("TerminalBus: {0} für Server '{1}'", functionName, server);
 
         if (sess is ITerminalBusInjector injector)
             injector.InjectNotice($"[Aktion: {title}]");
@@ -251,7 +251,7 @@ public static class TerminalBus
 
     /// <summary>
     /// Injiziert eine synthetische Notice-Zeile in den pwsh-Tab, ohne
-    /// dass dafuer ein PS-Command ausgefuehrt werden muss. Genutzt von
+    /// dass dafür ein PS-Command ausgeführt werden muss. Genutzt von
     /// OdbcDirect-Actions (Phase 10.4), damit Backup-/Restore-/Wartungs-
     /// Output im selben pwsh-Tab landet wie der FOC-SQL-Live-Stream — der
     /// User sieht alles an einem Ort. Wenn keine Session aktiv ist,

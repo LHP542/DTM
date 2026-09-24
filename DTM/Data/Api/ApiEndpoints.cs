@@ -11,10 +11,10 @@ namespace DTM.Data.Api;
 /// <summary>
 /// Alle HTTP-Routen der DTM-API. Getrennt vom <see cref="ApiHost"/>-Lifecycle,
 /// damit sie in Tests direkt gegen eine <see cref="WebApplication"/> gemountet
-/// werden koennen.
+/// werden können.
 ///
 /// <para>Alle Endpoints laufen hinter <see cref="ApiBearerAuth"/> — hier gibt
-/// es keine eigenen Auth-Pruefungen mehr.</para>
+/// es keine eigenen Auth-Prüfungen mehr.</para>
 /// </summary>
 internal static class ApiEndpoints
 {
@@ -100,7 +100,7 @@ internal static class ApiEndpoints
             ClickRequest? body = await ReadJson<ClickRequest>(ctx);
             if (body is null || string.IsNullOrWhiteSpace(body.ElementId))
                 return Problem(StatusCodes.Status400BadRequest, "elementId fehlt",
-                    "Body erwartet: { \"elementId\": \"…\" } — verfuegbare Namen liefert GET /elements.");
+                    "Body erwartet: { \"elementId\": \"…\" } — verfügbare Namen liefert GET /elements.");
 
             return Translate(await ui.ClickAsync(body.ElementId), ctx);
         });
@@ -132,7 +132,7 @@ internal static class ApiEndpoints
             byte[]? png = await ui.ScreenshotAsync(target ?? "main");
             if (png is null || png.Length == 0)
                 return Problem(StatusCodes.Status409Conflict, "Kein zeichenbares Fenster",
-                    "Es ist kein Fenster offen oder es hat die Groesse 0 (App startet vielleicht noch).");
+                    "Es ist kein Fenster offen oder es hat die Größe 0 (App startet vielleicht noch).");
 
             if (string.Equals(format, "json", StringComparison.OrdinalIgnoreCase))
             {
@@ -159,7 +159,7 @@ internal static class ApiEndpoints
         }
     }
 
-    /// <summary>Uebersetzt ein <see cref="DtmUiActions.ActionResult"/> in eine HTTP-Antwort.</summary>
+    /// <summary>Übersetzt ein <see cref="DtmUiActions.ActionResult"/> in eine HTTP-Antwort.</summary>
     private static IResult Translate(DtmUiActions.ActionResult res, HttpContext ctx)
     {
         if (res.Success) return Results.NoContent();
@@ -182,7 +182,7 @@ internal static class ApiEndpoints
                 Problem(StatusCodes.Status403Forbidden, "Destruktive Aktion gesperrt", res.Error!),
 
             DtmUiActions.ActionFailure.Unsupported =>
-                Problem(StatusCodes.Status422UnprocessableEntity, "Aktion nicht unterstuetzt", res.Error!),
+                Problem(StatusCodes.Status422UnprocessableEntity, "Aktion nicht unterstützt", res.Error!),
 
             _ => Problem(StatusCodes.Status409Conflict, "Zustand passt nicht", res.Error!),
         };

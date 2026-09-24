@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v[0-9]*'
-  # Manuell triggerbar (z.B. um den AppImage-Build zu pruefen, ohne ein
+  # Manuell triggerbar (z.B. um den AppImage-Build zu prüfen, ohne ein
   # echtes Release zu schneiden). Der release-Job ist tag-only, baut bei
   # manuellem Dispatch also nicht hoch.
   workflow_dispatch:
@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0  # MinVer braucht die volle Git-History fuer Tag-Aufloesung
+          fetch-depth: 0  # MinVer braucht die volle Git-History für Tag-Auflösung
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.x'
@@ -65,7 +65,7 @@ jobs:
         shell: pwsh
         run: |
           # SkiaSharp/HarfBuzzSharp bringen .pdb-Files mit — im Release nicht
-          # gebraucht. DebugType=embedded gilt nur fuer unsere eigene Exe.
+          # gebraucht. DebugType=embedded gilt nur für unsere eigene Exe.
           Remove-Item -Path ./publish/*.pdb -Force -ErrorAction SilentlyContinue
       - uses: actions/upload-artifact@v7
         with:
@@ -80,7 +80,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0  # MinVer braucht die volle Git-History fuer Tag-Aufloesung
+          fetch-depth: 0  # MinVer braucht die volle Git-History für Tag-Auflösung
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.x'
@@ -158,7 +158,7 @@ jobs:
           # App-Icon direkt aus Assets/dtm.png (schon 256x256, transparenter Grund)
           cp DTM/Assets/dtm.png AppDir/usr/share/icons/hicolor/256x256/apps/dtm.png
 
-          # Desktop-Entry + AppRun aus dem Repo uebernehmen
+          # Desktop-Entry + AppRun aus dem Repo übernehmen
           cp packaging/appimage/dtm.desktop AppDir/usr/share/applications/dtm.desktop
           cp packaging/appimage/AppRun       AppDir/AppRun
           chmod +x AppDir/AppRun
@@ -189,7 +189,7 @@ jobs:
     name: GitHub Release erstellen
     needs: [build-windows, build-linux, build-appimage]
     runs-on: ubuntu-latest
-    # Release nur bei tatsaechlichem Tag-Push, nicht beim manuellen Dispatch.
+    # Release nur bei tatsächlichem Tag-Push, nicht beim manuellen Dispatch.
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
@@ -214,7 +214,7 @@ jobs:
           tar -czf ../DTM-${{ github.ref_name }}-linux.tar.gz .
           cd ..
           # AppImage liegt schon als fertige Datei vor, nur umbenennen falls
-          # noetig.
+          # nötig.
           mv DTM-appimage/DTM-*-x86_64.AppImage \
              ./DTM-${{ github.ref_name }}-x86_64.AppImage
       - name: GitHub Release anlegen

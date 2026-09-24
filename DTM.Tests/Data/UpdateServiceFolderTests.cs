@@ -10,8 +10,8 @@ namespace DTM.Tests.Data;
 /// Der Ordner-Kanal des <see cref="UpdateService"/> — seit 2026-08-25 der
 /// Regelweg, weil GitHub aus dem Firmennetz nicht mehr erreichbar ist.
 ///
-/// <para>Bewusst NICHT geprueft wird, ob ein Update angeboten wird: das
-/// haengt an der Assembly-Version des Testhosts und wuerde je nach Tag
+/// <para>Bewusst NICHT geprüft wird, ob ein Update angeboten wird: das
+/// hängt an der Assembly-Version des Testhosts und würde je nach Tag
 /// unterschiedlich ausfallen. Der Versionsvergleich selbst steckt in
 /// <see cref="UpdateChannel.Normalize"/> und ist dort abgedeckt.</para>
 /// </summary>
@@ -47,9 +47,9 @@ public class UpdateServiceFolderTests : IDisposable
     }
 
     /// <summary>
-    /// Der Test, der den CI-Fehler gefangen haette: unter Linux liegt das
+    /// Der Test, der den CI-Fehler gefangen hätte: unter Linux liegt das
     /// Temp-Verzeichnis unter <c>/tmp/…</c>, und absolute Unix-Pfade galten
-    /// nicht als Ordner. Die uebrigen Tests hier liefen dadurch still gegen
+    /// nicht als Ordner. Die übrigen Tests hier liefen dadurch still gegen
     /// GitHub und verglichen echte Release-Daten mit ihren Erwartungen.
     /// </summary>
     [Fact]
@@ -119,8 +119,8 @@ public class UpdateServiceFolderTests : IDisposable
 
         result.Should().HaveCount(1);
         result[0].Version.Should().Be("2.3.11");
-        // modulesChanged traegt den MSSQL-Banner im Update-Dialog — muss
-        // ueber den Ordner-Kanal genauso ankommen wie ueber GitHub.
+        // modulesChanged trägt den MSSQL-Banner im Update-Dialog — muss
+        // über den Ordner-Kanal genauso ankommen wie über GitHub.
         result[0].ModulesChanged.Should().Contain("MSSQL");
     }
 

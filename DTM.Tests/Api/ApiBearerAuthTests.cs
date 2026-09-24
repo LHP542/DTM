@@ -6,8 +6,8 @@ namespace DTM.Tests.Api;
 
 /// <summary>
 /// Der Vergleich ist die einzige Stelle zwischen "jemand kennt das Token" und
-/// "jemand darf die DTM-Oberflaeche fernsteuern" — entsprechend explizit
-/// getestet. Die Middleware selbst braeuchte einen HttpContext; die Logik
+/// "jemand darf die DTM-Oberfläche fernsteuern" — entsprechend explizit
+/// getestet. Die Middleware selbst bräuchte einen HttpContext; die Logik
 /// dahinter ist hier isoliert.
 /// </summary>
 public class ApiBearerAuthTests
@@ -19,8 +19,8 @@ public class ApiBearerAuthTests
     }
 
     [Theory]
-    [InlineData("geheim", "geheiM")]   // Gross-/Kleinschreibung zaehlt
-    [InlineData("geheim", "geheim ")]  // Laenge zaehlt
+    [InlineData("geheim", "geheiM")]   // Groß-/Kleinschreibung zählt
+    [InlineData("geheim", "geheim ")]  // Länge zählt
     [InlineData("geheim", "")]
     [InlineData("", "geheim")]
     [InlineData("abc", "xyz")]
@@ -33,7 +33,7 @@ public class ApiBearerAuthTests
     public void FixedTimeEquals_EmptyStrings_AreEqual()
     {
         // Der leere Fall wird vorher in Enforce abgefangen (kein Token = 403);
-        // hier geht es nur darum, dass der Vergleich selbst nicht ueberrascht.
+        // hier geht es nur darum, dass der Vergleich selbst nicht überrascht.
         ApiBearerAuth.FixedTimeEquals(string.Empty, string.Empty).Should().BeTrue();
     }
 }

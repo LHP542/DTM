@@ -272,7 +272,7 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
 
   Release-Hinweis-Eintrag in `release-notes.json` mit `"modulesChanged":
   ["MSSQL"]` setzen — DTM zeigt im `UpdatePromptWindow` dann den roten
-  „MSSQL-Modul wurde geändert"-Banner und der User weiss, dass jeder
+  „MSSQL-Modul wurde geändert"-Banner und der User weiß, dass jeder
   Server einmal angefasst werden muss.
 
 ---
@@ -336,44 +336,44 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
      LayoutRenderer `${masked}`), per `[ModuleInitializer]` +
      `LogManager.Setup().SetupExtensions()` registriert. `Nlog.config` rendert
      Message und Exception durch den Renderer — greift auch, wenn eine
-     `SqlException` einen ConnectionString mit Passwort enthaelt. Regex-Patterns:
+     `SqlException` einen ConnectionString mit Passwort enthält. Regex-Patterns:
      `Password=`/`PWD=` (ConnectionString), `password=`/`token=`/`api_key=`
      (URL/JSON), `Bearer <token>`, `Authorization:`.
    - Avalonia 12.0.5 → 12.1.0 (Skill-Mindest wegen nativem Wayland-Backend).
      `Avalonia.Controls.DataGrid` + `Avalonia.Fonts.Inter` von 12.0.1 auf 12.1.0
      mitgezogen. `CentralPackageTransitivePinningEnabled=true` aktiviert, um
-     transitive Deps ueber `PackageVersion` pinnen zu koennen —
+     transitive Deps über `PackageVersion` pinnen zu können —
      `System.Security.Cryptography.Xml` auf 10.0.10 hochgezogen wegen mehrerer
      hoch-Sev CVEs.
    - xUnit 2.9.3 → `xunit.v3` 3.2.2 (v2 deprecated). API-kompatibel, kein
-     Quellcode-Change noetig.
+     Quellcode-Change nötig.
    - CI + Release-YAML bauen jetzt `DTM.slnx` statt `DTM.csproj` einzeln;
      `--no-build` im Test-Step vermeidet doppelten Compile in CI.
-   - `.vscode/tasks.json` um Skill-Standard-Tasks ergaenzt: `test`, `clean`,
+   - `.vscode/tasks.json` um Skill-Standard-Tasks ergänzt: `test`, `clean`,
      `publish-win-x64`, `publish-linux-x64`, `release (tag + push)`.
-     `scripts/release.sh` + `scripts/release.ps1` als Trigger fuer letzteren.
+     `scripts/release.sh` + `scripts/release.ps1` als Trigger für letzteren.
    - `Views/Controls/TitleBar.axaml(+.cs)` als wiederverwendbare Titelleiste
      angelegt (StyledProperties `Title`, `ShowMinimize`, `ShowMaximize`,
      `CloseResult`). **Rollout aktuell nur AboutWindow + ConnectionManagerWindow**
      — die restlichen 12 Dialoge behalten ihre eigene Titelleiste, weil:
-     (a) 6 haben ein Icon-Header-StackPanel statt reinem Text (TitleBar braeuchte
+     (a) 6 haben ein Icon-Header-StackPanel statt reinem Text (TitleBar bräuchte
      Content-Slot-API), (b) 6 haben spezielle Dialog-Result-Semantik
      (`TimePickResult.Cancel()`, EditConnection `Close(false)`, …) und die
-     lassen sich nicht mit `CloseResult=".."` per XAML setzen — nur ueber
+     lassen sich nicht mit `CloseResult=".."` per XAML setzen — nur über
      `x:Name` + Code-Behind. Follow-up-Ticket unten.
-   - Tests: 361/361 gruen (350 vorher + 11 neue MaskingLayoutRenderer-Tests).
+   - Tests: 361/361 grün (350 vorher + 11 neue MaskingLayoutRenderer-Tests).
    - **Repo-Umzug (`v2.4.0`-Vorlauf, Skill-Struktur):** App-Sourcen aus dem
      Repo-Root in den Unterordner `DTM/` verschoben (App.axaml, Program.cs,
      Assets/, Composition/, Data/, Diagnostics/, ViewModels/, Views/,
      Nlog.config, release-notes.json, app.manifest, DTM.csproj). Nachgezogen:
      `DTM.slnx` (jetzt beide Projekte explizit), `DTM.Tests/DTM.Tests.csproj`
      (ProjectReference auf `../DTM/DTM.csproj`), `DTM.csproj`
-     (`DefaultItemExcludes` fuer `DTM.Tests\**` entfaellt, nicht mehr noetig),
+     (`DefaultItemExcludes` für `DTM.Tests\**` entfällt, nicht mehr nötig),
      `.vscode/tasks.json` und `.vscode/launch.json` (Pfade `DTM/DTM.csproj`
      und `DTM/bin/...`), `.github/workflows/release.yml` (publish-Befehle
      und AppImage-Icon-Pfad `DTM/Assets/lhp_logo.png`), README (dotnet-run-
      Beispiele). Publish nach `linux-x64` liefert `DTM/bin/Release/...`,
-     Binary laeuft. Skill-konforme Struktur: `DTM/` und `DTM.Tests/` parallel
+     Binary läuft. Skill-konforme Struktur: `DTM/` und `DTM.Tests/` parallel
      im Root.
 
 3. **App-Icon + System-Tray (Skill-Standards Post-v2.3.0)** — erledigt
@@ -382,8 +382,8 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
      `#2DD4BF` — passt zu DTMs Akzentfarbe, ohne Text erkennbar auch als
      16x16-Favicon). Multi-Res `DTM/Assets/dtm.ico` (16/24/32/48/64/128/256)
      als `<ApplicationIcon>` in der csproj → Windows-Exe hat jetzt im
-     Explorer/Taskbar ein Icon. `ChromeWindow`-Basisklasse laedt die PNG
-     im ctor als `Window.Icon` (try/catch — ohne Icon lauffaehig). AppImage-
+     Explorer/Taskbar ein Icon. `ChromeWindow`-Basisklasse lädt die PNG
+     im ctor als `Window.Icon` (try/catch — ohne Icon lauffähig). AppImage-
      Release-Job zieht die PNG direkt (kein ImageMagick-Convert vom
      lhp_logo mehr). `scripts/build_icon.py` als Pillow-Generator im Repo,
      um das Icon reproduzierbar zu rebuilden (Design-Iterationen als
@@ -391,15 +391,15 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
      im AboutWindow als „Absender-Info" — kein App-Icon.
    - **System-Tray:** `DTM/Views/TrayController.cs` nach Skill-Muster
      (Referenz Checkmk Cockpit). Verhalten: Minimieren → `window.Hide()`
-     (Fenster in den Tray, Prozess laeuft weiter — PowerShell-Runspace und
-     DB-Verbindungen bleiben bestehen), Schliessen ✕ → beendet regulaer
-     (kein `ShutdownMode`-Umbau noetig). Tray-Menue „Anzeigen" + Separator
+     (Fenster in den Tray, Prozess läuft weiter — PowerShell-Runspace und
+     DB-Verbindungen bleiben bestehen), Schließen ✕ → beendet regulär
+     (kein `ShutdownMode`-Umbau nötig). Tray-Menü „Anzeigen" + Separator
      + „Beenden"; Linksklick aufs Tray-Icon = Anzeigen. Vier Pflicht-
      Absicherungen umgesetzt: GC-Referenz (App._tray-Feld), Restore-Guard
      (`_restoreInProgress`-Flag + `Dispatcher.UIThread.Post`), try/catch
      mit Fallback auf Standard-Minimieren bei fehlendem Tray-Support
      (headless-Server / kaputtes DBus), Linux zieht `Tmds.DBus.Protocol`
-     transitive ueber Avalonia. Instanziierung in
+     transitive über Avalonia. Instanziierung in
      `App.OnFrameworkInitializationCompleted` nach MainWindow-Erzeugung.
 
    Skill-Update parallel (siehe `~/.claude/skills/kroste-avalonia/`):
@@ -407,7 +407,7 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
    `references/design.md` bekommt einen eigenen „App-Icon"-Abschnitt mit
    Design-Vorgaben, `assets/TrayController.cs.example` +
    `assets/scripts/build_icon.py.example` als generische Kopiervorlagen
-   fuer neue Projekte. Neue Projekte kriegen jetzt die Rollout-Schritte
+   für neue Projekte. Neue Projekte kriegen jetzt die Rollout-Schritte
    3a (Icon) und 3b (Tray) in „Neues Projekt aufsetzen".
 
 ### Offene Roadmap (Phasen, in dieser Reihenfolge)
@@ -472,9 +472,9 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
       `OracleRestoreService` + `FocSqlRuntime.BuildImportSnippet`. POCOs in
       `Data/Terminal/OracleRestoreInfo.cs`, ViewModel mit Loading/Error-State,
       Dialog mit prominenter Multi-PDB-Warnung. Integration in
-      `MainWindowViewModel.RestoreSnapshot` macht den Weg fuer MSSQL unveraendert,
-      fuer Oracle wird vorab der Dialog gezeigt — kein Aufruf ohne explizite
-      Bestaetigung.)_
+      `MainWindowViewModel.RestoreSnapshot` macht den Weg für MSSQL unverändert,
+      für Oracle wird vorab der Dialog gezeigt — kein Aufruf ohne explizite
+      Bestätigung.)_
 
 #### Phase 2 — Sessions & Backup-Workflow
 
@@ -529,7 +529,7 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
       Read-Only-TextBlock; bei Oracle bleibt der TextBlock mit
       `ArchiveLogMode`. Suppression-Flag verhindert dass das initiale
       Server-Sync den Change-Dialog triggert; bei User-Abbruch wird die
-      ComboBox auf den zuletzt synchronisierten Wert zurueckgedreht.)_
+      ComboBox auf den zuletzt synchronisierten Wert zurückgedreht.)_
 
 #### Phase 4 — Polish & Komfort
 
@@ -546,12 +546,12 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
 - [x] **4.3** `.vscode/tasks.json` ergänzen: Hard-Clean-Task (rekursives Löschen
       `bin/`/`obj/`) + Task „Aktuelles Logfile öffnen" (`logs/info.log`/`error.log`). — `S`
       _(erledigt: `90fe0ba`; drei cross-platform Tasks „hard clean (bin + obj)",
-      „Logfile info oeffnen", „Logfile error oeffnen" via `linux`/`osx`/`windows`-
+      „Logfile info öffnen", „Logfile error öffnen" via `linux`/`osx`/`windows`-
       Branches.)_
 - [x] **4.4** **MinVer** einbinden; manuelle `<Version>`/`<AssemblyVersion>` aus
       `DTM.csproj` entfernen. Tag-Schema `vX.Y.Z` ist schon vorhanden. — `S`
       _(erledigt: dieser Commit; MinVer 7.0.0 mit `MinVerTagPrefix=v`; ab jetzt
-      kommt die Version aus dem juengsten Git-Tag. Zwischen Tags gibt's
+      kommt die Version aus dem jüngsten Git-Tag. Zwischen Tags gibt's
       pre-release-Versionen wie `1.1.1-alpha.0.2+<sha>`.)_
 - [x] **4.5** `.github/workflows/release.yml` um AppImage-Job erweitern
       (Node 24 ist bereits gesetzt). — `M`
@@ -625,7 +625,7 @@ Aktion pro Server bedeutet.
       `Invoke-MssqlServerScript` selbst. Refactored:
       `Close-DbSessions-MSSQL`, `Get-DbBackups-MSSQL`, `Invoke-DbRestore`,
       `Invoke-DbMaintenance`, `Set-DbRecoveryMode`, `Set-DbQueryStore`,
-      `Set-DbPageVerify`, `Reset-DbCompatibility`. Aeltere Legacy-Wrapper
+      `Set-DbPageVerify`, `Reset-DbCompatibility`. Ältere Legacy-Wrapper
       (`Backup-Database`, `Set-Snapshot`, `Restore-Snapshot-MSSQL`,
       `Get-DatabaseStats-MSSQL`, `Copy-Database-ToSamba-MSSQL`) noch nicht
       auf den Helper umgezogen — eigener Refactor-Posten, falls
@@ -641,44 +641,44 @@ Aktion pro Server bedeutet.
       `Regex` auf `VERSION_MISMATCH:.*'(?<host>...)'.*gefunden:\s*(?<found>...)`
       — Statusbar zeigt
       `⚠ MSSQL-Modul auf '<Host>' veraltet (<Version>). Bitte PS-Sitzung
-      auf dem Server oeffnen.` Auto-Reset über die naechste regulaere
+      auf dem Server öffnen.` Auto-Reset über die nächste reguläre
       StatusBar-Setzung; Komplett-Banner mit Auto-Pre-Check beim DB-Wechsel
-      ist eigener Posten 7.4 / spaeter.)_
+      ist eigener Posten 7.4 / später.)_
 
-#### Phase 9 — Multi-Credential-Support fuer PowerShell-Remoting
+#### Phase 9 — Multi-Credential-Support für PowerShell-Remoting
 
 Kontext: DTM verbindet sich zum SQL-Server auf zwei Wegen — ODBC/1433
 (Stats, Datenbank-Liste) und PowerShell-Remoting/WinRM (FOC-SQL-
 Cmdlets: Backup, Snapshot, Wartung, …). Die ODBC-Credentials liegen
-seit Phase 6 pro Server in `connections.json` (DPAPI-verschluesselt).
+seit Phase 6 pro Server in `connections.json` (DPAPI-verschlüsselt).
 Die PS-Remoting-Credentials aber kamen bisher aus **einer** globalen
 `credential.xml` im User-Profil — reicht, solange alle Server derselben
-AD-Zone angehoeren.
+AD-Zone angehören.
 
 Kaputt sobald ein Server in einer anderen Zone steht (z. B. DMZ mit
-lokaler Domain). Aktuell gibt's keinen Weg, DTM/FOC-SQL fuer diesen
+lokaler Domain). Aktuell gibt's keinen Weg, DTM/FOC-SQL für diesen
 Server abweichende Windows-Credentials zu geben.
 
 Entscheidungen:
 - **Kombi B + Fallback A:** DTM ist Owner der Multi-Server-PS-Credentials
   (im ConnectionManager pro Server pflegbar, DPAPI in `connections.json`).
   Fallback = globales `credential.xml`, sodass Konsolen-Nutzer und
-  Bestandssetups unveraendert weiterlaufen.
+  Bestandssetups unverändert weiterlaufen.
 - **Runspace-Injektion:** DTM pusht beim pwsh-Session-Setup eine
   `$global:DtmCredMap = @{'<Server>' = <PSCredential>; …}` in den
   Runspace. Der FOC-SQL-Helper `Invoke-MssqlServerScript` konsultiert
   die Map anhand des `-Server`-Parameters vor dem xml-Fallback.
 - **Kein Klartext im pwsh-Tab:** Credentials landen als Runspace-Variable
   in Memory, laufen nie durch die sichtbare Command-Line.
-- **Optional pro Server:** wenn `RemoteUser` leer ist, verhaelt sich DTM
-  wie bisher — kein Regressions-Risiko fuer den FOC-SQL-Server-Setup.
+- **Optional pro Server:** wenn `RemoteUser` leer ist, verhält sich DTM
+  wie bisher — kein Regressions-Risiko für den FOC-SQL-Server-Setup.
 
 Sub-Items:
 
 - [ ] **9.1** Netzwerk-Vorfrage: `Test-WSMan -ComputerName <dmz-host>
-      -Credential (Get-Credential)` von Lars durchgefuehrt. Wenn nein:
+      -Credential (Get-Credential)` von Lars durchgeführt. Wenn nein:
       DMZ-Server bleibt „ODBC-only" (nur Stats-Panel, alle FOC-SQL-
-      Actions ausgegraut) — Feature-Toggle ueber DB_SERVER-Property.
+      Actions ausgegraut) — Feature-Toggle über DB_SERVER-Property.
       Wenn ja: 9.2 - 9.5 rollout. — `S`
 - [x] **9.2** `ServerCredential` + `ConnectionEntry` um optionale Felder
       `RemoteUser` / `RemotePassword(Protected)` erweitern; leer =
@@ -688,51 +688,51 @@ Sub-Items:
       Roundtrip via `PlainRemotePassword`, Legacy-JSON-Deserialisierung
       getestet.)_
 - [x] **9.3** ConnectionManagerWindow: Panel „PS-Remoting-Credentials
-      (falls abweichend)" — zwei zusaetzliche Zellen pro Zeile (User +
+      (falls abweichend)" — zwei zusätzliche Zellen pro Zeile (User +
       Password). Leer lassen = Fallback. Beim Speichern DPAPI wie beim
       ODBC-Passwort. — `M`
       _(erledigt: `a1627c0`. Panel im EditConnectionWindow, nur MSSQL
       sichtbar (Oracle nutzt SSH-Keys). Typ-Wechsel MSSQL→Oracle droppt
-      Remote-Felder, damit kein "vergessener" DPAPI-Blob zurueckbleibt.)_
+      Remote-Felder, damit kein "vergessener" DPAPI-Blob zurückbleibt.)_
 - [x] **9.4** 📦 FOC-SQL: `Invoke-MssqlServerScript` bekommt optionalen
-      `[PSCredential]$Credential`-Parameter. Reihenfolge der Aufloesung:
+      `[PSCredential]$Credential`-Parameter. Reihenfolge der Auflösung:
       Parameter → `$global:DtmCredMap[$Server]` → `credential.xml`. — `M`
-      _(erledigt: FOC-SQL `d5a38ee`. Wrapper unveraendert — geben nur
+      _(erledigt: FOC-SQL `d5a38ee`. Wrapper unverändert — geben nur
       `-Server` weiter, Helper macht Map-Lookup pro Server. Fehlermeldung
-      bei fehlender xml erwaehnt den DTM-Weg fuer DMZ-Setup.)_
+      bei fehlender xml erwähnt den DTM-Weg für DMZ-Setup.)_
 - [x] **9.5** DTM injiziert `$global:DtmCredMap` in den pwsh-Runspace
       beim `RegisterPowerShellSession` — aus der Server-Liste alle
-      Eintraege mit gesetztem `RemoteUser` einsammeln, als
+      Einträge mit gesetztem `RemoteUser` einsammeln, als
       `PSCredential`-Objekte in die Map schreiben. Bei
       Connection-Manager-Save neu synchronisieren. — `S`
       _(erledigt: `DtmCredMapBuilder` baut Hashtable
       (case-insensitive Keys) mit `PSCredential`-Objekten aus
-      SecureString-Passwoertern. Injektion via
-      `PowerShellTerminalSession.SetGlobalVariable` — direkt ueber
+      SecureString-Passwörtern. Injektion via
+      `PowerShellTerminalSession.SetGlobalVariable` — direkt über
       `SessionStateProxy`, KEIN Command-Interpreter, keine
-      Klartext-Passwoerter im pwsh-Log. `TerminalBus.SetCredMap` cached
+      Klartext-Passwörter im pwsh-Log. `TerminalBus.SetCredMap` cached
       Server-Liste, injiziert sofort bei registrierter Session.
       `App.axaml.cs` (Startup) + `ConnectionManagerViewModel.Save`
       (nach Reload) rufen `SetCredMap`. Oracle-Server werden bewusst
       ausgefiltert.)_
 
-**Sicherheit:** Passwoerter nur DPAPI-verschluesselt in `connections.json`;
+**Sicherheit:** Passwörter nur DPAPI-verschlüsselt in `connections.json`;
 niemals Klartext ins pwsh-Tab, ins Log, in Fehlermeldungen. Log-Maske via
-`LogMask` (schon vorhanden fuer ConnectionString) wiederverwenden.
+`LogMask` (schon vorhanden für ConnectionString) wiederverwenden.
 
-#### Phase 10 — ODBC-Direct-Backend fuer DMZ-Server (`v2.2.0`)
+#### Phase 10 — ODBC-Direct-Backend für DMZ-Server (`v2.2.0`)
 
 Kontext: In der DMZ ist WinRM (5985/5986) hart deaktiviert (Vorfrage
 9.1 negativ). ODBC/1433 zum SQL-Server geht aber. FOC-SQL im
-Standard-Setup ist zwei Dinge in einem: (a) T-SQL-Ausfuehrung
+Standard-Setup ist zwei Dinge in einem: (a) T-SQL-Ausführung
 (BACKUP, RESTORE, Snapshot, Recovery-Mode, CHECKDB, …) und (b)
 PowerShell-Orchestrierung drumherum (Mail nach Backup, Cluster-
-Health-Aggregation, File-Copy zu Samba, ScheduledTasks, …). Fuer die
-DMZ willst du (a) direkt ueber ODBC, ohne (b).
+Health-Aggregation, File-Copy zu Samba, ScheduledTasks, …). Für die
+DMZ willst du (a) direkt über ODBC, ohne (b).
 
 Kernentscheidung: **Backend-Wahl pro Server**, persistiert in
 `connections.json` als `ServerBackend`-Enum. Default = `FocSql` →
-Bestandssetups unveraendert. `OdbcDirect` = neue Codepfade,
+Bestandssetups unverändert. `OdbcDirect` = neue Codepfade,
 15 von 17 Actions machbar (Copy-Database-ToSamba +
 Sync-Database-ToTest sind File-System-Ops und werden bei OdbcDirect
 ausgegraut).
@@ -746,14 +746,14 @@ Design-Entscheidungen (siehe Ultrathink-Notiz vor Phase-Start):
   `ITerminalBusInjector.InjectNotice`. `OdbcConnection.InfoMessage`
   wird gehookt und liefert `DBCC CHECKDB`- / `DBCC SHRINKFILE`-Live-
   Meldungen als Notices — konsistente UX zum FOC-SQL-Live-Stream.
-- **SQL-Injection: `sp_executesql` + `QUOTENAME`** fuer Object-Namen,
-  ODBC-Parameter fuer Werte. Kein String-Concat auf Client.
+- **SQL-Injection: `sp_executesql` + `QUOTENAME`** für Object-Namen,
+  ODBC-Parameter für Werte. Kein String-Concat auf Client.
 - **`MSSQL_ODBC`** bekommt `ExecuteNonQueryAsync` +
   `ExecuteReaderAsync` public. Bestehende Connection-Instanz wird
   geshared (Factory cached pro Server, Fix `0c7a4d5`).
-- **Backup-Browser** ueber `msdb.dbo.backupset` join
+- **Backup-Browser** über `msdb.dbo.backupset` join
   `backupmediafamily` — Server-verwaltete History, findet DTM-eigene
-  Backups zuverlaessig. Kein FS-Zugriff noetig.
+  Backups zuverlässig. Kein FS-Zugriff nötig.
 - **BackupRoot** via `master.dbo.xp_instance_regread` (SQL-Server-
   Default-BackupPath). Kein Extra-Config-Feld.
 - **Snapshot-Naming**: File-Layout aus `sys.master_files` lesen,
@@ -767,31 +767,31 @@ Sub-Items:
 
 - [x] **10.1** `ServerBackend`-Enum (`FocSql | OdbcDirect`) +
       `ConnectionEntry.Backend` + `DB_SERVER.Backend`-Property.
-      Default `FocSql`. `JsonStringEnumConverter` fuer Lesbarkeit.
+      Default `FocSql`. `JsonStringEnumConverter` für Lesbarkeit.
       Legacy-JSON deserialisiert korrekt zu Default. — `S`
       _(erledigt: `817f713`.)_
 - [x] **10.2** `EditConnectionWindow` bekommt Backend-Dropdown, nur
-      bei MSSQL sichtbar (Oracle bleibt unveraendert; SSH ist
+      bei MSSQL sichtbar (Oracle bleibt unverändert; SSH ist
       alternativlos). Bei Typ-Wechsel MSSQL→Oracle Backend auf Default
-      zurueck. — `S`
+      zurück. — `S`
       _(erledigt: `8ec66c1`.)_
 - [x] **10.3a** `MSSQL_ODBC.ExecuteNonQueryAsync(sql, params)` +
       `ExecuteReaderAsync<T>(sql, mapper, params)` public. Optionaler
-      `InfoMessage`-Callback fuer Live-Notices. Alle Connection-
+      `InfoMessage`-Callback für Live-Notices. Alle Connection-
       Lifecycle-Details bleiben intern. — `S`
       _(erledigt: `8ff4cf4`.)_
 - [x] **10.3b** `OdbcMssqlActionService`: Recovery-Mode, Query-Store,
       Page-Verify, Compatibility-Reset (4 einfache `ALTER DATABASE`-
-      Statements plus Archive-Log-Toggle-Wrapper fuer MSSQL). — `M`
+      Statements plus Archive-Log-Toggle-Wrapper für MSSQL). — `M`
       _(erledigt: `90c1efe`. Whitelist-Predicates
       `IsValidRecoveryMode`/`IsValidPageVerify` als static public
-      exposed fuer Unit-Tests ohne ODBC-Roundtrip.)_
+      exposed für Unit-Tests ohne ODBC-Roundtrip.)_
 - [x] **10.3c** `OdbcMssqlActionService`: Snapshot Create / List /
       Restore / Drop. Multi-Data-File-Support via `sys.master_files`-Query. — `M`
       _(erledigt: `1678f28`. Naming
       `<db>_Snapshot_<yyyyMMddHHmmss>` per Lars-Entscheidung.)_
 - [x] **10.3d** `OdbcMssqlActionService`: Backup (mit
-      `xp_instance_regread` fuer BackupRoot) + Backup-Browser (msdb-
+      `xp_instance_regread` für BackupRoot) + Backup-Browser (msdb-
       Query, nur Fulls, TOP 100) + Restore. Backup-Layout flach:
       `<root>\<db>\<db>-<yyyyMMdd_HHmm>.bak` (Lars-Entscheidung). — `M`
       _(erledigt: `9fc30ff`.)_
@@ -811,22 +811,22 @@ Sub-Items:
       _(erledigt in vier Commits:
       `19ba184` (10.4a+b Simple-Actions), `9d90650` (10.4c Backup-
       Browser Backend-Aware), `683cefb` (10.4d Snapshot-Select-Dialog
-      fuer Restore/Drop). `TerminalBus.InjectNotice` + `IDTM_DATA.
+      für Restore/Drop). `TerminalBus.InjectNotice` + `IDTM_DATA.
       GetMssqlActions` als Infrastruktur; `MainWindowViewModel.
       TryGetOdbcActions` + `RunOdbcActionAsync` als Dispatcher-Helper.
       DbConfigurationViewModel + SessionsViewModel + BackupBrowser-
       ViewModel bekommen `OdbcActions`-Property und switchen intern.
       Neuer `MssqlSnapshotSelectWindow` (analog OracleRestoreSelect-
-      Window) fuer Restore + Drop im OdbcDirect-Modus — bei FocSql
+      Window) für Restore + Drop im OdbcDirect-Modus — bei FocSql
       bleibt der interaktive pwsh-Read-Host-Weg.)_
 - [x] **10.5** Sichtbarkeit: bei `OdbcDirect` `CopyToSambaVisible`
       = false, `SyncToTestVisible` = false. — `S`
       _(erledigt: dieser Commit. Beide Properties Default true, in
       ApplyStats bei OdbcDirect-DB auf false. Buttons „Clone" und
-      „DB → Samba" in MainWindow.axaml haengen an den Bindings.
+      „DB → Samba" in MainWindow.axaml hängen an den Bindings.
       MainWindowViewModel-Fallback-Guards in Backup/Clone/DbToSamba-
       Commands rufen bei OdbcDirect eine InjectNotice („nicht
-      verfuegbar") — sicheres Netz falls ein Command doch getriggert
+      verfügbar") — sicheres Netz falls ein Command doch getriggert
       wird.)_
 
 **Was NICHT in Phase 10:**
@@ -835,29 +835,29 @@ Sub-Items:
 - Mail-Versand nach Backup (bewusst weg im DMZ)
 - Get-DatabaseStats-Konsolidierung (bleibt ODBC-Weg wie schon)
 
-**Sicherheit:** SQL-Login-Credentials sind fuer BACKUP/RESTORE/
-ALTER DATABASE zwingend `sysadmin`-privilegiert; das ist Realitaet
-fuer Backup-Tools. Kein neuer Angriffsvektor gegenueber Status quo.
-Windows-Credentials werden fuer OdbcDirect-Server nicht gebraucht —
-Phase-9-Infrastruktur bleibt inaktiv, aber intakt fuer echte
+**Sicherheit:** SQL-Login-Credentials sind für BACKUP/RESTORE/
+ALTER DATABASE zwingend `sysadmin`-privilegiert; das ist Realität
+für Backup-Tools. Kein neuer Angriffsvektor gegenüber Status quo.
+Windows-Credentials werden für OdbcDirect-Server nicht gebraucht —
+Phase-9-Infrastruktur bleibt inaktiv, aber intakt für echte
 WinRM-Multi-Zone-Setups.
 
-#### Phase 11 — OLVM-Snapshot fuer Oracle (`v2.3.0` geplant)
+#### Phase 11 — OLVM-Snapshot für Oracle (`v2.3.0` geplant)
 
-Kontext: Oracle-Snapshots werden bei Lars ueber ein Ansible-Playbook
+Kontext: Oracle-Snapshots werden bei Lars über ein Ansible-Playbook
 auf dem zentralen Manager-Host `DBMANAGER01` gefahren. Das Playbook
-faehrt die DB + VM runter, macht ueber OLVM einen VM-Snapshot und
-startet beides wieder. DTM soll das per Button ausloesen — als
-zusaetzlicher Weg neben dem existierenden `Set-Snapshot` (das den
+fährt die DB + VM runter, macht über OLVM einen VM-Snapshot und
+startet beides wieder. DTM soll das per Button auslösen — als
+zusätzlicher Weg neben dem existierenden `Set-Snapshot` (das den
 Oracle-DB-Snapshot per Restore Point macht, ohne VM anzufassen).
 
 Design-Skizze:
 - FOC-SQL: neue Funktion, die sich per SSH auf `DBMANAGER01`
   verbindet und `cd ansible && ansible-playbook <name>.yml -e ...`
-  ausfuehrt. `-tt` fuer Live-Output im pwsh-Tab.
+  ausführt. `-tt` für Live-Output im pwsh-Tab.
 - DTM: eigene Action-Gruppe "OLVM" in der Oracle-Sicht, mit
   ConfirmWindow davor (DB + VM Shutdown ist destruktiv).
-- Multi-Snapshot-Auswahl fuer Restore/Delete: neuer
+- Multi-Snapshot-Auswahl für Restore/Delete: neuer
   `OlvmSnapshotSelectWindow`, analog zum
   `MssqlSnapshotSelectWindow` aus Phase 10.4d.
 
@@ -867,11 +867,11 @@ Sub-Items:
       Playbook-Aufruf auf `DBMANAGER01`. — `M`
       _(erledigt: FOC-SQL `a8bbef2`. Playbook
       `olvm-create-dbvm-snapshot.yml` mit `-e "vm_dns=<Kurzname>"`;
-      SSH `-tt` fuer Live-Output, Log-Kaskade `ts` + `tee` fuer
+      SSH `-tt` für Live-Output, Log-Kaskade `ts` + `tee` für
       Audit-Trail auf dem Manager beibehalten. Drei-Punkt-Checkliste
       psm1+psd1+_ToExport.ps1 eingehalten.)_
 - [x] **11.2** DTM: Action-Gruppe "OLVM" mit Button „VM-Snapshot"
-      fuer Oracle-DBs. ConfirmWindow mit 5-Schritt-Ablauf und
+      für Oracle-DBs. ConfirmWindow mit 5-Schritt-Ablauf und
       „Dauer mehrere Minuten"-Warnung. — `S`
       _(erledigt: `OlvmVisible`-Property (Default false, in
       ApplyStats bei Oracle true), `OlvmSnapshotCommand` mit
@@ -886,27 +886,27 @@ Sub-Items:
       filtert den "active"-Eintrag raus und mapt zu `OlvmSnapshotInfo`
       (Id, Description, CreatedAt, Status, Type). VM-UUID kommt aus
       `Database_Info.Id` (bereits von REST beim Namen-Laden gesetzt).
-      Der User hat sich fuer REST statt Playbook entschieden, weil
-      List rein lesend ist und die Latenz sonst zu hoch waere. — `M`
+      Der User hat sich für REST statt Playbook entschieden, weil
+      List rein lesend ist und die Latenz sonst zu hoch wäre. — `M`
       _(erledigt: dieser Commit. IDTM_DATA.GetOlvmSnapshotService baut
       pro Aufruf einen frischen REST-Client (trustAllCertificates=true,
       analog ORACLE_ODBC).)_
 - [ ] **11.4** 📦 FOC-SQL: `Restore-OlvmSnapshot` — Rollback auf
-      einen ausgewaehlten Snapshot (per Ansible-Playbook, VM
-      Shutdown → Restore → Start). Sobald verfuegbar: den
+      einen ausgewählten Snapshot (per Ansible-Playbook, VM
+      Shutdown → Restore → Start). Sobald verfügbar: den
       "RestoreEnabled=false"-Placeholder im OlvmSnapshotSelectViewModel
       auf true setzen + Wrapper aufrufen. — `M`
 - [ ] **11.5** 📦 FOC-SQL: `Remove-OlvmSnapshot` — alte VM-
-      Snapshots loeschen (per Ansible-Playbook). Sobald verfuegbar:
+      Snapshots löschen (per Ansible-Playbook). Sobald verfügbar:
       `DeleteEnabled=false` im ViewModel auf true. — `S`
 - [x] **11.6** DTM: `OlvmSnapshotSelectWindow` (analog
       `MssqlSnapshotSelectWindow` aus 10.4d) — DataGrid mit
       Snapshots (Description, CreatedAt, Status, Type), Buttons
       „Restore" und „Löschen" beide DISABLED bis 11.4/11.5
-      bereit sind. ToolTip erklaert warum. Prominenter gelber
+      bereit sind. ToolTip erklärt warum. Prominenter gelber
       Hinweis-Banner im Dialog. Trigger aus zwei Commands
       (OlvmRestoreSnapshotCommand, OlvmRemoveSnapshotCommand) mit
-      vorgewaehlter Aktion. UI-Buttons "VM-Restore" + "VM-Remove"
+      vorgewählter Aktion. UI-Buttons "VM-Restore" + "VM-Remove"
       in der OLVM-Gruppe neben "VM-Snapshot". — `M`
       _(erledigt: dieser Commit.)_
 
@@ -928,10 +928,10 @@ Vorher nutzten nur `AboutWindow` und `ConnectionManagerWindow` den
 selbst. Jetzt gilt: **alle 14 Fenster** binden `<c:TitleBar>` ein, es gibt
 keine handgebaute Titelleiste mehr im Projekt.
 
-- [x] **12.1** TitleBar erweitert. Statt der urspruenglich angedachten
+- [x] **12.1** TitleBar erweitert. Statt der ursprünglich angedachten
       Content-Slot-API zwei gezielte Properties — alle Icon-Titelleisten
       folgen demselben Muster (Piktogramm + Text), ein
-      `ContentPresenter` waere unnoetig umstaendlich gewesen:
+      `ContentPresenter` wäre unnötig umständlich gewesen:
       `Glyph` (string) + `GlyphBrush` (IBrush). Ohne gesetztes Glyph
       bleibt der TextBlock unsichtbar, das Layout entspricht exakt der
       reinen Text-Variante. Genutzt von `ConfirmWindow` (⚠ Danger),
@@ -944,8 +944,8 @@ keine handgebaute Titelleiste mehr im Projekt.
       `EditConnectionWindow` → `false`, `OracleRestoreSelectWindow` →
       `false`, `TimePickerWindow` → `TimePickResult.Cancel()`. — `S`
       _(Bei `TimePickerWindow` ist das **zwingend**, nicht nur sauber:
-      der Result-Typ ist ein Objekt, ohne `CloseResult` kaeme beim Klick
-      auf „X" `null` zurueck und `RunDbActionAsync` wuerde beim Zugriff
+      der Result-Typ ist ein Objekt, ohne `CloseResult` käme beim Klick
+      auf „X" `null` zurück und `RunDbActionAsync` würde beim Zugriff
       auf `pick.Cancelled` knallen, statt die Aktion abzubrechen. Bei
       den drei `bool`-Dialogen liefert `Close()` ohne Argument zwar
       ohnehin `default(bool)` = false — das ist aber Zufall und bricht,
@@ -954,12 +954,12 @@ keine handgebaute Titelleiste mehr im Projekt.
       `OlvmSnapshotSelectWindow`, `BackupBrowserWindow`,
       `DbConfigurationWindow` und `FatalErrorWindow` brauchen nichts —
       deren „X" schloss auch vorher schon ohne Ergebnis.)_
-- [x] **12.3** `ChromeWindow` aufgeraeumt: `OnTitleBarPointerPressed`
+- [x] **12.3** `ChromeWindow` aufgeräumt: `OnTitleBarPointerPressed`
       und `OnTitleBarDoubleTapped` sind entfernt, ebenso das
       `Avalonia.Input`-using. Die Basisklasse setzt jetzt nur noch
       Fenster-Dekoration und App-Icon. — `S`
-      _(Dafuer musste **MainWindow** mit umziehen — es war der letzte
-      Nutzer der Handler. Damit sein „Ueber"-Button erhalten bleibt, hat
+      _(Dafür musste **MainWindow** mit umziehen — es war der letzte
+      Nutzer der Handler. Damit sein „Über"-Button erhalten bleibt, hat
       die TitleBar ein `ExtraContent`-Property bekommen: ein
       `ContentControl` links von Min/Max/Close. Der Glyph-Wechsel
       beim Maximieren (☐ ↔ ❐) liegt jetzt ebenfalls im Control — es
@@ -968,30 +968,30 @@ keine handgebaute Titelleiste mehr im Projekt.
       `OnDetachedFromVisualTree` wieder ab. `MainWindow.axaml.cs`
       schrumpft dadurch auf den einen `OnAbout`-Handler.)_
 
-Reines Konsolidierungs-Refactor, kein Release-Anlass fuer sich — aber
+Reines Konsolidierungs-Refactor, kein Release-Anlass für sich — aber
 zusammen mit dem Paletten-Umbau aus Phase 13.3 abgearbeitet.
 
 #### Phase 13 — Skill-Compliance-Nachzug (ausgeliefert mit `v2.3.11`)
 
-Ergebnis eines vollstaendigen Abgleichs gegen den `kroste-avalonia`-Skill.
-Der Grossteil des Kanons war bereits erfuellt (Struktur, CPM, MinVer,
+Ergebnis eines vollständigen Abgleichs gegen den `kroste-avalonia`-Skill.
+Der Großteil des Kanons war bereits erfüllt (Struktur, CPM, MinVer,
 Node-24-Actions, app.manifest mit PerMonitorV2, Icon, Tray, NLog-Masking,
 Self-Update inkl. `Process.Kill`, DPAPI-Inline-Secrets, README als
-Benutzerhandbuch). Diese Phase schliesst die verbliebenen Luecken.
+Benutzerhandbuch). Diese Phase schließt die verbliebenen Lücken.
 
 - [x] **13.1** Persistenz crash-sicher machen. `ConnectionStore` und
       `AppSettingsStore` schrieben mit `WriteAllText` direkt auf die
       Zieldatei und gaben bei kaputtem JSON still ein leeres Ergebnis
-      zurueck — der naechste Save hat die defekte Datei dann endgueltig
-      ueberschrieben (bei `connections.json`: alle Server samt
-      DPAPI-Passwoertern weg, ohne Kopie). Neuer Helper
+      zurück — der nächste Save hat die defekte Datei dann endgültig
+      überschrieben (bei `connections.json`: alle Server samt
+      DPAPI-Passwörtern weg, ohne Kopie). Neuer Helper
       `Data/Config/JsonFileStore.cs` mit `WriteAtomic` (tmp + `File.Move`
       `overwrite: true`) und `Quarantine` (defekte Datei nach
       `<datei>.broken`). Bewusst wird **nur** bei `JsonException`
-      quarantaenisiert — bei IO-Fehlern (Datei gesperrt, Netzlaufwerk kurz
-      weg) ist der Inhalt ja intakt und darf nicht weggeraeumt werden. — `S`
-      _(erledigt: dieser Commit; 12 neue Tests, 380 gesamt gruen.)_
-- [x] **13.2** Single-Instance-Guard (Pflicht fuer Tray-Apps laut
+      quarantänisiert — bei IO-Fehlern (Datei gesperrt, Netzlaufwerk kurz
+      weg) ist der Inhalt ja intakt und darf nicht weggeräumt werden. — `S`
+      _(erledigt: dieser Commit; 12 neue Tests, 380 gesamt grün.)_
+- [x] **13.2** Single-Instance-Guard (Pflicht für Tray-Apps laut
       `references/design.md`). Zweitstart bedeutete vorher: zwei
       PowerShell-Runspaces, zwei Tray-Icons und zwei Prozesse, die auf
       dieselbe `connections.json` schreiben. — `S`
@@ -999,54 +999,54 @@ Benutzerhandbuch). Diese Phase schliesst die verbliebenen Luecken.
       Named Pipe (auf Linux/macOS ein Unix-Domain-Socket unter
       `/tmp/CoreFxPipe_<name>`), Pipe-Name benutzerspezifisch wegen
       Terminalserver. `Program.Main` claimt vor Avalonia und gibt bei
-      Misserfolg nach `NotifyPrimary()` einfach 0 zurueck — Avalonia
-      startet gar nicht erst. `App` verkabelt `ActivationRequested` ueber
-      `Dispatcher.UIThread.Post` auf `TrayController.Restore()` (dafuer
+      Misserfolg nach `NotifyPrimary()` einfach 0 zurück — Avalonia
+      startet gar nicht erst. `App` verkabelt `ActivationRequested` über
+      `Dispatcher.UIThread.Post` auf `TrayController.Restore()` (dafür
       public geworden) und disposed den Guard bei `desktop.Exit`.
       **Stale-Socket-Recovery** ist hier kein Theoriefall: DTM beendet
-      sich im Update-Pfad per `Process.Kill()`, dabei laeuft kein Dispose.
-      Windows raeumt Named Pipes selbst auf, unter Linux bliebe die
-      Socket-Datei liegen und wuerde jeden weiteren Start blockieren —
-      deshalb wird bei belegter Pipe erst geprueft, ob sich wirklich
-      jemand verbinden laesst. 8 neue Tests, 388 gesamt gruen.)_
+      sich im Update-Pfad per `Process.Kill()`, dabei läuft kein Dispose.
+      Windows räumt Named Pipes selbst auf, unter Linux bliebe die
+      Socket-Datei liegen und würde jeden weiteren Start blockieren —
+      deshalb wird bei belegter Pipe erst geprüft, ob sich wirklich
+      jemand verbinden lässt. 8 neue Tests, 388 gesamt grün.)_
 - [x] **13.3** Kroste-Palette + fehlende Style-Klassen. — `M`
       _(erledigt: dieser Commit. `App.axaml` komplett neu — Kroste-Palette
       (Blau `#123E6B`, Gold `#E0B14C`, Grund `#1A1D21`, Titelleiste
-      `#14161A`) plus die vollstaendige Kanon-Style-Bibliothek:
+      `#14161A`) plus die vollständige Kanon-Style-Bibliothek:
       Button-Default, `.accent`, `.ghost`, `.danger`, `.chrome`,
       `Border.card`/`.card-flat`, `TextBlock.h1/.h2/.section-label/
       .muted/.secondary`, Gold-Fokus-Ring auf TextBox/ComboBox,
-      DataGrid mit Row-Hover + Akzent-Selection, duenne Gold-ProgressBar,
+      DataGrid mit Row-Hover + Akzent-Selection, dünne Gold-ProgressBar,
       `Rectangle.divider-v/-h`. DTM-eigene Klassen bleiben, laufen aber
-      auf denselben Rollen: `Button.action(.primary/.danger)` fuer die
+      auf denselben Rollen: `Button.action(.primary/.danger)` für die
       Aktions-Kacheln (eigene Geometrie + Glyph-Slot), `TextBlock.glyph`,
       `.infoLabel`/`.infoValue`. Umbenannt: `titleBtn` → `chrome`,
       `groupLabel` → `section-label`, alle Resource-Keys auf `Kroste*`.
 
       **Zwei Fallen, die dabei aufgefallen sind:**
       (a) Accent war vorher helles Teal und wurde an 12 Stellen als
-      `Foreground` fuer Glyphen/Akzenttexte benutzt. Kroste-Accent ist
+      `Foreground` für Glyphen/Akzenttexte benutzt. Kroste-Accent ist
       dunkles Blau — auf dunklem Grund unlesbar. Alle 12 auf
       `KrosteGoldBrush` umgestellt; Gold ist im Kroste-Look der
       Highlight-Ton (h1/h2 sind ebenfalls Gold).
-      (b) `UpdatePromptWindow` hatte laengst `Classes="accent"` stehen —
+      (b) `UpdatePromptWindow` hatte längst `Classes="accent"` stehen —
       der Style existierte aber gar nicht, der Button sah aus wie ein
       Fluent-Default. Solche toten Klassenverweise meldet Avalonia nicht.
 
-      Verifikation: ein Skript prueft, dass jeder referenzierte
+      Verifikation: ein Skript prüft, dass jeder referenzierte
       Resource-Key auch definiert ist (Avalonia meldet fehlende
       `DynamicResource`-Keys NICHT, sondern rendert still falsch) — 63
-      referenziert, alle definiert. Ausserdem App gestartet und per
+      referenziert, alle definiert. Außerdem App gestartet und per
       `PrintWindow` gescreenshottet; Log ohne neue Warnungen. Im XAML
-      ausserhalb `App.axaml` gibt es jetzt **null** `#`-Farbliterale.
+      außerhalb `App.axaml` gibt es jetzt **null** `#`-Farbliterale.
 
       App-Icon neu erzeugt: Grund auf `#123E6B`, Akzentpunkt von Teal auf
       Kroste-Gold. `scripts/build_icon.py` nutzt jetzt repo-relative
       Pfade statt hartkodierter `/home/OsteL/...`-Pfade (lief unter
-      Windows gar nicht). Neu dazu `scripts/build_icon.ps1` als Port fuer
+      Windows gar nicht). Neu dazu `scripts/build_icon.ps1` als Port für
       den Arbeitslaptop, der kein Python/Pillow hat — analog zum
-      bestehenden `release.sh`/`release.ps1`-Paar. Beide Skripte muessen
-      bei Design-Aenderungen konsistent gehalten werden.)_
+      bestehenden `release.sh`/`release.ps1`-Paar. Beide Skripte müssen
+      bei Design-Änderungen konsistent gehalten werden.)_
 - [x] **13.4** `MainWindowViewModel` aufgeteilt. Vorher 995 Zeilen — der
       Skill nennt DTM namentlich als abschreckendes Beispiel, damals mit
       885, es war seitdem weiter gewachsen. — `M`
@@ -1055,167 +1055,167 @@ Benutzerhandbuch). Diese Phase schliesst die verbliebenen Luecken.
       `MainWindowViewModel.cs` (314) — Zustand, Server-Baum, `ApplyStats`,
       `ReloadFromStores`;
       `.Dispatch.cs` (133) — Backend-Wahl FOC-SQL vs. OdbcDirect plus die
-      gemeinsamen Ausfuehrungspfade `RunDbActionAsync` /
+      gemeinsamen Ausführungspfade `RunDbActionAsync` /
       `RunOdbcActionAsync` / `RunSimpleAction`;
       `.Backup.cs` (97) — Gruppe SICHERUNG;
       `.Snapshots.cs` (205) — Gruppen SNAPSHOTS und OLVM;
       `.Maintenance.cs` (258) — ARCHIVE-LOG, WARTUNG, Recovery-Mode,
       Cluster-Health;
       `.Dialogs.cs` (101) — Verbindungen, Sessions, Update-Ablauf.
-      Reiner Umzug, keine Logik geaendert; 388 Tests unveraendert gruen.
-      Die Kern-Datei liegt mit 314 Zeilen knapp ueber der 300er-Marke —
-      der Ueberhang sind die `[ObservableProperty]`-Deklarationen samt
-      Begruendungskommentaren, die zu keiner Gruppe gehoeren.)_
+      Reiner Umzug, keine Logik geändert; 388 Tests unverändert grün.
+      Die Kern-Datei liegt mit 314 Zeilen knapp über der 300er-Marke —
+      der Überhang sind die `[ObservableProperty]`-Deklarationen samt
+      Begründungskommentaren, die zu keiner Gruppe gehören.)_
 - [x] **13.5** Kleinigkeiten. — `S`
       _(erledigt: `scripts/__pycache__/build_icon.cpython-314.pyc` aus der
       Versionskontrolle genommen, `__pycache__/` + `*.py[cod]` in
-      `.gitignore` ergaenzt. Die drei hardcodeten BMC-Markenfarben in
-      `AboutWindow.axaml` laufen jetzt ueber `BmcBrandBrush` /
+      `.gitignore` ergänzt. Die drei hardcodeten BMC-Markenfarben in
+      `AboutWindow.axaml` laufen jetzt über `BmcBrandBrush` /
       `BmcBrandBorderBrush` / `BmcBrandTextBrush` — die Farbwerte bleiben
-      bewusst ausserhalb der Kroste-Palette, weil der Button in den
+      bewusst außerhalb der Kroste-Palette, weil der Button in den
       Wiedererkennungsfarben von Buy-me-a-coffee stehen soll.)_
-- [x] **13.6** Visuelle Pruefung der Fenster im laufenden Programm
+- [x] **13.6** Visuelle Prüfung der Fenster im laufenden Programm
       (nachgezogen, nachdem Palette und TitleBar umgebaut waren). — `S`
       _(erledigt: App gestartet und per UI-Automation durchgeklickt,
-      Screenshots via `PrintWindow`. Geprueft: `MainWindow`,
+      Screenshots via `PrintWindow`. Geprüft: `MainWindow`,
       `AboutWindow`, `ConnectionManagerWindow`, `EditConnectionWindow` —
       zusammen decken die alle Stil-Elemente ab (TitleBar mit Glyph und
       ExtraContent, Button-Default/`.accent`/`.danger`, DataGrid,
       TextBox/ComboBox mit Gold-Fokusring, Sektions-Karten, Statusbar,
       Konsole). Drei Befunde, alle gefixt:
 
-      1. **Zahnrad-Button im MainWindow war ein leeres graues Kaestchen.**
+      1. **Zahnrad-Button im MainWindow war ein leeres graues Kästchen.**
          Der Glyph stand auf `FontSize="60"` in einem 38px-Button und
          wurde komplett abgeschnitten. Auf 16 korrigiert. Bestand schon
-         vor dem Paletten-Umbau — faellt eben nur auf, wenn man wirklich
+         vor dem Paletten-Umbau — fällt eben nur auf, wenn man wirklich
          hinschaut.
       2. **ConnectionManagerWindow schnitt Texte ab**: Fenster von 700
          auf 820 (MinWidth 560 → 620), Label-Spalte 130 → 170, die drei
          Buttons 90 → 110 (aus „Bearbeiten" wurde sonst „Bearbeite").
-      3. Bestaetigt, dass der Gold-Fokusring auf Formularfeldern greift
+      3. Bestätigt, dass der Gold-Fokusring auf Formularfeldern greift
          und die neue Glyph-API rendert.
 
-      **Nebenbefund zur Arbeitsweise:** `dotnet build`, waehrend die App
-      noch laeuft, schlaegt still fehl (DLL gesperrt) — der naechste
+      **Nebenbefund zur Arbeitsweise:** `dotnet build`, während die App
+      noch läuft, schlägt still fehl (DLL gesperrt) — der nächste
       Screenshot zeigt dann den alten Stand und man sucht den Fehler an
       der falschen Stelle. Immer erst `taskkill /IM DTM.exe`, dann bauen.)_
-- [x] **13.7** App-Icon in den kleinen Groessen repariert (Lars-Meldung
-      2026-08-20: "sieht auf Windows fuerchterlich aus"). — `S`
+- [x] **13.7** App-Icon in den kleinen Größen repariert (Lars-Meldung
+      2026-08-20: "sieht auf Windows fürchterlich aus"). — `S`
       _(erledigt: zwei Fehler in `New-IconSmall`/`Add-Background`.
 
       **(a) Die 48px-Variante war kaputt** — die Ecken zerfielen sichtbar.
       Ursache: `Add-Background` nahm bei `size >= 48` den vollen Radius
       `CORNER * scale`; die Small-Variante ruft aber mit `scale = 1.0`, also
-      traf ein Radius von 48 auf eine 48px-Flaeche. Die vier Boegen
-      ueberlappten sich und der Pfad degenerierte. Fix: Radius immer gegen
-      die Kantenlaenge deckeln (`min(CORNER * scale, size * 0.22)`).
-      48px ist die Standardgroesse im Explorer und auf dem Desktop — das
+      traf ein Radius von 48 auf eine 48px-Fläche. Die vier Bögen
+      überlappten sich und der Pfad degenerierte. Fix: Radius immer gegen
+      die Kantenlänge deckeln (`min(CORNER * scale, size * 0.22)`).
+      48px ist die Standardgröße im Explorer und auf dem Desktop — das
       war mit hoher Wahrscheinlichkeit das, was Lars gesehen hat.
 
-      **(b) 16-32px sahen aus wie eine weisse Pille**, nicht wie eine
+      **(b) 16-32px sahen aus wie eine weiße Pille**, nicht wie eine
       Datenbank. Drei Proportionsfehler, in dieser Reihenfolge gefunden:
       der Zylinder war schmaler als hoch (28 % Seitenpadding); danach zu
       flach, sodass er wie eine Untertasse wirkte; und `r_y` durfte nicht
       unter 2px fallen, sonst verschwindet die Deckel-Ellipse und der
-      Koerper liest sich als Rechteck. Endwerte: Padding 15 %, Koerper von
-      33 % bis 70 % der Hoehe, `r_y` 9 % (mindestens 2px). Faustregel fuers
-      naechste Mal: **Koerper etwa doppelt so hoch wie eine Ellipse,
-      Gesamtbreite etwa das 1,4-fache der Gesamthoehe.**
+      Körper liest sich als Rechteck. Endwerte: Padding 15 %, Körper von
+      33 % bis 70 % der Höhe, `r_y` 9 % (mindestens 2px). Faustregel fürs
+      nächste Mal: **Körper etwa doppelt so hoch wie eine Ellipse,
+      Gesamtbreite etwa das 1,4-fache der Gesamthöhe.**
 
       Bei 16px bleibt es notgedrungen eine grobe Silhouette — auf
-      16x16 Pixeln ist ein Zylinder nicht wirklich darstellbar; dort traegt
+      16x16 Pixeln ist ein Zylinder nicht wirklich darstellbar; dort trägt
       die Farbkombination die Wiedererkennung. Die 256px-Master-PNG
       (Fenster, Tray, AppImage) war nie betroffen, die nutzt
       `New-IconLarge`.
 
       Beide Generatoren (`build_icon.ps1` und `build_icon.py`) nachgezogen;
       derselbe Radius-Bug steckte auch in der Skill-Vorlage und ist dort
-      ebenfalls behoben. Pruefweg: die ICO-Eintraege einzeln extrahieren und
-      als Kontaktbogen 1:1 plus vergroessert nebeneinander rendern — im
-      256px-Master faellt so ein Fehler naemlich gar nicht auf.)_
+      ebenfalls behoben. Prüfweg: die ICO-Einträge einzeln extrahieren und
+      als Kontaktbogen 1:1 plus vergrößert nebeneinander rendern — im
+      256px-Master fällt so ein Fehler nämlich gar nicht auf.)_
 
-#### Phase 14 — Lokale REST-API fuer UI-Pruefungen (ausgeliefert mit `v2.3.11`)
+#### Phase 14 — Lokale REST-API für UI-Prüfungen (ausgeliefert mit `v2.3.11`)
 
 **Anlass:** Beim visuellen Abnehmen des Paletten-Umbaus (13.6) habe ich die
-Oberflaeche von aussen ferngesteuert — `SetForegroundWindow`, `mouse_event`,
+Oberfläche von außen ferngesteuert — `SetForegroundWindow`, `mouse_event`,
 `PrintWindow`, UI-Automation. Das ist aus Sicht eines verhaltensbasierten
 Virenscanners das Muster einer Fernsteuerungs-Schadsoftware: **Trend Micro
 hat einen Teil dieser Aktionen blockiert** (2026-08-19). Der Weg ist auf
 verwalteten Rechnern also nicht gangbar — und war ohnehin fragil
 (Fokus-Wechsel, DPI, verdeckte Fenster).
 
-**Loesung** nach dem Vorbild von `KroModIx` (Repo `KroModIx/KroModIx`,
+**Lösung** nach dem Vorbild von `KroModIx` (Repo `KroModIx/KroModIx`,
 `Services/Api/`): DTM bringt die Schnittstelle selbst mit. Screenshots
-entstehen ueber Avalonias `RenderTargetBitmap`, Klicks ueber
+entstehen über Avalonias `RenderTargetBitmap`, Klicks über
 `ICommand.Execute` bzw. `RaiseEvent(Button.ClickEvent)` — alles **innerhalb
-des Prozesses**, kein einziger Win32-Aufruf von aussen.
+des Prozesses**, kein einziger Win32-Aufruf von außen.
 
-- [x] **14.1** Grundgeruest unter `Data/Api/`, uebernommen aus KroModIx:
-      `ApiOptions`/`ApiOptionsResolver` (CLI schlaegt settings.json),
+- [x] **14.1** Grundgerüst unter `Data/Api/`, übernommen aus KroModIx:
+      `ApiOptions`/`ApiOptionsResolver` (CLI schlägt settings.json),
       `ApiBearerAuth` (statisches Token, Vergleich in konstanter Zeit),
       `ApiHost` (Kestrel via `WebApplication.CreateSlimBuilder`, nur
-      `ListenLocalhost`, HTTP/1). Kestrel kommt ueber
+      `ListenLocalhost`, HTTP/1). Kestrel kommt über
       `<FrameworkReference Include="Microsoft.AspNetCore.App" />` — kein
       NuGet-Paket. **Falle:** der bestehende `PackageReference` auf
       `Microsoft.Extensions.DependencyInjection` muss weg, sonst bricht der
-      Build mit `NU1510` (das Paket kommt ueber den FrameworkReference mit).
+      Build mit `NU1510` (das Paket kommt über den FrameworkReference mit).
       `Config/AppLaunchOptions.cs` parst `--api-port`, `--api-token`,
       `--api-allow-destructive`, `--auto-shutdown-after`. — `M`
-- [x] **14.2** `DtmUiActions` — alle UI-Zugriffe ueber
+- [x] **14.2** `DtmUiActions` — alle UI-Zugriffe über
       `Dispatcher.UIThread`. **Wichtig: Momentaufnahmen komplett INNERHALB
-      des Dispatchers bauen.** Erst hatte ich nur das ViewModel ueber den
+      des Dispatchers bauen.** Erst hatte ich nur das ViewModel über den
       Dispatcher geholt und danach im HTTP-Thread durch seine
       `ObservableCollection`s iteriert — das ist eine Race Condition. Jetzt
-      liefern `GetStateAsync`/`GetTreeAsync` fertige Records zurueck.
+      liefern `GetStateAsync`/`GetTreeAsync` fertige Records zurück.
       `ClickAsync` bedient beide Bauarten: Buttons mit Command direkt (inkl.
-      `CanExecute`-Pruefung), Buttons mit Click-Handler ueber
-      `RaiseEvent(Button.ClickEvent)` — ohne den zweiten Zweig liessen sich
-      Dialoge oeffnen, aber nicht wieder schliessen. — `M`
+      `CanExecute`-Prüfung), Buttons mit Click-Handler über
+      `RaiseEvent(Button.ClickEvent)` — ohne den zweiten Zweig ließen sich
+      Dialoge öffnen, aber nicht wieder schließen. — `M`
 - [x] **14.3** `DestructiveGuard` — die DTM-spezifische Zutat, die es bei
-      KroModIx nicht braucht. DTM loest Backups, Restores, Snapshot-Drops
+      KroModIx nicht braucht. DTM löst Backups, Restores, Snapshot-Drops
       und Session-Kills auf produktiven Datenbanken aus; ein einzelner
-      HTTP-Aufruf darf das nicht koennen. Die API ist deshalb per Default
+      HTTP-Aufruf darf das nicht können. Die API ist deshalb per Default
       ein **Beobachtungs- und Navigationskanal**: gesperrt sind die
       schreibenden Commands des MainWindowViewModel *und* die Buttons, die
-      solche Aktionen bestaetigen (`ConfirmButton`, `RestoreButton`,
-      `CloseSessionsButton`) — sonst haette man die Sperre einfach
-      wegklicken koennen. Freigabe nur bewusst per
+      solche Aktionen bestätigen (`ConfirmButton`, `RestoreButton`,
+      `CloseSessionsButton`) — sonst hätte man die Sperre einfach
+      wegklicken können. Freigabe nur bewusst per
       `--api-allow-destructive` bzw. `AllowDestructive` in den
       Einstellungen. Zwei Tests halten die Sperrliste gegen die echten
       Commands: einer verlangt, dass **jeder** Command entweder gesperrt
-      oder ausdruecklich als harmlos gelistet ist (sonst rutscht eine neue
+      oder ausdrücklich als harmlos gelistet ist (sonst rutscht eine neue
       destruktive Aktion still durch), der andere findet verwaiste
-      Eintraege nach Umbenennungen. — `M`
+      Einträge nach Umbenennungen. — `M`
 - [x] **14.4** Endpoints: `/state`, `/tree`, `/elements`, `/select-node`,
       `/command`, `/click`, `/text`, `/screenshot`. Fehler kommen als
       `application/problem+json`; ein 404 liefert gleich mit, was es
-      stattdessen gaebe (`available`). — `M`
-      _(Live geprueft: Auth 401/403, destruktive Sperre 403, Dialog
-      oeffnen und schliessen, Navigation bis auf DB-Ebene, Screenshot als
-      PNG. 50 neue Tests, 438 gesamt gruen.)_
+      stattdessen gäbe (`available`). — `M`
+      _(Live geprüft: Auth 401/403, destruktive Sperre 403, Dialog
+      öffnen und schließen, Navigation bis auf DB-Ebene, Screenshot als
+      PNG. 50 neue Tests, 438 gesamt grün.)_
 
 **Nutzung** siehe README. Kurzform:
 `DTM.exe --api-port 8765 --api-token <geheim> --auto-shutdown-after 10m`,
 danach `curl -H "Authorization: Bearer <geheim>" http://127.0.0.1:8765/state`.
 
-**Stolperstelle beim Navigieren:** der Baum laedt die Datenbanken erst beim
-Auswaehlen eines Servers. Also zuerst `/select-node` mit dem Servernamen,
-dann mit `<Server>/<Datenbank>`. `/tree` zeigt ueber `databasesLoaded`, ob
+**Stolperstelle beim Navigieren:** der Baum lädt die Datenbanken erst beim
+Auswählen eines Servers. Also zuerst `/select-node` mit dem Servernamen,
+dann mit `<Server>/<Datenbank>`. `/tree` zeigt über `databasesLoaded`, ob
 schon geladen wurde. Datenbanknamen werden ohne Status-Suffix erwartet
 (`ALKIS`, nicht `ALKIS (up)`) — die Beschriftung wird aber auch akzeptiert.
 
-**Offen:** Endpoints fuer die Fenstergroesse (fuer Screenshots in
-definierten Groessen) und ein `/wait`-Endpunkt, der auf einen Zustand
+**Offen:** Endpoints für die Fenstergröße (für Screenshots in
+definierten Größen) und ein `/wait`-Endpunkt, der auf einen Zustand
 wartet, statt im Skript zu schlafen. Beides erst bauen, wenn es fehlt.
 
-#### Phase 15 — Update-Weg zurueck auf ein Netzlaufwerk (noch nicht getaggt, naechster Tag waere `v2.3.14`)
+#### Phase 15 — Update-Weg zurück auf ein Netzlaufwerk (noch nicht getaggt, nächster Tag wäre `v2.3.14`)
 
-**Anlass (Lars, 2026-08-25):** „Die Aktualisierung ueber Github funktioniert
-auf Arbeit leider nicht mehr." Kuenftig liegen die ZIPs unter
+**Anlass (Lars, 2026-08-25):** „Die Aktualisierung über Github funktioniert
+auf Arbeit leider nicht mehr." Künftig liegen die ZIPs unter
 `\\samba01\542$\5424_IT-Basis-Dienste\MS-SQL\DTM`.
 
 Der Skill deckt das bereits ab — `references/autoupdate.md` →
-„Ausnahme fuer dienstliche Werkzeuge: ein Ordner im Netz", geschrieben nach
+„Ausnahme für dienstliche Werkzeuge: ein Ordner im Netz", geschrieben nach
 dem Checkmk-Cockpit-Fall, **mit DTM namentlich in der Ausnahmeliste**. Es war
 also nichts nachzutragen, nur umzusetzen. Referenz-Implementierung:
 `Checkmk.App/Services/FileShareUpdateChecker.cs`.
@@ -1227,67 +1227,67 @@ also nichts nachzutragen, nur umzusetzen. Referenz-Implementierung:
       `Normalize` (vier Segmente), `FindNewestPackage`. — `M`
 - [x] **15.2** `UpdateService` verzweigt an drei Stellen: Check,
       Release-Notes, Paket-Beschaffung. Bewusst **kein** `IUpdateChecker`-
-      Interface wie bei Checkmk — dort waehlt die DI-Registrierung zwischen
+      Interface wie bei Checkmk — dort wählt die DI-Registrierung zwischen
       zwei Checkern, DTM hat einen Service ohne Interface, und zwei
-      Checker-Klassen muessten sich Apply/Terminate teilen. Der Gewinn haette
+      Checker-Klassen müssten sich Apply/Terminate teilen. Der Gewinn hätte
       den Umbau nicht getragen; die inhaltlichen Regeln sind alle umgesetzt. — `M`
 - [x] **15.3** Neues Settings-Feld `UpdateChannel` **statt** des alten
       `UpdateSource`. — `S`
       _(Der wichtigste Fund des Tages: `UpdateSource` gab es bis v2.2.0 schon
-      einmal fuer denselben Zweck, und in Lars' echter settings.json steht
-      dort noch `…\MS-SQL\DTM_Update\AktuelleVersion` — das **abgeloeste**
-      Verzeichnis. Haette ich das Feld wiederverwendet (mein erster Ansatz),
-      waeren genau die Bestandsnutzer unbemerkt auf dem falschen Ordner
-      gelandet, waehrend Neuinstallationen korrekt laufen. Der neue Name
-      faengt bei allen mit dem Default an; `UpdateSource` faellt beim
-      naechsten Speichern aus der Datei, weil unbekannte Felder beim Lesen
+      einmal für denselben Zweck, und in Lars' echter settings.json steht
+      dort noch `…\MS-SQL\DTM_Update\AktuelleVersion` — das **abgelöste**
+      Verzeichnis. Hätte ich das Feld wiederverwendet (mein erster Ansatz),
+      wären genau die Bestandsnutzer unbemerkt auf dem falschen Ordner
+      gelandet, während Neuinstallationen korrekt laufen. Der neue Name
+      fängt bei allen mit dem Default an; `UpdateSource` fällt beim
+      nächsten Speichern aus der Datei, weil unbekannte Felder beim Lesen
       ignoriert werden.)_
 - [x] **15.4** Update-Quelle im ConnectionManagerWindow pflegbar gemacht.
-      Vorher wurde das Feld nur durchgereicht, ohne UI — ein Wechsel zurueck
-      auf GitHub haette Handarbeit an der JSON verlangt. — `S`
+      Vorher wurde das Feld nur durchgereicht, ohne UI — ein Wechsel zurück
+      auf GitHub hätte Handarbeit an der JSON verlangt. — `S`
 - [x] **15.5** Tests: 37 neue (Kanaltyp-Erkennung, Version aus Dateiname,
-      Paketwahl, Release-Notes aus dem Ordner), 475 gesamt gruen. — `M`
-- [x] **15.6** CI war rot, lokal gruen — Ursache und zwei Lehren. — `M`
+      Paketwahl, Release-Notes aus dem Ordner), 475 gesamt grün. — `M`
+- [x] **15.6** CI war rot, lokal grün — Ursache und zwei Lehren. — `M`
       _`LooksLikeFolder` stammt aus Checkmk und kannte nur UNC-Pfade und
       Windows-Laufwerke. Ein absoluter Unix-Pfad (`/tmp/…`, wo die Tests auf
       dem Linux-Runner arbeiten) galt damit als Adresse: der Service lief
       still gegen GitHub und verglich echte Release-Daten mit den
-      Test-Erwartungen. **Das ist kein Testartefakt — DTM laeuft als AppImage
-      unter Linux**, dort waere jeder lokale Ordner als Kanal unbrauchbar
+      Test-Erwartungen. **Das ist kein Testartefakt — DTM läuft als AppImage
+      unter Linux**, dort wäre jeder lokale Ordner als Kanal unbrauchbar
       gewesen. Derselbe Fehler steckt in der Skill-Vorlage und ist dort
       nachgezogen.
 
-      **Diagnose-Luecke:** Bei einem roten Lauf steht in der
+      **Diagnose-Lücke:** Bei einem roten Lauf steht in der
       Job-Zusammenfassung nur „Process completed with exit code 1"; das
-      Job-Log laedt die API nur mit Admin-Rechten am Repo, und `gh` gibt es
+      Job-Log lädt die API nur mit Admin-Rechten am Repo, und `gh` gibt es
       auf dem Arbeitslaptop nicht. Der CI schreibt deshalb jetzt eine
       TRX-Datei und gibt bei `failure()` Testname, Meldung und ersten
-      Stack-Frame als `::error::`-Annotation aus — die sind ueber die
-      oeffentliche API lesbar. Damit war die Ursache in einem Lauf sichtbar.
+      Stack-Frame als `::error::`-Annotation aus — die sind über die
+      öffentliche API lesbar. Damit war die Ursache in einem Lauf sichtbar.
 
       **Vorher lag ich einmal daneben:** erster Verdacht war der
       `HttpClientHandler` mit `CredentialCache.DefaultCredentials` im
       Konstruktor (auf Nicht-Windows heikel, und die neuen Tests
-      instanziierten den Service erstmals ueberhaupt). Der Umbau auf einen
+      instanziierten den Service erstmals überhaupt). Der Umbau auf einen
       `Lazy<HttpClient>` war trotzdem richtig — der Ordner-Kanal braucht gar
       keinen HttpClient — hat den Lauf aber nicht repariert._
 
 **Die vier Regeln aus dem Skill, die real etwas verhindern:**
-1. **Hoechste Version gewinnt, nicht neuester Zeitstempel.** Kopiert jemand
-   ein aelteres Paket zurueck, ist es die juengste Datei — nach `LastWriteTime`
-   sortiert waere das ein „Update" auf eine aeltere Version. Eigener Test.
-2. **Version aus dem Dateinamen.** Sie aus dem Paket zu lesen hiesse, es bei
+1. **Höchste Version gewinnt, nicht neuester Zeitstempel.** Kopiert jemand
+   ein älteres Paket zurück, ist es die jüngste Datei — nach `LastWriteTime`
+   sortiert wäre das ein „Update" auf eine ältere Version. Eigener Test.
+2. **Version aus dem Dateinamen.** Sie aus dem Paket zu lesen hieße, es bei
    jedem Start herunterzuladen und auszupacken.
-3. **Auch vom Share erst kopieren, dann entpacken.** Das Paket koennte
-   zwischen Pruefung und Entpacken ausgetauscht werden, und ein wegbrechendes
-   Netzlaufwerk wuerde ein halb ersetztes Programmverzeichnis hinterlassen.
+3. **Auch vom Share erst kopieren, dann entpacken.** Das Paket könnte
+   zwischen Prüfung und Entpacken ausgetauscht werden, und ein wegbrechendes
+   Netzlaufwerk würde ein halb ersetztes Programmverzeichnis hinterlassen.
 4. **Unerreichbarer Ordner ist `Debug`, nicht `Error`.** Ein Notebook ohne
    Netzlaufwerk ist der Normalfall; sonst steht im Log jedes mobilen Nutzers
-   taeglich ein Fehler, den niemand beheben kann.
+   täglich ein Fehler, den niemand beheben kann.
 
-**Live geprueft** (Kanal temporaer auf einen Testordner, settings.json vorher
-gesichert und danach zurueckgespielt): Paketwahl nach Version, kein Update bei
-aelterem Paket, Update-Dialog samt Release-Notes und MSSQL-Banner aus der
+**Live geprüft** (Kanal temporär auf einen Testordner, settings.json vorher
+gesichert und danach zurückgespielt): Paketwahl nach Version, kein Update bei
+älterem Paket, Update-Dialog samt Release-Notes und MSSQL-Banner aus der
 `release-notes.json` im Ordner. Der echte Share existiert und ist erreichbar,
 war zum Zeitpunkt der Umstellung aber noch leer.
 
@@ -1297,15 +1297,15 @@ breit messen und `TextWrapping="Wrap"` greift nie. Nachgezogen — der im
 Screenshot sichtbare Textabriss im MSSQL-Banner blieb allerdings bestehen und
 ist vermutlich ein Rand-Artefakt des In-Process-Screenshots, kein Layoutfehler.
 
-#### Phase 16 — MariaDB (noch nicht getaggt, naechster Tag waere `v2.4.0`)
+#### Phase 16 — MariaDB (noch nicht getaggt, nächster Tag wäre `v2.4.0`)
 
 **Anlass (Lars, 2026-09-23):** „ich brauch eine verbindung zu maria db,
 genauso wie zu mssql ohne foc-sql". Umfang abgestimmt: Ansehen + Wartung +
 Sicherung/Restore. Treiber: **MySqlConnector 2.6.2** (MIT, rein managed).
 
-Der entscheidende Unterschied zu allem Bisherigen: MariaDB haengt an **keinem**
+Der entscheidende Unterschied zu allem Bisherigen: MariaDB hängt an **keinem**
 der beiden bestehenden Wege. Kein FOC-SQL (kein PowerShell-Remoting zu einem
-Linux-Datenbankserver) und auch kein ODBC (das haette auf jedem Client einen
+Linux-Datenbankserver) und auch kein ODBC (das hätte auf jedem Client einen
 installierten Treiber verlangt — DTM wird als ZIP verteilt). Deshalb ein
 eigener Zweig unter `Data/HelperClasses/MariaDb/`.
 
@@ -1315,13 +1315,13 @@ Design-Entscheidungen:
   Technik vor. `MariaDb_Connector` implementiert es, die `ODBC_Factory` cached
   ihn wie die anderen pro `"<Typ>::<Server>"`.
 - **Keine Backend-Wahl.** `ServerBackend` bleibt MSSQL vorbehalten — bei MariaDB
-  gibt es nichts zu waehlen. `EditConnectionViewModel.IsMssql` blendet Backend-
+  gibt es nichts zu wählen. `EditConnectionViewModel.IsMssql` blendet Backend-
   und PS-Remoting-Panel aus und leert die Felder beim Speichern.
 - **Dispatch wie in Phase 10 am Aufrufer**, kein Backend-Interface. Die
   Signaturen passen nach wie vor nicht zusammen (FOC-SQL ist fire-and-forget im
   pwsh-Tab, MariaDB ist synchrones SQL mit Notices).
 - **`PostgreSQL` aus dem `ServerTyp`-Enum entfernt.** Der Wert war ein
-  Platzhalter ohne Implementierung, aber im Dropdown waehlbar — wer ihn nahm,
+  Platzhalter ohne Implementierung, aber im Dropdown wählbar — wer ihn nahm,
   lief in eine Factory-Sackgasse.
 
 Sub-Items:
@@ -1332,43 +1332,43 @@ Sub-Items:
       _(erledigt: `3725ffa`. Port-Angabe im Server-Feld (`db01:3307`)
       mitgebaut — **eigener Test hat dabei einen echten Fehler gefunden**: bei
       einer blanken IPv6-Adresse wurde alles hinter dem letzten `:` als Port
-      gelesen, aus `fe80::1` wurde Host `fe80:` auf Port 1. Die Verbindung waere
+      gelesen, aus `fe80::1` wurde Host `fe80:` auf Port 1. Die Verbindung wäre
       gegen den falschen Rechner gelaufen statt klar zu scheitern. Jetzt
       verlangt IPv6 die Klammer-Form `[fe80::1]:3307`.)_
 - [x] **16.2** Dienste: `MariaDbActionService` (KILL, `CHECK`/`ANALYZE`/
       `OPTIMIZE TABLE` mit Fortschritt pro Tabelle) und `MariaDbBackupService`
-      (Dump und Restore ueber `mariadb-dump`/`mariadb`). — `L`
+      (Dump und Restore über `mariadb-dump`/`mariadb`). — `L`
       _(erledigt: `b8d20af`. **Das Passwort steht nie auf der Kommandozeile** —
       Prozess-Argumente kann auf dem Rechner jeder lesen, der die Prozessliste
-      sieht. Es geht ueber eine temporaere Optionsdatei als erstes Argument
+      sieht. Es geht über eine temporäre Optionsdatei als erstes Argument
       (`--defaults-extra-file`), die leer angelegt, unter Unix auf 0600 gesetzt
       und erst dann beschrieben wird, und die im `finally` wieder verschwindet.
-      Ein abgebrochener Dump loescht seine halbe Datei: sie saehe aus wie ein
-      Backup und liesse sich nicht einspielen.
+      Ein abgebrochener Dump löscht seine halbe Datei: sie sähe aus wie ein
+      Backup und ließe sich nicht einspielen.
       Tabellen- und Datenbanknamen sind die einzige Stelle, an der ein Name
-      ungeprueft in den SQL-Text muss (nicht als Parameter bindbar) —
+      ungeprüft in den SQL-Text muss (nicht als Parameter bindbar) —
       `QuoteIdentifier` verdoppelt Backticks, mit eigenem Injection-Test.)_
-- [x] **16.3** Oberflaeche: Info-Karte mit passenden Zeilen (Version statt
-      Comp. Level, Zeichensatz statt Recovery, zusaetzlich Tabellen/Engines),
+- [x] **16.3** Oberfläche: Info-Karte mit passenden Zeilen (Version statt
+      Comp. Level, Zeichensatz statt Recovery, zusätzlich Tabellen/Engines),
       Wartungs-Gruppe, MariaDB-Werkzeuge im Verbindungsmanager,
-      Backup-Browser fuer Dumps. — `M`
+      Backup-Browser für Dumps. — `M`
       _(erledigt: `84ffdf0`. Der Backup-Browser bedient jetzt drei Quellen mit
-      einer Ansicht; der Hinweis im Bestaetigungs-Dialog haengt an der Quelle,
+      einer Ansicht; der Hinweis im Bestätigungs-Dialog hängt an der Quelle,
       weil „Alle aktiven Sessions werden vorher beendet" bei MariaDB schlicht
-      falsch waere — der Client tut das nicht.
+      falsch wäre — der Client tut das nicht.
       **Nebenbefund, mitgenommen:** Speichern im Verbindungsmanager baute ein
-      frisches `FocSqlConfig` und hat damit alles ueberschrieben, was sonst noch
+      frisches `FocSqlConfig` und hat damit alles überschrieben, was sonst noch
       in der `settings.json` stand — unter anderem die REST-API-Optionen samt
       Token. Jetzt werden die bestehenden Einstellungen geladen und nur die
       Felder dieses Fensters gesetzt.)_
 
 **Bewusst nicht dabei:** Replikations-Verwaltung, Benutzer-/Rechteverwaltung,
-Binlog-basiertes Point-in-Time-Recovery. Alles drei ist eigenstaendiger Umfang
+Binlog-basiertes Point-in-Time-Recovery. Alles drei ist eigenständiger Umfang
 und war nicht Teil der Absprache.
 
-**Offen:** Ein echter Server war beim Bauen nicht verfuegbar — geprueft sind
+**Offen:** Ein echter Server war beim Bauen nicht verfügbar — geprüft sind
 Verbindungsmanager und Einstellungen in der laufenden App, die Datenpfade nur
-ueber Tests. Der erste Lauf gegen eine echte MariaDB steht noch aus; die
+über Tests. Der erste Lauf gegen eine echte MariaDB steht noch aus; die
 wahrscheinlichste Stolperstelle ist der Pfad zu `mariadb-dump` auf dem
 Arbeitsplatz.
 

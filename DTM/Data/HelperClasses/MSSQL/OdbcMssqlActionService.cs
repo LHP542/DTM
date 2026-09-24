@@ -4,18 +4,18 @@ using NLog;
 namespace DTM.Data.Mssql;
 
 /// <summary>
-/// Phase 10: T-SQL-Actions fuer OdbcDirect-Backend. Wickelt alles ab, was
-/// FOC-SQL sonst ueber WinRM + MSSQL-Modul macht — nur eben direkt ueber
+/// Phase 10: T-SQL-Actions für OdbcDirect-Backend. Wickelt alles ab, was
+/// FOC-SQL sonst über WinRM + MSSQL-Modul macht — nur eben direkt über
 /// die ODBC/1433-Verbindung (siehe <see cref="MSSQL_ODBC.ExecuteNonQueryAsync"/>).
 ///
 /// Design-Prinzipien:
-/// - SQL-Injection: <c>QUOTENAME(@dbname)</c> serverseitig fuer Object-Namen,
-///   ODBC-Positional-Params ('?') fuer Werte. Kein String-Concat auf Client.
+/// - SQL-Injection: <c>QUOTENAME(@dbname)</c> serverseitig für Object-Namen,
+///   ODBC-Positional-Params ('?') für Werte. Kein String-Concat auf Client.
 /// - Live-Output: Actions reichen einen <c>Action&lt;string&gt; onInfo</c>-
 ///   Callback an <see cref="MSSQL_ODBC"/> durch, der PRINT/RAISERROR/DBCC-
 ///   Meldungen als Notices in den pwsh-Tab injiziert (siehe 10.4).
 /// - Async: alle Methoden sind <c>Task</c>-basiert und blocken den UI-Thread
-///   nicht. Serialisierung pro OdbcConnection uebernimmt der ActionLock in
+///   nicht. Serialisierung pro OdbcConnection übernimmt der ActionLock in
 ///   MSSQL_ODBC.
 /// </summary>
 public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
@@ -29,10 +29,10 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
     private static readonly HashSet<string> _pageVerifyModes = new(StringComparer.OrdinalIgnoreCase)
     { "CHECKSUM", "TORN_PAGE_DETECTION", "NONE" };
 
-    /// <summary>Whitelist-Check fuer Recovery-Mode (Unit-Test-Hook).</summary>
+    /// <summary>Whitelist-Check für Recovery-Mode (Unit-Test-Hook).</summary>
     public static bool IsValidRecoveryMode(string mode) => _recoveryModes.Contains(mode);
 
-    /// <summary>Whitelist-Check fuer Page-Verify (Unit-Test-Hook).</summary>
+    /// <summary>Whitelist-Check für Page-Verify (Unit-Test-Hook).</summary>
     public static bool IsValidPageVerify(string pv) => _pageVerifyModes.Contains(pv);
 
     /// <summary>
@@ -45,12 +45,12 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
         Action<string>? onInfo = null, CancellationToken ct = default)
     {
         if (!_recoveryModes.Contains(recovery))
-            throw new ArgumentException($"Ungueltiger Recovery-Modus: '{recovery}'", nameof(recovery));
+            throw new ArgumentException($"Ungültiger Recovery-Modus: '{recovery}'", nameof(recovery));
 
         _logger.Info("OdbcDirect: SET RECOVERY {0} auf '{1}'", recovery.ToUpperInvariant(), database);
 
         // Recovery-Mode-Wert ist nicht parametrisierbar (Keyword), aber wir
-        // haben ihn oben gegen die Whitelist geprueft — sicher fuer Concat.
+        // haben ihn oben gegen die Whitelist geprüft — sicher für Concat.
         string sql =
             "DECLARE @db NVARCHAR(128) = ?;" +
             $"DECLARE @sql NVARCHAR(MAX) = N'ALTER DATABASE ' + QUOTENAME(@db) + N' SET RECOVERY {recovery.ToUpperInvariant()}';" +
@@ -84,7 +84,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
         Action<string>? onInfo = null, CancellationToken ct = default)
     {
         if (!_pageVerifyModes.Contains(pageVerify))
-            throw new ArgumentException($"Ungueltiger Page-Verify-Modus: '{pageVerify}'", nameof(pageVerify));
+            throw new ArgumentException($"Ungültiger Page-Verify-Modus: '{pageVerify}'", nameof(pageVerify));
 
         _logger.Info("OdbcDirect: SET PAGE_VERIFY {0} auf '{1}'", pageVerify.ToUpperInvariant(), database);
 
@@ -105,10 +105,10 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
         string database,
         Action<string>? onInfo = null, CancellationToken ct = default)
     {
-        _logger.Info("OdbcDirect: SET COMPATIBILITY_LEVEL = master fuer '{0}'", database);
+        _logger.Info("OdbcDirect: SET COMPATIBILITY_LEVEL = master für '{0}'", database);
 
         // Master-Compatibility-Level einlesen und in dyn. SQL einbetten. Wert
-        // ist eine Zahl (SMALLINT) — sicher fuer Concat, kommt aus master
+        // ist eine Zahl (SMALLINT) — sicher für Concat, kommt aus master
         // und nicht vom User.
         string sql =
             "DECLARE @db NVARCHAR(128) = ?;" +
@@ -120,8 +120,8 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
     }
 
     /// <summary>
-    /// MSSQL-Aequivalent zu <c>Set-Archive-Log</c>: togglet zwischen
-    /// FULL (Log-Backups moeglich) und SIMPLE (kein Log-Backup). Wrapper
+    /// MSSQL-Äquivalent zu <c>Set-Archive-Log</c>: togglet zwischen
+    /// FULL (Log-Backups möglich) und SIMPLE (kein Log-Backup). Wrapper
     /// um <see cref="SetRecoveryModeAsync"/> — echte MSSQL-Semantik. Oracle
     /// wird von diesem Service nicht behandelt.
     /// </summary>
@@ -137,8 +137,8 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
     /// <summary>
     /// Baut den Snapshot-DB-Namen deterministisch aus DB + Timestamp.
     /// Format: <c>&lt;db&gt;_Snapshot_&lt;yyyyMMddHHmmss&gt;</c>. Kollisionsfrei
-    /// durch Sekunden-Aufloesung, selbsterklaerend beim Restore-Auswahl-
-    /// Dialog. Static gemacht, damit Tests das Muster verifizieren koennen.
+    /// durch Sekunden-Auflösung, selbsterklärend beim Restore-Auswahl-
+    /// Dialog. Static gemacht, damit Tests das Muster verifizieren können.
     /// </summary>
     public static string BuildSnapshotName(string database, DateTime timestamp) =>
         $"{database}_Snapshot_{timestamp:yyyyMMddHHmmss}";
@@ -146,16 +146,16 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
     /// <summary>
     /// Legt einen DB-Snapshot der angegebenen Datenbank an. Snapshot-DB-Name
     /// und -Filenames werden automatisch gebildet (siehe
-    /// <see cref="BuildSnapshotName"/>). Multi-Data-File-DBs sind unterstuetzt:
+    /// <see cref="BuildSnapshotName"/>). Multi-Data-File-DBs sind unterstützt:
     /// pro Original-Data-File eine <c>.ss</c>-Datei im selben Verzeichnis.
-    /// Rueckgabe: Snapshot-Name (fuer spaeteren Restore/Drop-Aufruf).
+    /// Rückgabe: Snapshot-Name (für späteren Restore/Drop-Aufruf).
     /// </summary>
     public async Task<string> CreateSnapshotAsync(
         string database,
         Action<string>? onInfo = null, CancellationToken ct = default)
     {
         // 1) Data-File-Layout des Originals lesen. Bei Multi-Data-File-DBs
-        //    liefert das mehrere Zeilen — alle muessen ins CREATE DATABASE-
+        //    liefert das mehrere Zeilen — alle müssen ins CREATE DATABASE-
         //    Statement, sonst weigert sich SQL Server. Log-Files (type=1)
         //    werden bewusst ausgeschlossen: Snapshots enthalten keinen Log.
         string filesSql =
@@ -170,10 +170,10 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
 
         if (files.Count == 0)
             throw new InvalidOperationException(
-                $"CreateSnapshot: keine Data-Files fuer '{database}' gefunden (DB existiert nicht oder offline?).");
+                $"CreateSnapshot: keine Data-Files für '{database}' gefunden (DB existiert nicht oder offline?).");
 
         string snapName = BuildSnapshotName(database, DateTime.Now);
-        _logger.Info("OdbcDirect: CREATE SNAPSHOT '{0}' fuer '{1}' ({2} File(s))",
+        _logger.Info("OdbcDirect: CREATE SNAPSHOT '{0}' für '{1}' ({2} File(s))",
             snapName, database, files.Count);
 
         // 2) CREATE DATABASE snap ON (NAME = ..., FILENAME = '...') AS SNAPSHOT OF db.
@@ -181,7 +181,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
         //    <dir>\<snapName>_<LogicalName>.ss. Kollisionsfrei durch
         //    Timestamp im snapName. LogicalName und Filename kommen aus
         //    sys.master_files (also von der SQL-Server-Registry, kein User-
-        //    Input) — trotzdem defensive Escape fuer Single-Quotes im
+        //    Input) — trotzdem defensive Escape für Single-Quotes im
         //    Filename-Literal.
         var fileClauses = new List<string>();
         foreach (var (logical, physical) in files)
@@ -208,7 +208,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
 
     /// <summary>
     /// Listet alle Snapshots der angegebenen Datenbank (sortiert nach
-    /// Erstellungsdatum, neueste zuerst). Aus <c>sys.databases</c> ueber
+    /// Erstellungsdatum, neueste zuerst). Aus <c>sys.databases</c> über
     /// <c>source_database_id</c>.
     /// </summary>
     public Task<List<MssqlSnapshotInfo>> ListSnapshotsAsync(
@@ -231,7 +231,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
     /// wird die Ziel-DB kurz in SINGLE_USER geschaltet (rollback pending
     /// transactions), damit RESTORE nicht mit "database is in use"
     /// abbricht. TRY/CATCH stellt MULTI_USER auf jeden Fall wieder her,
-    /// auch wenn RESTORE fehlschlaegt.
+    /// auch wenn RESTORE fehlschlägt.
     /// </summary>
     public Task RestoreSnapshotAsync(
         string database, string snapshotName,
@@ -274,8 +274,8 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
         return _odbc.ExecuteNonQueryAsync(sql, new object?[] { snapshotName }, onInfo, ct);
     }
 
-    // C#-seitige QUOTENAME-Reproduktion fuer Statement-Teile, die als
-    // Literal in dyn. SQL gehen (nicht ueber sp_executesql lauffaehig, weil
+    // C#-seitige QUOTENAME-Reproduktion für Statement-Teile, die als
+    // Literal in dyn. SQL gehen (nicht über sp_executesql lauffähig, weil
     // FILENAME nicht parametrisierbar ist). Reine 1:1-Kopie der T-SQL-
     // Semantik: eckige Klammern, ']' → ']]' escape.
     private static string QuoteName(string identifier) =>
@@ -289,8 +289,8 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
     /// Baut den Backup-Filepath deterministisch aus BackupRoot, DB und
     /// Timestamp. Flaches Layout (Lars-Entscheidung Phase 10.3d):
     /// <c>&lt;root&gt;\&lt;db&gt;\&lt;db&gt;-&lt;yyyyMMdd_HHmm&gt;.bak</c> —
-    /// bewusst OHNE FOC-SQL-Unterordner '01 Taeglich', weil in der DMZ die
-    /// FOC-SQL-Retention-Rotation nicht laeuft.
+    /// bewusst OHNE FOC-SQL-Unterordner '01 Täglich', weil in der DMZ die
+    /// FOC-SQL-Retention-Rotation nicht läuft.
     /// </summary>
     public static string BuildBackupPath(string backupRoot, string database, DateTime timestamp) =>
         Path.Combine(
@@ -300,7 +300,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
 
     /// <summary>
     /// Liest den SQL-Server-Default-BackupPath aus der Server-Registry
-    /// (<c>xp_instance_regread</c>). Kein Extra-Config-Feld in DTM noetig.
+    /// (<c>xp_instance_regread</c>). Kein Extra-Config-Feld in DTM nötig.
     /// Kann leer sein, wenn der Server die Registry-Property nicht gesetzt
     /// hat — dann wirft die Methode InvalidOperationException.
     /// </summary>
@@ -329,7 +329,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
     /// Layout (siehe <see cref="BuildBackupPath"/>), Ziel-Verzeichnis wird
     /// per <c>xp_create_subdir</c> idempotent angelegt. WITH INIT, FORMAT,
     /// STATS = 10 → 10%-Progress-Meldungen kommen live via
-    /// <paramref name="onInfo"/>. Rueckgabe: der Backup-Filepath (fuer
+    /// <paramref name="onInfo"/>. Rückgabe: der Backup-Filepath (für
     /// UI-Feedback / Log).
     /// </summary>
     public async Task<string> BackupAsync(
@@ -433,7 +433,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
         string database,
         Action<string>? onInfo = null, CancellationToken ct = default)
     {
-        _logger.Info("OdbcDirect: KILL user sessions fuer '{0}'", database);
+        _logger.Info("OdbcDirect: KILL user sessions für '{0}'", database);
 
         string sql =
             "DECLARE @db NVARCHAR(128) = ?;" +
@@ -448,7 +448,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
 
     /// <summary>
     /// <c>DBCC CHECKDB(&lt;db&gt;) WITH ALL_ERRORMSGS</c>. Alle DBCC-Meldungen
-    /// (auch die grossen Table-Summaries) kommen live per
+    /// (auch die großen Table-Summaries) kommen live per
     /// <paramref name="onInfo"/>-Callback — der User sieht im pwsh-Tab
     /// exakt was der Server ausgibt.
     /// </summary>
@@ -456,7 +456,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
         string database,
         Action<string>? onInfo = null, CancellationToken ct = default)
     {
-        _logger.Info("OdbcDirect: DBCC CHECKDB fuer '{0}'", database);
+        _logger.Info("OdbcDirect: DBCC CHECKDB für '{0}'", database);
 
         string sql =
             "DECLARE @db NVARCHAR(128) = ?;" +
@@ -470,7 +470,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
     /// Rebuild aller Indizes auf User-Tables der DB. Statt eines langen
     /// dyn.-SQL-Cursors (der schwer zu debuggen ist) baut DTM die Table-
     /// Liste selbst und feuert pro Table einen kurzen ALTER-INDEX-Aufruf.
-    /// Vorteil: Live-Progress per <paramref name="onInfo"/>-Notice fuer
+    /// Vorteil: Live-Progress per <paramref name="onInfo"/>-Notice für
     /// jede Table, klare Log-Zuordnung im pwsh-Tab.
     /// </summary>
     public async Task IndexRebuildAsync(
@@ -510,7 +510,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
                        .ConfigureAwait(false);
         }
 
-        onInfo?.Invoke($"[Index-Rebuild fertig fuer '{database}']");
+        onInfo?.Invoke($"[Index-Rebuild fertig für '{database}']");
     }
 
     /// <summary>
@@ -531,9 +531,9 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
 
         if (logFiles.Count == 0)
             throw new InvalidOperationException(
-                $"ShrinkLog: keine Log-Datei fuer '{database}' gefunden.");
+                $"ShrinkLog: keine Log-Datei für '{database}' gefunden.");
 
-        _logger.Info("OdbcDirect: SHRINK LOG fuer '{0}' ({1} Log-File(s))", database, logFiles.Count);
+        _logger.Info("OdbcDirect: SHRINK LOG für '{0}' ({1} Log-File(s))", database, logFiles.Count);
 
         foreach (string logFile in logFiles)
         {
@@ -559,7 +559,7 @@ public sealed class OdbcMssqlActionService(MSSQL_ODBC odbc)
     /// <c>sys.availability_replicas</c> + <c>sys.dm_hadr_availability_replica_states</c>.
     /// Output geht als Text-Notice pro Zeile in den pwsh-Tab (analog zum
     /// FOC-SQL-Get-ClusterHealthStatus-Output). Wenn kein Always-On
-    /// konfiguriert ist, eine erklaerende Notice statt einer leeren
+    /// konfiguriert ist, eine erklärende Notice statt einer leeren
     /// Ergebnismenge. Read-only, harmlos.
     /// </summary>
     public async Task GetClusterHealthAsync(

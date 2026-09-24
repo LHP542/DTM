@@ -7,17 +7,17 @@ using DTM.Views;
 namespace DTM.ViewModels;
 
 /// <summary>
-/// Aktions-Gruppe WARTUNG fuer MariaDB.
+/// Aktions-Gruppe WARTUNG für MariaDB.
 ///
 /// <para>Eigene Gruppe statt der MSSQL-Wartung, weil die Befehle andere sind:
 /// <c>CHECK</c>, <c>OPTIMIZE</c> und <c>ANALYZE TABLE</c> wirken pro Tabelle,
-/// waehrend DBCC CHECKDB und Index-Rebuild die ganze Datenbank nehmen. Die
-/// Buttons haengen an <c>MariaDbMaintenanceVisible</c> und sind nur sichtbar,
-/// wenn eine MariaDB-Datenbank gewaehlt ist.</para>
+/// während DBCC CHECKDB und Index-Rebuild die ganze Datenbank nehmen. Die
+/// Buttons hängen an <c>MariaDbMaintenanceVisible</c> und sind nur sichtbar,
+/// wenn eine MariaDB-Datenbank gewählt ist.</para>
 ///
 /// <para><c>OPTIMIZE TABLE</c> schreibt die Tabelle neu und sperrt sie dabei
-/// bei den meisten Engines — deshalb steht davor ein Bestaetigungsdialog.
-/// <c>CHECK</c> und <c>ANALYZE</c> laufen ohne Rueckfrage: Ersteres ist
+/// bei den meisten Engines — deshalb steht davor ein Bestätigungsdialog.
+/// <c>CHECK</c> und <c>ANALYZE</c> laufen ohne Rückfrage: Ersteres ist
 /// lesend, Letzteres aktualisiert nur die Optimizer-Statistiken.</para>
 /// </summary>
 public sealed partial class MainWindowViewModel

@@ -14,7 +14,7 @@ namespace DTM.ViewModels;
 /// ist eine reine Dateisystem-Operation und Sync-Database-ToTest eine
 /// mehrstufige PowerShell-Orchestrierung — beides ohne SQL-Entsprechung.
 /// Die Buttons werden dort ausgeblendet (Phase 10.5); die Guards hier sind
-/// das Sicherheitsnetz, falls ein Command doch ausgeloest wird.
+/// das Sicherheitsnetz, falls ein Command doch ausgelöst wird.
 /// </summary>
 public sealed partial class MainWindowViewModel
 {
@@ -23,8 +23,8 @@ public sealed partial class MainWindowViewModel
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
 
-        // MariaDB: Dump ueber das externe mariadb-dump. Kein Scheduling —
-        // der Dump laeuft sofort und schreibt in das konfigurierte
+        // MariaDB: Dump über das externe mariadb-dump. Kein Scheduling —
+        // der Dump läuft sofort und schreibt in das konfigurierte
         // Backup-Verzeichnis.
         if (db.ServerTyp == DB_SERVER.ServerTyp.MariaDB)
         {
@@ -40,7 +40,7 @@ public sealed partial class MainWindowViewModel
         }
 
         // OdbcDirect: kein Scheduling (Task-Scheduler-Weg des FOC-SQL-Moduls
-        // faellt weg). Backup laeuft sofort.
+        // fällt weg). Backup läuft sofort.
         var odbc = TryGetOdbcActions(db);
         if (odbc is not null)
         {
@@ -61,14 +61,14 @@ public sealed partial class MainWindowViewModel
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
         // Sync-Database-ToTest ist Multi-Step-PS-Orchestrierung, kein
-        // SQL-Weg — OdbcDirect kann das nicht, Button wird in 10.5 fuer
+        // SQL-Weg — OdbcDirect kann das nicht, Button wird in 10.5 für
         // OdbcDirect ausgeblendet. Falls doch durchgerutscht: klarer
         // Hinweis, kein Silent-Fail.
         var odbc = TryGetOdbcActions(db);
         if (odbc is not null)
         {
             DTM.Data.Terminal.TerminalBus.InjectNotice(
-                "[Clone (Sync-Database-ToTest) ist bei OdbcDirect nicht verfuegbar — nur ueber FocSql-Server.]");
+                "[Clone (Sync-Database-ToTest) ist bei OdbcDirect nicht verfügbar — nur über FocSql-Server.]");
             return;
         }
 
@@ -84,7 +84,7 @@ public sealed partial class MainWindowViewModel
         if (TryGetOdbcActions(db) is not null)
         {
             DTM.Data.Terminal.TerminalBus.InjectNotice(
-                "[Copy-Database-ToSamba ist bei OdbcDirect nicht verfuegbar — nur ueber FocSql-Server.]");
+                "[Copy-Database-ToSamba ist bei OdbcDirect nicht verfügbar — nur über FocSql-Server.]");
             return;
         }
         RunSimpleAction("Copy-Database-ToSamba", db, "", "DB → Samba");
@@ -93,7 +93,7 @@ public sealed partial class MainWindowViewModel
     // Backup-Browser: Dialog mit den vorhandenen Sicherungen der selektierten
     // DB samt Restore-Knopf — bei MSSQL die .bak-Dateien (Restore WITH
     // REPLACE), bei MariaDB die Dumps aus dem Backup-Verzeichnis. Oracle
-    // laeuft ueber RMAN und ist hier nicht abgedeckt.
+    // läuft über RMAN und ist hier nicht abgedeckt.
     [RelayCommand]
     private async Task OpenBackupBrowser()
     {

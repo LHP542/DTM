@@ -400,7 +400,7 @@ git submodule update --init external/FOC-SQL
 dotnet build DTM.slnx -c Debug
 dotnet test  DTM.Tests/DTM.Tests.csproj
 
-# Starten (VSCode-Task "DTM ausfuehren" umgeht das coreclr-Problem
+# Starten (VSCode-Task "DTM ausführen" umgeht das coreclr-Problem
 # auf Code-OSS/Codium):
 dotnet run --project DTM/DTM.csproj
 ```
