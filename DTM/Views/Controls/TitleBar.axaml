@@ -3,13 +3,18 @@
              x:Class="DTM.Views.Controls.TitleBar"
              Height="36"
              Background="{DynamicResource KrosteTitleBarBrush}">
-    <!-- Wiederverwendbare Standard-Titelleiste fuer DTM-Dialoge:
-         Title-Text links, optional Min/Max, immer Close rechts. Pointer-
-         Handling laeuft ueber Code-Behind (nicht ueber Avalonia-12-
-         ElementRole), weil DTM den etablierten IsHitTestVisible-Weg
-         nutzt und der cross-plattform stabil ist. MainWindow behaelt
-         seine eigene Titelleiste (Sonder-Header-Buttons wie Settings/About). -->
-    <Border BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
+    <!-- Wiederverwendbare Titelleiste für alle DTM-Fenster: Titel links,
+         optional Min/Max, immer Schließen rechts. Seit dem Rollout in Phase 12
+         gibt es im Projekt keine handgebaute Titelleiste mehr — fensterspezifische
+         Knöpfe kommen über ExtraContent dazu.
+
+         Das Zeiger-Handling läuft über das Code-Behind (nicht über die
+         ElementRole-Rollen von Avalonia 12), weil DTM den etablierten
+         IsHitTestVisible-Weg nutzt und der plattformübergreifend stabil ist.
+         Der x:Name der Border ist dabei nicht schmückend: LandedOnInteractiveChild
+         braucht sie als Abbruchpunkt beim Hochlaufen des Visual-Trees. -->
+    <Border x:Name="Bar"
+            BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,0,0,1"
             PointerPressed="OnBarPointerPressed"
             DoubleTapped="OnBarDoubleTapped">
         <Grid ColumnDefinitions="*,Auto">

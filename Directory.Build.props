@@ -7,5 +7,10 @@
     <Authors>Lars Oste</Authors>
     <RepositoryUrl>https://github.com/LHP542/$(MSBuildProjectName)</RepositoryUrl>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Ohne diese Zeile ist die .editorconfig zahnlos: die Stilregeln laufen
+         nur im Editor und tauchen im Build nirgends auf. Zusammen mit
+         TreatWarningsAsErrors werden Stilverstöße zu Compile-Fehlern statt zu
+         Fundsachen im Review. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 </Project>

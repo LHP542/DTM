@@ -23,6 +23,10 @@ public class ChromeWindow : Window
     {
         WindowDecorations = WindowDecorations.BorderOnly;
         ExtendClientAreaToDecorationsHint = true;
+        // Kanon-Wert aus der Skill-Vorlage: -1 überlässt die gesamte Höhe der
+        // eigenen Titelleiste, statt oben einen Streifen für die
+        // System-Caption zu reservieren.
+        ExtendClientAreaTitleBarHeightHint = -1;
         CanResize = true;
 
         // App-Icon fuer Fenster (Taskbar/Alt-Tab/Wayland-Header). Try/Catch:

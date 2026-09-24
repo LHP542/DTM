@@ -288,7 +288,7 @@ public static class TerminalBus
 /// </summary>
 public interface ITerminalBusInjector
 {
-    void InjectNotice(string text);
+    public void InjectNotice(string text);
 }
 
 public sealed class TerminalLineEventArgs : EventArgs

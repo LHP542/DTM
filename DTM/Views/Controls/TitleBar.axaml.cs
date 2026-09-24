@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace DTM.Views.Controls;
 
@@ -151,16 +152,54 @@ public partial class TitleBar : UserControl
 
     private void OnBarPointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        if (LandedOnInteractiveChild(e.Source)) return;
+
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             Host?.BeginMoveDrag(e);
     }
 
     private void OnBarDoubleTapped(object? sender, TappedEventArgs e)
     {
+        if (LandedOnInteractiveChild(e.Source)) return;
         if (!ShowMaximize || Host is not { } w) return;
         w.WindowState = w.WindowState == WindowState.Maximized
             ? WindowState.Normal
             : WindowState.Maximized;
+    }
+
+    /// <summary>
+    /// Läuft vom Ereignis-Ursprung den Visual-Tree hoch bis zur Titelleisten-
+    /// Border und meldet true, wenn unterwegs ein bedienbares Control liegt.
+    ///
+    /// <para>Warum das nötig ist: <c>PointerPressed</c> steigt auf. Ein Button
+    /// fängt den Druck selbst ab und greift sich den Zeiger — eine ComboBox tut
+    /// das nicht. Ohne diesen Test startet <c>BeginMoveDrag</c> einen
+    /// Fenster-Verschiebe-Vorgang, der Zeiger geht ans Betriebssystem, und das
+    /// Control sieht nie ein <c>PointerReleased</c>: das Auswahlfeld lässt sich
+    /// gar nicht mehr aufklappen, es erscheint nur noch der Hinweistext.</para>
+    ///
+    /// <para>Heute hängt in DTMs Titelleiste über <see cref="ExtraContent"/> nur
+    /// ein Button (MainWindow: „Über"), und Buttons fallen deshalb nicht auf.
+    /// Der Test bleibt trotzdem drin — er ist die Absicherung für das nächste
+    /// Control, das dort eingehängt wird.</para>
+    /// </summary>
+    private bool LandedOnInteractiveChild(object? source)
+    {
+        for (var v = source as Visual; v is not null; v = v.GetVisualParent())
+        {
+            // Die Leiste selbst (und alles darüber) ist Ziehfläche.
+            if (ReferenceEquals(v, Bar)) return false;
+
+            // Button deckt ToggleButton/CheckBox/RadioButton/RepeatButton mit ab.
+            if (v is Button or ComboBox or TextBox or Slider or ListBox or MenuItem)
+                return true;
+
+            // Auffangnetz: alles Fokussierbare will den Klick selbst verarbeiten.
+            if (v is InputElement { Focusable: true }) return true;
+        }
+
+        // Ursprung liegt außerhalb der Leiste (etwa in einem Popup-Root).
+        return true;
     }
 
     private void OnMinClick(object? sender, RoutedEventArgs e)

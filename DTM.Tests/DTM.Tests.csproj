@@ -4,7 +4,18 @@
          ../Directory.Build.props. -->
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Netz gegen einen Test, der in eine allokierende Endlosschleife läuft:
+         ohne Deckel zieht er den ganzen Rechner leer, und der OOM-Killer holt
+         sich nicht den Schuldigen, sondern die größte Scope. Mit Limit endet
+         derselbe Hänger nach Sekunden als normaler Testfehler mit
+         OutOfMemoryException. Wirkt auch unter Windows und im CI-Runner.
+         Bei echtem Bedarf hochsetzen statt entfernen. -->
+    <RuntimeHostConfigurationOption Include="System.GC.HeapHardLimit" Value="0x40000000" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="FluentAssertions" />
