@@ -50,13 +50,13 @@
             </Border>
 
             <!-- Footer-Buttons -->
-            <StackPanel Grid.Row="3" Orientation="Horizontal"
-                        HorizontalAlignment="Right" Spacing="8" Margin="0,14,0,0">
+            <WrapPanel Grid.Row="3" Orientation="Horizontal"
+                        HorizontalAlignment="Right" ItemSpacing="8" LineSpacing="8" Margin="0,14,0,0">
                 <Button Content="Log-Ordner &#xF6;ffnen" Click="OnOpenLogs"
                         MinWidth="140" />
                 <Button x:Name="CloseButton" Content="Schlie&#xDF;en" Click="OnClose"
                         MinWidth="100" IsDefault="True" Classes="action primary" />
-            </StackPanel>
+            </WrapPanel>
         </Grid>
     </Grid>
 

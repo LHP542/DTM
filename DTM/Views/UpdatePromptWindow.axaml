@@ -18,7 +18,7 @@
              ohne das darf der Inhalt beliebig breit messen, und die
              TextWrapping="Wrap" der Texte greift nie — der MSSQL-Banner wurde
              dadurch rechts abgeschnitten statt umzubrechen. -->
-        <ScrollViewer Grid.Row="1" Padding="20,16"
+        <ScrollViewer Grid.Row="1" Padding="20,16,30,16"
                       HorizontalScrollBarVisibility="Disabled">
             <StackPanel Spacing="14">
                 <TextBlock x:Name="MessageText" TextWrapping="Wrap" FontSize="14" />
@@ -81,11 +81,11 @@
 
         <Border Grid.Row="2" BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,1,0,0"
                 Padding="16,12">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" ItemSpacing="8" LineSpacing="8">
                 <Button x:Name="SkipButton" Content="Überspringen"        Click="OnSkip"  Width="120" />
                 <Button Content="Später (30 min)"     Click="OnLater" Width="120" />
                 <Button Content="Jetzt aktualisieren" Click="OnApply" Width="160" Classes="accent" />
-            </StackPanel>
+            </WrapPanel>
         </Border>
     </Grid>
 

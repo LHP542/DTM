@@ -99,11 +99,11 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right"
-                        Spacing="8" Margin="0,16,0,0">
+            <WrapPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right"
+                        ItemSpacing="8" LineSpacing="8" Margin="0,16,0,0">
                 <Button x:Name="CancelButton" Content="Abbrechen" Click="OnCancel" Width="100" />
                 <Button Content="Speichern" Click="OnSave" Width="100" IsDefault="True" Classes="accent" />
-            </StackPanel>
+            </WrapPanel>
         </Grid>
     </Grid>
 

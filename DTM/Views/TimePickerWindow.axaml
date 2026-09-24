@@ -26,11 +26,11 @@
                 <TimePicker SelectedTime="{Binding SelectedTime, Mode=TwoWay}" HorizontalAlignment="Stretch" />
             </StackPanel>
 
-            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,12,0,0">
+            <WrapPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" ItemSpacing="8" LineSpacing="8" Margin="0,12,0,0">
                 <Button x:Name="CancelButton" Content="Abbrechen" Click="OnCancel" Width="90" />
                 <Button Content="Sofort" Click="OnImmediate" Width="90" />
                 <Button Content="Geplant" Click="OnOk" Width="90" IsDefault="True" Classes="accent" />
-            </StackPanel>
+            </WrapPanel>
         </Grid>
     </Grid>
 
