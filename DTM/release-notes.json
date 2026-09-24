@@ -1,5 +1,26 @@
 [
   {
+    "version": "2.4.0",
+    "date": "2026-09-24",
+    "notes": [
+      "MariaDB und MySQL werden jetzt unterstützt — gleichwertig neben MSSQL und Oracle. Anlegen im Verbindungsmanager wie gewohnt, Typ 'MariaDB' wählen. Im Server-Feld darf ein abweichender Port stehen ('db01:3307', bei IPv6 in Klammern '[fe80::1]:3307').",
+      "MariaDB läuft komplett ohne FOC-SQL und ohne PowerShell: DTM spricht den Server direkt an. Es gibt deshalb keine Backend-Wahl und keine PS-Remoting-Credentials für diesen Typ.",
+      "Verfügbar sind: Kennzahlen (Größe, Tabellenzahl, Engines, Zeichensatz, Server-Version), Sitzungen ansehen und beenden, Tabellen-Wartung (Prüfen / Analysieren / Optimieren), Dump und Restore über den Backup-Browser. Snapshots, Archive-Log, Recovery-Modus, Cluster-Health, Clone und DB→Samba bleiben ausgeblendet — dafür gibt es in MariaDB kein Gegenstück.",
+      "WICHTIG für Sicherung und Restore: MariaDB kennt kein BACKUP DATABASE. DTM braucht dafür die Kommandozeilenwerkzeuge 'mariadb-dump' und 'mariadb' AUF DEM ARBEITSPLATZ. Liegen sie nicht im PATH, lassen sich die Pfade im Verbindungsmanager unter 'MariaDB-Werkzeuge' eintragen. Ohne sie funktionieren Ansehen und Wartung vollständig, nur Sicherung und Restore nicht.",
+      "Neue Versionsprüfung: vor dem ersten Dump prüft DTM, ob das gefundene Werkzeug zu ihm und zum Server passt, und meldet es in der Konsole, wenn nicht. Ein Dump-Werkzeug, das älter ist als der Server, erzeugt Dumps, die sich nicht zuverlässig zurückspielen lassen — der Lauf meldet Erfolg, der Restore scheitert. Die Meldung bricht nicht ab, die Sicherung läuft trotzdem.",
+      "Beim Restore einer MariaDB beendet DTM — anders als bei MSSQL — KEINE offenen Verbindungen. Laufende Schreibzugriffe können den eingespielten Stand sofort wieder verändern. Wer sichergehen will, beendet die Sitzungen vorher über den Sitzungs-Dialog.",
+      "Serverseitige Einrichtung (Dienstkonto mit den passenden Rechten, Server-Einstellungen, Prüfskript sowie Sicherung und Wartung als systemd-Timer) liegt im neuen Repository LHP542/MySQL-MariaDB.",
+      "Fehlerbehebung: beim Speichern im Verbindungsmanager blieben bisher alle bestehenden Datenbankverbindungen offen liegen — auf dem Server standen die Sitzungen bis zum Beenden von DTM. Sie werden jetzt sauber geschlossen.",
+      "Fehlerbehebung: der Verbindungs-Cache konnte bei gleichzeitigen Zugriffen aus dem Hintergrund durcheinandergeraten. Betraf vor allem schnelles Klicken im Datenbankbaum.",
+      "Fehlerbehebung: eine Kennzahl-Abfrage konnte in eine laufende Aktion (CHECKDB, Backup) auf derselben Verbindung hineinlaufen. Beide Wege teilen sich jetzt dieselbe Serialisierung.",
+      "Fehlerbehebung: Datenbanken mit einem Anführungszeichen im Namen lieferten keine Kennzahlen.",
+      "Fehlerbehebung: die Kennzahlen wurden acht Sekunden nach 'Log An/Aus' auch dann für die alte Datenbank nachgeladen, wenn inzwischen eine andere ausgewählt war — die Info-Karte zeigte dann die falschen Werte.",
+      "Oberfläche: die Knopfreihen aller Dialoge brechen jetzt um, statt bei schmalen Fenstern abgeschnitten zu werden. Im Verbindungsmanager waren die Spalten 'Typ' und 'Datenbank' zu schmal ('MSS' statt MSSQL).",
+      "Ein Diagnose-Protokoll unter %TEMP%\\dtm-console.log wuchs unbegrenzt und wurde nie aufgeräumt. Es entfällt; die Konsolenausgabe steht jetzt im regulären Log, das täglich rolliert und Passwörter maskiert."
+    ],
+    "modulesChanged": []
+  },
+  {
     "version": "2.2.0",
     "date": "2026-07-03",
     "notes": [
@@ -11,7 +32,9 @@
       "FOC-SQL: Copy-Database-ToSamba-Oracle grundlegend überarbeitet. Nutzt jetzt Oracle-Directory-Objekte (dba_directories) statt hardcoded Pfad, wechselt bei Multitenant in die PDB (ALTER SESSION SET CONTAINER), und identifiziert neue Dumps über Marker-File + PDB-Prefix-Filter. Behebt den Bug wo bei mehreren DBs im gemeinsamen Backup-Verzeichnis das falsche (neuere) Dump einer anderen DB kopiert wurde.",
       "DTM erkennt jetzt VERSION_MISMATCH-Meldungen aus FOC-SQL (Phase 7.3) im Terminal-Stream und spiegelt sie in der Statusbar — inkl. Server-Name und gefundener MSSQL-Modul-Version, sodass sofort klar ist, welcher Server ein PS-Profil-Refresh braucht."
     ],
-    "modulesChanged": ["FOC-SQL"]
+    "modulesChanged": [
+      "FOC-SQL"
+    ]
   },
   {
     "version": "2.1.0",
@@ -22,6 +45,8 @@
       "FOC-SQL: zentraler Helper Invoke-MssqlServerScript ersetzt die PSSession-Boilerplate in allen 8 MSSQL-Wrappern. Prüft vor jedem Aufruf die Mindestversion des MSSQL-Moduls auf dem Server — bei Mismatch wirft FOC-SQL VERSION_MISMATCH mit ComputerName und gefundener Version statt einer kryptischen Folgeexception.",
       "DTM-Statusbar spiegelt VERSION_MISMATCH-Meldungen aus dem PowerShell-Terminal — du siehst sofort, welcher Server das MSSQL-Update braucht, ohne ins Terminal-Log scrollen zu müssen."
     ],
-    "modulesChanged": ["FOC-SQL"]
+    "modulesChanged": [
+      "FOC-SQL"
+    ]
   }
 ]
