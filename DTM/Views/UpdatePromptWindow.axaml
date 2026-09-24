@@ -18,9 +18,17 @@
              ohne das darf der Inhalt beliebig breit messen, und die
              TextWrapping="Wrap" der Texte greift nie — der MSSQL-Banner wurde
              dadurch rechts abgeschnitten statt umzubrechen. -->
-        <ScrollViewer Grid.Row="1" Padding="20,16,30,16"
-                      HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="14">
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+            <!-- Die Ränder stehen hier als Margin am inneren Container und
+                 NICHT als Padding am ScrollViewer. Der Unterschied ist nicht
+                 kosmetisch: mit Padding messen die TextBlocks weiter gegen die
+                 volle Breite, der Rollbalken legt sich darüber, und von jeder
+                 Zeile fehlen die letzten ein bis zwei Zeichen ("DTM brauch"
+                 statt "DTM braucht"). Das ist genau so im Update-Dialog von
+                 v2.4.0 gelandet.
+                 Rechts mehr als links, damit der Balken nicht auf dem Text
+                 sitzt. -->
+            <StackPanel Spacing="14" Margin="20,16,30,16">
                 <TextBlock x:Name="MessageText" TextWrapping="Wrap" FontSize="14" />
 
                 <!-- Banner: MSSQL-Modul geändert (manueller Server-Eingriff nötig). -->
@@ -82,9 +90,14 @@
         <Border Grid.Row="2" BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,1,0,0"
                 Padding="16,12">
             <WrapPanel Orientation="Horizontal" HorizontalAlignment="Right" ItemSpacing="8" LineSpacing="8">
-                <Button x:Name="SkipButton" Content="Überspringen"        Click="OnSkip"  Width="120" />
-                <Button Content="Später (30 min)"     Click="OnLater" Width="120" />
-                <Button Content="Jetzt aktualisieren" Click="OnApply" Width="160" Classes="accent" />
+                <!-- MinWidth statt Width: eine feste Breite schneidet ab, was
+                     nicht hineinpasst, ohne Fehler und ohne Warnung — aus
+                     "Später (30 min)" wurde in v2.4.0 "Später (30 mir".
+                     MinWidth hält die Knöpfe optisch gleich breit und lässt
+                     längere Beschriftungen trotzdem wachsen. -->
+                <Button x:Name="SkipButton" Content="Überspringen"  Click="OnSkip"  MinWidth="120" />
+                <Button Content="Später (30 min)"                   Click="OnLater" MinWidth="120" />
+                <Button Content="Jetzt aktualisieren"               Click="OnApply" MinWidth="160" Classes="accent" />
             </WrapPanel>
         </Border>
     </Grid>

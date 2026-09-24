@@ -21,9 +21,12 @@
              Seite, wenn der Rollbalken erscheint, sondern zeichnet ihn darüber.
              Ohne den Zuschlag säße er auf den Eingabefeldern. Fällt im Entwurf
              nicht auf, weil der Balken erst bei zu hohem Inhalt auftaucht. -->
-        <ScrollViewer Grid.Row="1" Padding="20,16,30,16"
-                      HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Spacing="14">
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+            <!-- Rand als Margin am inneren Container, nicht als Padding am
+                 ScrollViewer: mit Padding messen die TextBlocks weiter gegen
+                 die volle Breite, der Rollbalken legt sich darueber, und von
+                 jeder Zeile fehlen die letzten Zeichen. -->
+            <StackPanel Spacing="14" Margin="20,16,30,16">
 
                 <!-- Header: DB-Name -->
                 <Grid ColumnDefinitions="Auto,*">
