@@ -49,6 +49,44 @@ public sealed class FocSqlConfig
     /// Defaults (API aus).
     /// </summary>
     public ApiSettings Api { get; set; } = new();
+
+    /// <summary>
+    /// Einstellungen fuer die MariaDB-Werkzeuge. Fehlt der Block, greifen
+    /// die Defaults.
+    /// </summary>
+    public MariaDbSettings MariaDb { get; set; } = new();
+}
+
+/// <summary>
+/// Pfade fuer die externen MariaDB-Kommandozeilenwerkzeuge und das
+/// Backup-Ziel.
+///
+/// <para><b>Warum externe Werkzeuge:</b> MariaDB kennt kein
+/// <c>BACKUP DATABASE</c> wie MSSQL. Ein vollstaendiger, wieder einspielbarer
+/// Dump entsteht nur ueber <c>mariadb-dump</c> (frueher <c>mysqldump</c>);
+/// <c>SELECT … INTO OUTFILE</c> schreibt serverseitig und pro Tabelle und ist
+/// kein Ersatz. DTM startet das Werkzeug deshalb lokal als Prozess.</para>
+/// </summary>
+public sealed class MariaDbSettings
+{
+    /// <summary>
+    /// Voller Pfad zu <c>mariadb-dump</c>. Leer = in <c>PATH</c> suchen
+    /// (<c>mariadb-dump</c>, dann <c>mysqldump</c>).
+    /// </summary>
+    public string DumpPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Voller Pfad zum Client <c>mariadb</c> — fuer das Zurueckspielen eines
+    /// Dumps. Leer = in <c>PATH</c> suchen (<c>mariadb</c>, dann <c>mysql</c>).
+    /// </summary>
+    public string ClientPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Wurzelverzeichnis fuer Dumps. Leer =
+    /// <c>%USERPROFILE%\DTM-Backups\MariaDB</c>. DTM legt darunter je Server
+    /// und Datenbank einen Unterordner an.
+    /// </summary>
+    public string BackupRoot { get; set; } = string.Empty;
 }
 
 /// <summary>

@@ -81,6 +81,24 @@ namespace DTM
             return new DTM.Data.Mssql.OdbcMssqlActionService(odbc);
         }
 
+        public DTM.Data.MariaDb.MariaDbActionService GetMariaDbActions(ServerIdentity identity) =>
+            new(ResolveMariaDb(identity));
+
+        public DTM.Data.MariaDb.MariaDbBackupService GetMariaDbBackups(ServerIdentity identity) =>
+            new(ResolveMariaDb(identity), DTM.Config.AppSettingsStore.LoadFocSql().MariaDb);
+
+        private DTM.MariaDb.MariaDb_Connector ResolveMariaDb(ServerIdentity identity)
+        {
+            DB_SERVER server = ResolveServer(identity);
+            if (server.Typ != DB_SERVER.ServerTyp.MariaDB)
+                throw new InvalidOperationException(
+                    $"MariaDB-Dienste nur fuer MariaDB verfuegbar (Server '{identity}' ist {server.Typ}).");
+
+            return _factory.Get_DATA("MariaDB", server.serverCredential!) as DTM.MariaDb.MariaDb_Connector
+                   ?? throw new InvalidOperationException(
+                       $"Factory lieferte keinen MariaDb_Connector fuer '{identity}'.");
+        }
+
         public DTM.Data.Olvm.OlvmSnapshotService GetOlvmSnapshotService(ServerIdentity identity)
         {
             DB_SERVER server = ResolveServer(identity);

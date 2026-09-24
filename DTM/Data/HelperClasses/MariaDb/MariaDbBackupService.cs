@@ -1,0 +1,328 @@
+using System.Diagnostics;
+using System.Text;
+using DTM.Config;
+using DTM.MariaDb;
+using NLog;
+using SystemFile = System.IO.File;
+
+namespace DTM.Data.MariaDb;
+
+/// <summary>Ein gefundener Dump im Backup-Verzeichnis.</summary>
+/// <param name="Path">Voller Pfad.</param>
+/// <param name="FileName">Dateiname zur Anzeige.</param>
+/// <param name="Created">Zeitpunkt der Erstellung.</param>
+/// <param name="SizeMB">Groesse in MB.</param>
+public sealed record MariaDbBackupFile(string Path, string FileName, DateTime Created, double SizeMB);
+
+/// <summary>
+/// Backup und Restore einer MariaDB-Datenbank ueber die externen Werkzeuge
+/// <c>mariadb-dump</c> und <c>mariadb</c>.
+///
+/// <para><b>Warum ueberhaupt externe Werkzeuge:</b> MariaDB kennt kein
+/// <c>BACKUP DATABASE</c> wie MSSQL. Ein vollstaendiger, wieder einspielbarer
+/// Dump entsteht nur ueber das Kommandozeilenwerkzeug — <c>SELECT … INTO
+/// OUTFILE</c> schreibt serverseitig, pro Tabelle und ohne Schema und ist
+/// deshalb kein Ersatz.</para>
+///
+/// <para><b>Das Passwort steht nie auf der Kommandozeile.</b> Argumente eines
+/// Prozesses sind auf dem Rechner fuer jeden lesbar, der die Prozessliste
+/// sehen darf — <c>--password=geheim</c> waere damit im Klartext sichtbar.
+/// DTM schreibt es stattdessen in eine temporaere Optionsdatei und uebergibt
+/// sie als <c>--defaults-extra-file</c>; die Datei wird unter Unix auf 0600
+/// gesetzt und in jedem Fall wieder geloescht. Das ist der von MariaDB dafuer
+/// vorgesehene Weg.</para>
+/// </summary>
+public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSettings settings)
+{
+    private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
+
+    private readonly MariaDb_Connector _connector = connector;
+    private readonly MariaDbSettings _settings = settings;
+
+    /// <summary>Kandidaten fuer das Dump-Werkzeug, neuer Name zuerst.</summary>
+    private static readonly string[] DumpCandidates = ["mariadb-dump", "mysqldump"];
+
+    /// <summary>Kandidaten fuer den Client (Restore), neuer Name zuerst.</summary>
+    private static readonly string[] ClientCandidates = ["mariadb", "mysql"];
+
+    /// <summary>
+    /// Zielverzeichnis fuer diese Datenbank:
+    /// <c>&lt;Wurzel&gt;\&lt;Server&gt;\&lt;Datenbank&gt;</c>. Pro Server ein
+    /// eigener Zweig, damit gleichnamige Datenbanken auf verschiedenen Servern
+    /// nicht im selben Ordner landen.
+    /// </summary>
+    public string BackupDirectoryFor(string database)
+    {
+        string root = string.IsNullOrWhiteSpace(_settings.BackupRoot)
+            ? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "DTM-Backups", "MariaDB")
+            : _settings.BackupRoot;
+
+        (string host, _) = _connector.HostAndPort();
+        return Path.Combine(root, SanitizeForPath(host), SanitizeForPath(database));
+    }
+
+    /// <summary>Vorhandene Dumps, neueste zuerst.</summary>
+    public IReadOnlyList<MariaDbBackupFile> ListBackups(string database)
+    {
+        string dir = BackupDirectoryFor(database);
+        if (!Directory.Exists(dir)) return [];
+
+        return Directory.EnumerateFiles(dir, "*.sql")
+            .Select(p => new FileInfo(p))
+            .OrderByDescending(f => f.CreationTimeUtc)
+            .Select(f => new MariaDbBackupFile(
+                f.FullName, f.Name, f.CreationTime, Math.Round(f.Length / 1024d / 1024d, 2)))
+            .ToList();
+    }
+
+    /// <summary>
+    /// Schreibt einen vollstaendigen Dump und liefert den Pfad zurueck.
+    /// Fortschritt und Meldungen des Werkzeugs gehen laufend an
+    /// <paramref name="onInfo"/>.
+    /// </summary>
+    public async Task<string> BackupAsync(
+        string database, Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        string tool = ResolveTool(_settings.DumpPath, DumpCandidates, "mariadb-dump");
+        string dir = BackupDirectoryFor(database);
+        Directory.CreateDirectory(dir);
+
+        string target = Path.Combine(dir, $"{SanitizeForPath(database)}-{DateTime.Now:yyyyMMdd_HHmm}.sql");
+        (string host, uint port) = _connector.HostAndPort();
+
+        onInfo?.Invoke($"Backup von '{database}' nach {target}");
+        _logger.Info("MariaDB-Backup: {0} → {1}", database, target);
+
+        // --single-transaction: konsistenter Stand ohne die Tabellen zu
+        // sperren (gilt fuer transaktionale Engines wie InnoDB).
+        // --routines/--events/--triggers: sonst fehlen sie im Dump und der
+        // Restore liefert eine unvollstaendige Datenbank.
+        List<string> args =
+        [
+            $"--host={host}",
+            $"--port={port}",
+            $"--user={_connector.CredentialRef.User}",
+            "--single-transaction",
+            "--routines",
+            "--events",
+            "--triggers",
+            "--default-character-set=utf8mb4",
+            $"--result-file={target}",
+            database,
+        ];
+
+        int exitCode = await RunToolAsync(tool, args, onInfo, ct);
+        if (exitCode != 0)
+        {
+            // Eine halb geschriebene Datei ist schlimmer als keine: sie sieht
+            // aus wie ein Backup und laesst sich nicht einspielen.
+            TryDelete(target);
+            throw new InvalidOperationException(
+                $"{Path.GetFileName(tool)} endete mit Code {exitCode}. Die unvollstaendige Datei wurde entfernt.");
+        }
+
+        var info = new FileInfo(target);
+        onInfo?.Invoke($"Backup fertig: {info.Name} ({info.Length / 1024d / 1024d:N1} MB)");
+        return target;
+    }
+
+    /// <summary>
+    /// Spielt einen Dump in die Datenbank zurueck. <b>Destruktiv</b> — der
+    /// Aufrufer muss vorher bestaetigen lassen.
+    /// </summary>
+    public async Task RestoreAsync(
+        string database, string backupFile,
+        Action<string>? onInfo = null, CancellationToken ct = default)
+    {
+        if (!SystemFile.Exists(backupFile))
+            throw new FileNotFoundException($"Dump nicht gefunden: {backupFile}", backupFile);
+
+        string tool = ResolveTool(_settings.ClientPath, ClientCandidates, "mariadb");
+        (string host, uint port) = _connector.HostAndPort();
+
+        onInfo?.Invoke($"Spiele {Path.GetFileName(backupFile)} in '{database}' ein …");
+        _logger.Info("MariaDB-Restore: {0} → {1}", backupFile, database);
+
+        List<string> args =
+        [
+            $"--host={host}",
+            $"--port={port}",
+            $"--user={_connector.CredentialRef.User}",
+            "--default-character-set=utf8mb4",
+            database,
+        ];
+
+        // Der Client liest das Skript von stdin — es gibt keine Option dafuer.
+        int exitCode = await RunToolAsync(tool, args, onInfo, ct, stdinFile: backupFile);
+        if (exitCode != 0)
+            throw new InvalidOperationException(
+                $"{Path.GetFileName(tool)} endete mit Code {exitCode}. Die Datenbank kann unvollstaendig sein.");
+
+        onInfo?.Invoke("Restore abgeschlossen.");
+    }
+
+    /// <summary>
+    /// Startet ein Werkzeug, streamt dessen Ausgaben und wartet auf das Ende.
+    /// Das Passwort geht ueber eine temporaere Optionsdatei, nie als Argument.
+    /// </summary>
+    private async Task<int> RunToolAsync(
+        string tool, IReadOnlyList<string> args, Action<string>? onInfo,
+        CancellationToken ct, string? stdinFile = null)
+    {
+        string optionsFile = WriteCredentialFile();
+        try
+        {
+            ProcessStartInfo psi = new()
+            {
+                FileName = tool,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = stdinFile is not null,
+                RedirectStandardError = true,
+                RedirectStandardInput = stdinFile is not null,
+                StandardErrorEncoding = Encoding.UTF8,
+            };
+
+            // Muss das erste Argument sein — spaetere Optionen sollen die
+            // Datei ueberschreiben koennen, nicht umgekehrt.
+            psi.ArgumentList.Add($"--defaults-extra-file={optionsFile}");
+            foreach (string a in args) psi.ArgumentList.Add(a);
+
+            using Process process = new() { StartInfo = psi };
+            process.Start();
+
+            // stderr traegt bei diesen Werkzeugen auch die Fortschritts- und
+            // Warnmeldungen, nicht nur Fehler.
+            Task<string> stderr = process.StandardError.ReadToEndAsync(ct);
+
+            if (stdinFile is not null)
+            {
+                await using FileStream input = SystemFile.OpenRead(stdinFile);
+                await input.CopyToAsync(process.StandardInput.BaseStream, ct);
+                process.StandardInput.Close();
+            }
+
+            await process.WaitForExitAsync(ct);
+            string errorText = await stderr;
+
+            foreach (string line in errorText.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+            {
+                string trimmed = line.Trim();
+                if (trimmed.Length == 0) continue;
+                // Der Hinweis auf die Passwortdatei ist erwartbar und kein
+                // Problem — er wuerde nur verunsichern.
+                if (trimmed.Contains("Using a password on the command line", StringComparison.OrdinalIgnoreCase))
+                    continue;
+                onInfo?.Invoke($"  {trimmed}");
+            }
+
+            return process.ExitCode;
+        }
+        catch (System.ComponentModel.Win32Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"'{tool}' liess sich nicht starten: {ex.Message}. "
+                + "Pfad in den Einstellungen unter MariaDB pruefen.", ex);
+        }
+        finally
+        {
+            TryDelete(optionsFile);
+        }
+    }
+
+    /// <summary>
+    /// Schreibt eine temporaere Optionsdatei mit dem Passwort und schuetzt sie
+    /// so weit die Plattform es zulaesst.
+    /// </summary>
+    private string WriteCredentialFile()
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"dtm-mariadb-{Guid.NewGuid():N}.cnf");
+
+        // Datei zuerst leer anlegen, Rechte setzen, dann erst das Passwort
+        // hineinschreiben — sonst steht es kurzzeitig in einer Datei mit den
+        // Standardrechten des Verzeichnisses.
+        SystemFile.WriteAllText(path, string.Empty);
+        if (!OperatingSystem.IsWindows())
+            SystemFile.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+
+        string password = _connector.CredentialRef.Password ?? string.Empty;
+        SystemFile.WriteAllText(path,
+            $"[client]{Environment.NewLine}password=\"{password.Replace("\"", "\\\"", StringComparison.Ordinal)}\"{Environment.NewLine}");
+        return path;
+    }
+
+    /// <summary>
+    /// Ermittelt den Pfad zum Werkzeug: konfigurierter Wert, sonst die
+    /// bekannten Namen aus dem <c>PATH</c>.
+    /// </summary>
+    internal static string ResolveTool(string configured, IReadOnlyList<string> candidates, string displayName)
+    {
+        if (!string.IsNullOrWhiteSpace(configured))
+        {
+            if (SystemFile.Exists(configured)) return configured;
+            throw new FileNotFoundException(
+                $"Der in den Einstellungen hinterlegte Pfad zu {displayName} existiert nicht: {configured}",
+                configured);
+        }
+
+        foreach (string candidate in candidates)
+        {
+            string? found = FindOnPath(candidate);
+            if (found is not null) return found;
+        }
+
+        throw new FileNotFoundException(
+            $"{displayName} wurde nicht gefunden. Entweder in den PATH aufnehmen "
+            + $"oder den vollen Pfad in den Einstellungen unter MariaDB eintragen. "
+            + $"Gesucht wurde nach: {string.Join(", ", candidates)}.");
+    }
+
+    private static string? FindOnPath(string command)
+    {
+        string[] extensions = OperatingSystem.IsWindows()
+            ? [".exe", ".cmd", ".bat"]
+            : [string.Empty];
+
+        foreach (string dir in (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
+                     .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        {
+            foreach (string ext in extensions)
+            {
+                try
+                {
+                    string full = Path.Combine(dir.Trim(), command + ext);
+                    if (SystemFile.Exists(full)) return full;
+                }
+                catch (ArgumentException)
+                {
+                    // Ungueltige Zeichen in einem PATH-Eintrag — ueberspringen
+                    // statt die ganze Suche scheitern zu lassen.
+                }
+            }
+        }
+        return null;
+    }
+
+    /// <summary>Ersetzt alles, was in einem Pfadsegment stoeren koennte.</summary>
+    internal static string SanitizeForPath(string value)
+    {
+        char[] invalid = Path.GetInvalidFileNameChars();
+        StringBuilder sb = new(value.Length);
+        foreach (char c in value) sb.Append(Array.IndexOf(invalid, c) >= 0 ? '_' : c);
+        return sb.ToString();
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            if (SystemFile.Exists(path)) SystemFile.Delete(path);
+        }
+        catch (Exception ex)
+        {
+            _logger.Warn(ex, "Temporaere Datei {0} liess sich nicht entfernen.", path);
+        }
+    }
+}

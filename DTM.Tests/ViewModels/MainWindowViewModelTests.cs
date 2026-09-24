@@ -17,6 +17,10 @@ public class MainWindowViewModelTests
             => throw new NotSupportedException("Stub: MainWindowViewModelTests testen den FOC-SQL-Weg.");
         public DTM.Data.Olvm.OlvmSnapshotService GetOlvmSnapshotService(ServerIdentity id)
             => throw new NotSupportedException("Stub: OLVM-REST wird hier nicht aufgerufen.");
+        public DTM.Data.MariaDb.MariaDbActionService GetMariaDbActions(ServerIdentity id)
+            => throw new NotSupportedException("Stub: MariaDB-Aktionen brauchen einen Server.");
+        public DTM.Data.MariaDb.MariaDbBackupService GetMariaDbBackups(ServerIdentity id)
+            => throw new NotSupportedException("Stub: MariaDB-Backups brauchen einen Server.");
     }
 
     private static MainWindowViewModel MakeVm(params DB_SERVER.ServerTyp[] types)

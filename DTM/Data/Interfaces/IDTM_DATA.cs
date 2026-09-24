@@ -37,5 +37,20 @@ namespace DTM
         /// Oracle ist.
         /// </summary>
         Data.Olvm.OlvmSnapshotService GetOlvmSnapshotService(ServerIdentity identity);
+
+        /// <summary>
+        /// Phase 16: Sessions beenden und Tabellen-Wartung fuer den benannten
+        /// MariaDB-Server. Nutzt dieselbe gecachte Verbindung wie Stats und
+        /// Namen. Wirft <see cref="InvalidOperationException"/>, wenn der
+        /// Server nicht MariaDB ist.
+        /// </summary>
+        Data.MariaDb.MariaDbActionService GetMariaDbActions(ServerIdentity identity);
+
+        /// <summary>
+        /// Phase 16: Backup und Restore fuer den benannten MariaDB-Server ueber
+        /// die externen Werkzeuge <c>mariadb-dump</c> und <c>mariadb</c>. Die
+        /// Pfade kommen aus den Einstellungen.
+        /// </summary>
+        Data.MariaDb.MariaDbBackupService GetMariaDbBackups(ServerIdentity identity);
     }
 }
