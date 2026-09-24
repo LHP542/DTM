@@ -1,5 +1,17 @@
 [
   {
+    "version": "2.4.2",
+    "date": "2026-09-24",
+    "notes": [
+      "Rollbalken legen sich nicht mehr über den Inhalt. Betroffen waren alle Fenster mit scrollbarem Inhalt: im Verbindungs-Dialog liefen die Eingabefelder unter den Balken, im Update-Dialog fehlten von jeder Textzeile rechts ein bis zwei Zeichen.",
+      "Datenbank-Baum: kein waagerechtes Rollen mehr. Bisher wuchs der Baum mit dem längsten Datenbanknamen, und wer den Balken benutzte, schob sich die Gruppen-Beschriftung ('MSSQL', 'ORACLE') links aus dem Bild. Lange Namen werden jetzt mit '…' gekürzt und stehen vollständig im Tooltip.",
+      "Backup-Browser: Datum und Größe waren abgeschnitten ('2026-09-24 12:' statt '2026-09-24 12:00', '746,9 M' statt '746,9 MB'). Beide Spalten richten sich jetzt nach ihrem Inhalt.",
+      "Verbindungsmanager: Server- und Benutzer-Spalte waren zu schmal, lange Servernamen wurden abgeschnitten.",
+      "Sitzungs-Fenster: die Tabelle klebte ohne Rand an den Fensterkanten — als einziges Fenster. Sie sitzt jetzt wie überall sonst in einer Karte."
+    ],
+    "modulesChanged": []
+  },
+  {
     "version": "2.4.1",
     "date": "2026-09-24",
     "notes": [
