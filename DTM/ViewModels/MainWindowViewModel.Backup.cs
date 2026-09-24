@@ -23,6 +23,22 @@ public sealed partial class MainWindowViewModel
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
 
+        // MariaDB: Dump ueber das externe mariadb-dump. Kein Scheduling —
+        // der Dump laeuft sofort und schreibt in das konfigurierte
+        // Backup-Verzeichnis.
+        if (db.ServerTyp == DB_SERVER.ServerTyp.MariaDB)
+        {
+            await RunOdbcActionAsync("Backup", db.Database.Name,
+                async onInfo =>
+                {
+                    string path = await _data.GetMariaDbBackups(db.ServerIdentity)
+                        .BackupAsync(db.Database.Name, onInfo)
+                        .ConfigureAwait(false);
+                    onInfo($"Backup-Datei: {path}");
+                });
+            return;
+        }
+
         // OdbcDirect: kein Scheduling (Task-Scheduler-Weg des FOC-SQL-Moduls
         // faellt weg). Backup laeuft sofort.
         var odbc = TryGetOdbcActions(db);
@@ -74,13 +90,16 @@ public sealed partial class MainWindowViewModel
         RunSimpleAction("Copy-Database-ToSamba", db, "", "DB → Samba");
     }
 
-    // Backup-Browser: Dialog mit allen .bak-Dateien der selektierten MSSQL-DB,
-    // mit Restore-Knopf (WITH REPLACE). MSSQL-only in v1.
+    // Backup-Browser: Dialog mit den vorhandenen Sicherungen der selektierten
+    // DB samt Restore-Knopf — bei MSSQL die .bak-Dateien (Restore WITH
+    // REPLACE), bei MariaDB die Dumps aus dem Backup-Verzeichnis. Oracle
+    // laeuft ueber RMAN und ist hier nicht abgedeckt.
     [RelayCommand]
     private async Task OpenBackupBrowser()
     {
         if (SelectedNode is not DatabaseNodeViewModel db) return;
-        if (db.ServerTyp != DB_SERVER.ServerTyp.MSSQL) return;
+        bool isMaria = db.ServerTyp == DB_SERVER.ServerTyp.MariaDB;
+        if (db.ServerTyp != DB_SERVER.ServerTyp.MSSQL && !isMaria) return;
 
         Window? owner = GetMainWindow();
         if (owner is null || _services is null) return;
@@ -90,7 +109,11 @@ public sealed partial class MainWindowViewModel
         BackupBrowserWindow dlg = new() { DataContext = vm };
 
         // Spinner ist sofort sichtbar, Daten laden parallel.
-        _ = vm.LoadAsync(ModuleDatabaseId(db), ServerParamFor(db), TryGetOdbcActions(db));
+        _ = vm.LoadAsync(
+            ModuleDatabaseId(db),
+            ServerParamFor(db),
+            isMaria ? null : TryGetOdbcActions(db),
+            isMaria ? _data.GetMariaDbBackups(db.ServerIdentity) : null);
 
         await dlg.ShowDialog(owner);
     }

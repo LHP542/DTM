@@ -183,6 +183,20 @@ public class MariaDbBackupServiceTests : IDisposable
     }
 
     [Fact]
+    public void ListBackups_ReportsExactByteSize()
+    {
+        // Die Groesse wird hier bewusst nicht in MB vorgerundet: der
+        // Backup-Browser bereitet sie selbst auf, und eine vorab gerundete
+        // Zahl liesse sich nicht mehr exakt zurueckrechnen.
+        MariaDbBackupService svc = Service();
+        string dir = svc.BackupDirectoryFor("kunden");
+        Directory.CreateDirectory(dir);
+        SystemFile.WriteAllBytes(Path.Combine(dir, "kunden-20250101_1000.sql"), new byte[1234]);
+
+        svc.ListBackups("kunden").Single().SizeBytes.Should().Be(1234);
+    }
+
+    [Fact]
     public async Task RestoreAsync_MissingFile_ThrowsBeforeStartingAnything()
     {
         MariaDbBackupService svc = Service();

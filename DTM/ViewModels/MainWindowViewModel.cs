@@ -49,6 +49,25 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private string _dbSize = "—";
     [ObservableProperty] private string _recoveryOrArchiveMode = "—";
     [ObservableProperty] private string _recoveryLabel = "Recovery";
+
+    /// <summary>
+    /// Beschriftung der Versions-Zeile in der Info-Card. MSSQL zeigt dort den
+    /// Compatibility-Level, Oracle und MariaDB die Server-Version.
+    /// </summary>
+    [ObservableProperty] private string _versionLabel = "Comp. Level";
+
+    // Freier Slot in der Info-Card fuer Angaben, die es nur bei einem Backend
+    // gibt — aktuell MariaDB (Tabellenzahl und Storage-Engines).
+    [ObservableProperty] private bool _extraInfoVisible;
+    [ObservableProperty] private string _extraInfoLabel = string.Empty;
+    [ObservableProperty] private string _extraInfoValue = string.Empty;
+
+    /// <summary>
+    /// Wartungs-Gruppe fuer MariaDB (CHECK / OPTIMIZE / ANALYZE TABLE).
+    /// Eigene Gruppe statt der MSSQL-Wartung, weil die Befehle andere sind
+    /// und pro Tabelle statt pro Datenbank laufen.
+    /// </summary>
+    [ObservableProperty] private bool _mariaDbMaintenanceVisible;
     [ObservableProperty] private string _activeSessionsLabel = "Aktive Sessions: —";
     [ObservableProperty] private string _activeSessionsCount = "0";
     [ObservableProperty] private string _statusBar = "Bereit";
@@ -180,6 +199,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         SyncToTestVisible = true;
         // 11: OLVM-Aktionen sind Oracle-only, wird in ApplyStats gesetzt.
         OlvmVisible = false;
+        MariaDbMaintenanceVisible = false;
+        ExtraInfoVisible = false;
+        VersionLabel = "Comp. Level";
 
         switch (value)
         {
@@ -271,8 +293,44 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             DbSize = $"{o.DataSizeMB.ToString(System.Globalization.CultureInfo.InvariantCulture)} MB";
             RecoveryLabel = "ArchiveLog";
             RecoveryOrArchiveMode = o.ArchiveLogMode ?? "—";
+            VersionLabel = "Version";
             // Phase 11: OLVM-Snapshot-Gruppe nur bei Oracle einblenden.
             OlvmVisible = true;
+        }
+        else if (stats is Database_Stats_MariaDb maria)
+        {
+            // MariaDB laeuft immer direkt — es gibt keinen FOC-SQL-Weg und
+            // damit auch keine Backend-Wahl.
+            BackupButtonText = "Dump";
+            DbName = maria.Name ?? "—";
+            DbHost = maria.Server ?? "—";
+            DbStatus = maria.State ?? "—";
+            VersionLabel = "Version";
+            DbVersion = maria.ServerVersion ?? "—";
+            DbSize = $"{maria.TotalSizeMB.ToString("N2", new CultureInfo("de-DE"))} MB";
+
+            // Die Recovery-Zeile traegt hier den Zeichensatz: einen
+            // Recovery-Modus gibt es nicht, und die Sortierung entscheidet
+            // bei MariaDB ueber Vergleiche und Sortierreihenfolge — das ist
+            // die Angabe, die man an dieser Stelle wirklich braucht.
+            RecoveryLabel = "Zeichensatz";
+            RecoveryOrArchiveMode = string.IsNullOrWhiteSpace(maria.Collation)
+                ? maria.CharacterSet ?? "—"
+                : $"{maria.CharacterSet} / {maria.Collation}";
+
+            ExtraInfoVisible = true;
+            ExtraInfoLabel = "Tabellen";
+            ExtraInfoValue = string.IsNullOrWhiteSpace(maria.Engines)
+                ? maria.TableCount.ToString(CultureInfo.InvariantCulture)
+                : $"{maria.TableCount} — {maria.Engines}";
+
+            // Nur Backup, Backup-Browser und Tabellen-Wartung. Snapshots,
+            // Recovery-Modus, Archive-Log und Cluster-Health haben in MariaDB
+            // kein Gegenstueck und bleiben aus (siehe MariaDbActionService).
+            BackupBrowserVisible = true;
+            MariaDbMaintenanceVisible = true;
+            CopyToSambaVisible = false;
+            SyncToTestVisible = false;
         }
     }
 
@@ -305,6 +363,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         CopyToSambaVisible = true;
         SyncToTestVisible = true;
         OlvmVisible = false;
+        MariaDbMaintenanceVisible = false;
+        ExtraInfoVisible = false;
+        VersionLabel = "Comp. Level";
         StatusBar = "Verbindungen aktualisiert.";
         _logger.Debug("Verbindungen neu geladen: {0} Server.", newServers.Count);
     }

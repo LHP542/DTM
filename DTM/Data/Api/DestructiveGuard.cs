@@ -39,6 +39,10 @@ public static class DestructiveGuard
         "ArchiveLogOn", "ArchiveLogOff",
         // Wartung: CHECKDB ist lesend, Rebuild und Shrink sind es nicht
         "RunIndexRebuild", "RunShrinkLog",
+        // MariaDB: OPTIMIZE schreibt jede Tabelle neu und sperrt sie dabei.
+        // CHECK ist rein lesend und ANALYZE beruehrt nur die Optimizer-
+        // Statistiken — beide gelten als unkritisch.
+        "MariaDbOptimizeTables",
     };
 
     /// <summary>

@@ -21,6 +21,9 @@ public sealed partial class SessionsViewModel : ViewModelBase
     /// <summary>Wenn gesetzt: OdbcDirect-Pfad; sonst FOC-SQL-Pfad.</summary>
     public OdbcMssqlActionService? OdbcActions { get; set; }
 
+    /// <summary>Wenn gesetzt: MariaDB-Pfad (hat Vorrang vor beiden anderen).</summary>
+    public DTM.Data.MariaDb.MariaDbActionService? MariaDbActions { get; set; }
+
     public void SetSessions(IEnumerable<Session>? sessions)
     {
         Sessions.Clear();
@@ -38,11 +41,13 @@ public sealed partial class SessionsViewModel : ViewModelBase
     /// optionaler OdbcActionService fuer den OdbcDirect-Pfad.
     /// </summary>
     public void Configure(string focDatabaseId, string displayName,
-                          OdbcMssqlActionService? odbcActions = null)
+                          OdbcMssqlActionService? odbcActions = null,
+                          DTM.Data.MariaDb.MariaDbActionService? mariaDbActions = null)
     {
         FocDatabaseId = focDatabaseId;
         DatabaseDisplayName = displayName;
         OdbcActions = odbcActions;
+        MariaDbActions = mariaDbActions;
         CanCloseSessions = !string.IsNullOrWhiteSpace(focDatabaseId);
     }
 
@@ -54,6 +59,13 @@ public sealed partial class SessionsViewModel : ViewModelBase
     public void PerformCloseAllSessions()
     {
         if (!CanCloseSessions) return;
+
+        if (MariaDbActions is { } maria)
+        {
+            _ = RunAsync($"Alle Verbindungen zu {DatabaseDisplayName} beenden (MariaDB)",
+                onInfo => maria.KillSessionsAsync(FocDatabaseId, onInfo));
+            return;
+        }
 
         if (OdbcActions is { } svc)
         {
@@ -68,14 +80,22 @@ public sealed partial class SessionsViewModel : ViewModelBase
             title: $"Alle Sessions zu {DatabaseDisplayName} beenden");
     }
 
-    private async Task RunOdbcAsync(OdbcMssqlActionService svc)
+    private Task RunOdbcAsync(OdbcMssqlActionService svc) =>
+        RunAsync($"Alle Sessions zu {DatabaseDisplayName} beenden (OdbcDirect)",
+            onInfo => svc.KillUserSessionsAsync(FocDatabaseId, onInfo));
+
+    /// <summary>
+    /// Fuehrt eine Aktion aus und spiegelt Start, Fortschritt und Ende als
+    /// Notices in den pwsh-Tab — damit sieht der Nutzer bei allen Backends
+    /// dasselbe, egal ob die Arbeit ueber FOC-SQL, ODBC oder MariaDB laeuft.
+    /// </summary>
+    private static async Task RunAsync(string label, Func<Action<string>, Task> action)
     {
-        string label = $"Alle Sessions zu {DatabaseDisplayName} beenden (OdbcDirect)";
         TerminalBus.InjectNotice($"[{label}]");
         try
         {
             Action<string> onInfo = t => TerminalBus.InjectNotice($"  {t}");
-            await svc.KillUserSessionsAsync(FocDatabaseId, onInfo).ConfigureAwait(false);
+            await action(onInfo).ConfigureAwait(false);
             TerminalBus.InjectNotice("[Sessions beendet]");
         }
         catch (Exception ex)

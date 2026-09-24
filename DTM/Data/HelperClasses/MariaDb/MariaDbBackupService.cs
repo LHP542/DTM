@@ -11,8 +11,9 @@ namespace DTM.Data.MariaDb;
 /// <param name="Path">Voller Pfad.</param>
 /// <param name="FileName">Dateiname zur Anzeige.</param>
 /// <param name="Created">Zeitpunkt der Erstellung.</param>
-/// <param name="SizeMB">Groesse in MB.</param>
-public sealed record MariaDbBackupFile(string Path, string FileName, DateTime Created, double SizeMB);
+/// <param name="SizeBytes">Groesse in Byte — die Aufbereitung fuer die
+/// Anzeige macht die UI, damit hier nichts vorab gerundet wird.</param>
+public sealed record MariaDbBackupFile(string Path, string FileName, DateTime Created, long SizeBytes);
 
 /// <summary>
 /// Backup und Restore einer MariaDB-Datenbank ueber die externen Werkzeuge
@@ -72,8 +73,7 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
         return Directory.EnumerateFiles(dir, "*.sql")
             .Select(p => new FileInfo(p))
             .OrderByDescending(f => f.CreationTimeUtc)
-            .Select(f => new MariaDbBackupFile(
-                f.FullName, f.Name, f.CreationTime, Math.Round(f.Length / 1024d / 1024d, 2)))
+            .Select(f => new MariaDbBackupFile(f.FullName, f.Name, f.CreationTime, f.Length))
             .ToList();
     }
 

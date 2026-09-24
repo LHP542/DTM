@@ -32,7 +32,14 @@ public sealed partial class MainWindowViewModel
         SessionsViewModel vm = ResolveOrNew<SessionsViewModel>();
         vm.SetSessions(_currentSessions);
         if (SelectedNode is DatabaseNodeViewModel db)
-            vm.Configure(ModuleDatabaseId(db), db.Database.Name, TryGetOdbcActions(db));
+        {
+            // MariaDB beendet Verbindungen ueber KILL, nicht ueber FOC-SQL
+            // oder T-SQL — der Dialog bekommt deshalb den passenden Dienst.
+            var maria = db.ServerTyp == DB_SERVER.ServerTyp.MariaDB
+                ? _data.GetMariaDbActions(db.ServerIdentity)
+                : null;
+            vm.Configure(ModuleDatabaseId(db), db.Database.Name, TryGetOdbcActions(db), maria);
+        }
         SessionsWindow dlg = new SessionsWindow { DataContext = vm };
         await dlg.ShowDialog(owner);
     }

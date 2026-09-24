@@ -81,6 +81,11 @@ public class DestructiveGuardTests
             "OpenBackupBrowser",
             "OpenDbConfiguration",
             "RunCheckDb",
+            // MariaDB: CHECK ist rein lesend, ANALYZE beruehrt nur die
+            // Optimizer-Statistiken. OPTIMIZE schreibt dagegen jede Tabelle
+            // neu und steht in der Sperrliste.
+            "MariaDbCheckTables",
+            "MariaDbAnalyzeTables",
         };
 
         List<string> commands = typeof(MainWindowViewModel)

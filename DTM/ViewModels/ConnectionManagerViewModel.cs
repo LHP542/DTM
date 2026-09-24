@@ -27,6 +27,13 @@ public sealed partial class ConnectionManagerViewModel : ViewModelBase
     public static string UpdateChannelPlaceholder =>
         $"leer = {DTM.Updater.UpdateChannel.DefaultFolder}";
 
+    // --- MariaDB-Werkzeuge -------------------------------------------------
+    // MariaDB kennt kein BACKUP DATABASE; Dump und Restore laufen ueber die
+    // externen Kommandozeilenwerkzeuge. Leer = im PATH suchen.
+    [ObservableProperty] private string _mariaDbDumpPath = string.Empty;
+    [ObservableProperty] private string _mariaDbClientPath = string.Empty;
+    [ObservableProperty] private string _mariaDbBackupRoot = string.Empty;
+
     public ConnectionManagerViewModel()
     {
         foreach (ConnectionEntry e in ConnectionStore.Load())
@@ -36,18 +43,28 @@ public sealed partial class ConnectionManagerViewModel : ViewModelBase
         _sambaSource = foc.SambaSource;
         _modulePath = foc.ModulePath;
         _updateChannel = foc.UpdateChannel;
+        _mariaDbDumpPath = foc.MariaDb.DumpPath;
+        _mariaDbClientPath = foc.MariaDb.ClientPath;
+        _mariaDbBackupRoot = foc.MariaDb.BackupRoot;
 
         _logger.Debug("ConnectionManager: {0} Verbindungen geladen.", Connections.Count);
     }
 
     public void SaveFocSql()
     {
-        FocSqlConfig config = new()
-        {
-            SambaSource = SambaSource,
-            ModulePath = ModulePath,
-            UpdateChannel = UpdateChannel,
-        };
+        // Bestehende Einstellungen laden und nur die Felder dieses Fensters
+        // ueberschreiben. Vorher wurde hier ein frisches FocSqlConfig gebaut —
+        // damit hat jedes Speichern im Verbindungsmanager alles zurueckgesetzt,
+        // was sonst noch in der settings.json steht (die REST-API-Optionen
+        // etwa, samt Bearer-Token).
+        FocSqlConfig config = AppSettingsStore.LoadFocSql();
+        config.SambaSource = SambaSource;
+        config.ModulePath = ModulePath;
+        config.UpdateChannel = UpdateChannel;
+        config.MariaDb.DumpPath = MariaDbDumpPath;
+        config.MariaDb.ClientPath = MariaDbClientPath;
+        config.MariaDb.BackupRoot = MariaDbBackupRoot;
+
         AppSettingsStore.SaveFocSql(config);
         FocSqlRuntime.Current = config;
         TerminalBus.SendScript(FocSqlRuntime.BuildImportSnippet());
