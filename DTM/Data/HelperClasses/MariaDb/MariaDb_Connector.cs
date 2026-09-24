@@ -286,6 +286,28 @@ public sealed class MariaDb_Connector(ServerCredential credential) : IDisposable
 
     internal ServerCredential CredentialRef => Credential;
 
+    /// <summary>
+    /// Die Server-Version, oder <c>null</c>, wenn sie sich gerade nicht holen
+    /// lässt. Für den Versionsvergleich mit dem Dump-Werkzeug.
+    ///
+    /// <para>Bewusst mit Fangnetz: die Prüfung ist eine Dreingabe vor der
+    /// Sicherung. Scheitert sie — etwa weil der Server gerade nicht erreichbar
+    /// ist — soll daran nicht die Sicherung scheitern, sondern nur der
+    /// Vergleich ausfallen.</para>
+    /// </summary>
+    internal string? TryGetServerVersion()
+    {
+        try
+        {
+            return Query("SELECT VERSION()", r => r.GetString(0)).FirstOrDefault();
+        }
+        catch (Exception ex)
+        {
+            _logger.Debug(ex, "Server-Version für den Versionsvergleich nicht lesbar.");
+            return null;
+        }
+    }
+
     public void Dispose()
     {
         _connection?.Dispose();

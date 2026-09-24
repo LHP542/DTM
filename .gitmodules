@@ -1,3 +1,6 @@
 [submodule "external/FOC-SQL"]
 	path = external/FOC-SQL
 	url = https://github.com/LHP542/FOC-SQL.git
+[submodule "external/MySQL-MariaDB"]
+	path = external/MySQL-MariaDB
+	url = https://github.com/LHP542/MySQL-MariaDB.git

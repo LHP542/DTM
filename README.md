@@ -118,6 +118,19 @@ sind:
 | mariadb (Client) | Voller Pfad zum Client; leer = im `PATH` suchen (`mariadb`, ersatzweise `mysql`). Wird nur zum Zurückspielen gebraucht |
 | Backup-Ziel | Wurzelverzeichnis für Dumps; leer = `%USERPROFILE%\DTM-Backups\MariaDB`. Darunter legt DTM je Server und Datenbank einen Unterordner an |
 
+**Serverseitige Einrichtung** — Dienstkonto, Server-Einstellungen, Prüfskript
+und die Timer für nächtliche Sicherung und wöchentliche Wartung — liegt im
+eigenen Repository [MySQL-MariaDB](https://github.com/LHP542/MySQL-MariaDB),
+eingebunden unter `external/MySQL-MariaDB/`. Anders als bei FOC-SQL wird dort
+**kein Modul auf dem Server installiert**: DTM spricht MariaDB direkt an, die
+Dump-Werkzeuge laufen auf dem Arbeitsplatz.
+
+**Versionsprüfung:** Vor dem ersten Dump prüft DTM, ob das gefundene Werkzeug
+zu ihm und zum Server passt, und meldet es in der Konsole, wenn nicht. Ein
+Dump-Werkzeug, das älter ist als der Server, erzeugt Dumps, die sich nicht
+zuverlässig zurückspielen lassen — der Lauf meldet Erfolg, der Restore
+scheitert. Die Meldung bricht nicht ab; die Sicherung läuft trotzdem.
+
 MariaDB kennt kein `BACKUP DATABASE` — ein vollständiger, wieder einspielbarer
 Dump entsteht nur über das Kommandozeilenwerkzeug. Fehlt es, meldet DTM das
 beim ersten Dump-Versuch und nennt beide Wege (in den `PATH` aufnehmen oder
@@ -391,10 +404,10 @@ Bei einem Problem bitte ein Issue mit der aktuellen Logdatei eröffnen.
 ## Entwicklung
 
 ```bash
-# Klone (inkl. Dev-Submodul FOC-SQL unter external/):
+# Klone (inkl. der Submodule unter external/):
 git clone --recurse-submodules https://github.com/LHP542/DTM.git
 # oder, falls schon geklont:
-git submodule update --init external/FOC-SQL
+git submodule update --init --recursive
 
 # Bauen und Tests (VSCode-Task "build" / "test" ruft dasselbe):
 dotnet build DTM.slnx -c Debug
@@ -408,9 +421,15 @@ dotnet run --project DTM/DTM.csproj
 Release: VSCode-Task **„release (tag + push)"** — prüft den Git-Zustand, setzt
 den `vX.Y.Z`-Tag und stößt die GitHub-Action an, die alle Pakete baut.
 
-Das Submodul unter `external/FOC-SQL/` ist eine reine **Entwicklungs-Referenz**
-auf den FOC-SQL-Quellcode. Die App lädt FOC-SQL zur Laufzeit weiterhin über die
-in den Einstellungen konfigurierte Samba-Quelle bzw. den Modulpfad-Override.
+Unter `external/` liegen zwei Submodule, aus denen die App zur Laufzeit
+**nichts** lädt:
+
+- **`FOC-SQL/`** — Entwicklungs-Referenz auf den FOC-SQL-Quellcode. Die App holt
+  das Modul weiterhin über die in den Einstellungen konfigurierte Samba-Quelle
+  bzw. den Modulpfad-Override.
+- **`MySQL-MariaDB/`** — das Server-Kit für MariaDB und MySQL: Dienstkonto,
+  Server-Einstellungen, ein Prüfskript und die Timer für Sicherung und Wartung.
+  Wird auf dem Datenbankserver eingerichtet, nicht von DTM geladen.
 
 ### Architektur (Kurzüberblick)
 

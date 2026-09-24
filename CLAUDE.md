@@ -239,6 +239,30 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
   Einstellungen in `ConnectionManagerWindow`). Submodul-Inhalt aktualisieren bei
   Bedarf: `git submodule update --remote external/FOC-SQL`.
 
+  **Woher der Name kommt:** FOC steht für **FailOverCluster** (Lars,
+  2026-09-24) — nicht für irgendeine Produktfamilie. Deshalb passt er für
+  MariaDB und MySQL nicht, und das neue Kit heißt schlicht `MySQL-MariaDB`.
+  Das erklärt auch die Roadmap-Notiz in Phase 6, das Modul-Renaming stehe noch
+  aus: „FOC-SQL" beschreibt längst nicht mehr, was das Modul tut.
+
+- **MySQL-MariaDB als Server-Kit (Submodul):** Unter
+  `external/MySQL-MariaDB/` liegt `https://github.com/LHP542/MySQL-MariaDB.git`
+  (privat) — alles, was auf einem MariaDB-/MySQL-Server eingerichtet werden
+  muss, damit DTM ihn verwalten kann, plus Sicherung und Wartung als
+  systemd-Timer.
+
+  **Wichtig, weil es die Erwartung aus FOC-SQL bricht:** dort liegt ein
+  PowerShell-Modul auf dem Server, das DTM aus der Ferne aufruft. Hier ist das
+  nicht so und wird es nicht werden — DTM spricht MariaDB direkt über
+  MySqlConnector an, und die Dump-Werkzeuge laufen auf dem Arbeitsplatz. Das
+  Kit enthält deshalb Einrichtung (Dienstkonto, Server-Einstellungen), ein
+  Prüfskript und die beiden Timer. **DTM lädt daraus zur Laufzeit nichts.**
+
+  Inhalt: `setup/` (Konto mit einzeln begründeten Rechten, `.cnf`), `check/`
+  (`pruefe-server.sh` — liest und meldet, ändert nichts, endet mit der Zahl
+  der Beanstandungen), `backup/` + `wartung/` + `systemd/` (nächtlicher Dump
+  mit Aufbewahrung, wöchentliche Tabellen-Wartung), `VERSION`.
+
 - **FOC-SQL-Cmdlet ergänzen — Drei-Punkt-Checkliste:** Wenn eine neue Funktion
   ins FOC-SQL-Submodul kommt (für ein 📦-Roadmap-Item), müssen **alle drei**
   Files konsistent gepflegt werden — sonst ist die Funktion im Code da, wird aber
@@ -1403,6 +1427,23 @@ Vermutung aus dem Code, keine Messung.
    `information_schema`, `PROCESS` für die Sitzungsliste, `SUPER` bzw.
    `CONNECTION ADMIN` für `KILL` fremder Sitzungen, dazu die üblichen Rechte
    für `CHECK`/`ANALYZE`/`OPTIMIZE TABLE` und für den Dump.
+
+**Versionscheck (erledigt 2026-09-24):** `MariaDbToolVersion` prüft vor dem
+ersten Dump, ob das gefundene Werkzeug zu DTM und zum Server passt — das
+Gegenstück zum `VERSION_MISMATCH` von FOC-SQL. Zwei Vergleiche: gegen die in
+DTM hinterlegte Untergrenze (MariaDB 10.1, MySQL 5.7) und gegen die
+Server-Version. Der zweite ist der, der in der Praxis zuschlägt: ein
+Dump-Werkzeug, das älter ist als der Server, erzeugt Dumps, die sich nicht
+zuverlässig zurückspielen lassen — der Lauf meldet Erfolg, der Restore
+scheitert. Die Meldung bricht bewusst **nicht** ab, sie erscheint als Hinweis
+in der Konsole und im Log; wer gerade sichern will, soll nicht von einer
+Versionsfrage aufgehalten werden.
+
+Beim Parsen steckt eine Falle, die die Tests festhalten: bei MariaDB steht in
+der Ausgabe `Ver 10.19 Distrib 10.11.6-MariaDB` — die **erste** Zahl ist die
+interne Nummer des Werkzeugs, die zweite die Produktversion. Wer die erste
+vergleicht, hält eine MariaDB 10.11 für eine 10.19 und dreht die Prüfung ins
+Gegenteil. Ab MySQL 8 fällt `Distrib` weg, dort ist `Ver` die Produktversion.
 
 **Zwei Punkte aus der Code-Durchsicht vom 2026-09-24, beide unbelegt:**
 

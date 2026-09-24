@@ -92,6 +92,19 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
         string target = Path.Combine(dir, $"{SanitizeForPath(database)}-{DateTime.Now:yyyyMMdd_HHmm}.sql");
         (string host, uint port) = _connector.HostAndPort();
 
+        // Vor dem Dump prüfen, ob das Werkzeug zu DTM und zum Server passt.
+        // Die Meldung geht als Hinweis durch, sie bricht nicht ab: ein Dump mit
+        // einem zu alten Werkzeug ist immer noch besser als gar keiner, und wer
+        // gerade sichern will, soll nicht von einer Versionsfrage aufgehalten
+        // werden. Gemeldet wird trotzdem deutlich — der Fall, der weh tut, ist
+        // ein Dump, der Erfolg meldet und sich später nicht einspielen lässt.
+        string? versionsHinweis = await CheckToolVersionAsync(tool, ct).ConfigureAwait(false);
+        if (versionsHinweis is not null)
+        {
+            onInfo?.Invoke(versionsHinweis);
+            _logger.Warn("MariaDB-Werkzeug: {0}", versionsHinweis);
+        }
+
         onInfo?.Invoke($"Backup von '{database}' nach {target}");
         _logger.Info("MariaDB-Backup: {0} → {1}", database, target);
 
@@ -162,6 +175,59 @@ public sealed class MariaDbBackupService(MariaDb_Connector connector, MariaDbSet
 
         onInfo?.Invoke("Restore abgeschlossen.");
     }
+
+    /// <summary>
+    /// Ruft <c>--version</c> auf dem Dump-Werkzeug auf und vergleicht das
+    /// Ergebnis mit der Untergrenze und mit der Server-Version. Liefert den
+    /// Meldungstext oder <c>null</c>, wenn alles passt.
+    ///
+    /// <para>Das Ergebnis wird für die Lebensdauer des Dienstes gemerkt: das
+    /// Werkzeug wechselt während einer Sitzung nicht, und ein Prozessstart pro
+    /// Sicherung wäre verschenkte Zeit.</para>
+    /// </summary>
+    private async Task<string?> CheckToolVersionAsync(string tool, CancellationToken ct)
+    {
+        if (_versionsHinweisGeprueft) return _versionsHinweis;
+
+        try
+        {
+            ProcessStartInfo psi = new()
+            {
+                FileName = tool,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                StandardOutputEncoding = Encoding.UTF8,
+            };
+            psi.ArgumentList.Add("--version");
+
+            using Process p = new() { StartInfo = psi };
+            p.Start();
+            string ausgabe = await p.StandardOutput.ReadToEndAsync(ct).ConfigureAwait(false);
+            await p.WaitForExitAsync(ct).ConfigureAwait(false);
+
+            DumpToolInfo? info = MariaDbToolVersion.Parse(ausgabe);
+            string? serverVersion = _connector.TryGetServerVersion();
+            _versionsHinweis = MariaDbToolVersion.Check(info, serverVersion, tool);
+
+            if (_versionsHinweis is null && info is not null)
+                _logger.Info("MariaDB-Werkzeug passt: {0} (Server: {1})", info.RawOutput, serverVersion ?? "unbekannt");
+        }
+        catch (Exception ex)
+        {
+            // Eine gescheiterte Versionsabfrage darf die Sicherung nicht
+            // verhindern — sie ist eine Zusatzprüfung, keine Voraussetzung.
+            _logger.Warn(ex, "Versionsabfrage von '{0}' fehlgeschlagen.", tool);
+            _versionsHinweis = null;
+        }
+
+        _versionsHinweisGeprueft = true;
+        return _versionsHinweis;
+    }
+
+    private bool _versionsHinweisGeprueft;
+    private string? _versionsHinweis;
 
     /// <summary>
     /// Startet ein Werkzeug, streamt dessen Ausgaben und wartet auf das Ende.
