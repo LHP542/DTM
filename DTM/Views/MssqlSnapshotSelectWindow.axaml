@@ -70,7 +70,7 @@
                               SelectionMode="Single">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Snapshot-Name" Binding="{Binding Name}" Width="*" />
-                            <DataGridTextColumn Header="Erstellt am" Binding="{Binding CreatedAt}" Width="200" />
+                            <DataGridTextColumn Header="Erstellt am" Binding="{Binding CreatedAt}" Width="Auto" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>

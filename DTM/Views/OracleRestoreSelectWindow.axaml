@@ -108,10 +108,10 @@
                               SelectionMode="Single">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
-                            <DataGridTextColumn Header="Zeit" Binding="{Binding Time}" Width="180" />
-                            <DataGridTextColumn Header="Guaranteed" Binding="{Binding Guaranteed}" Width="110" />
-                            <DataGridTextColumn Header="ConID" Binding="{Binding ConId}" Width="80" />
-                            <DataGridTextColumn Header="SCN" Binding="{Binding Scn}" Width="140" />
+                            <DataGridTextColumn Header="Zeit" Binding="{Binding Time}" Width="Auto" />
+                            <DataGridTextColumn Header="Guaranteed" Binding="{Binding Guaranteed}" Width="Auto" />
+                            <DataGridTextColumn Header="ConID" Binding="{Binding ConId}" Width="Auto" />
+                            <DataGridTextColumn Header="SCN" Binding="{Binding Scn}" Width="Auto" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>

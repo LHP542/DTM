@@ -5,15 +5,23 @@
     <TreeDataTemplate x:Key="NodeTemplate"
                       DataType="vm:NodeViewModelBase"
                       ItemsSource="{Binding Children}">
-        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
-            <TextBlock Text="{Binding Header}" VerticalAlignment="Center" FontSize="13" />
-            <TextBlock Text="(lädt…)"
+        <!-- Auto,Auto statt StackPanel: der Name bekommt den Platz, der da
+             ist, und wird bei Bedarf mit „…" gekürzt. Vorher wuchs die Zeile
+             mit dem längsten Datenbanknamen, der Baum bekam einen waagerechten
+             Rollbalken, und sobald man ihn benutzte, schob sich die
+             Gruppen-Beschriftung („MSSQL") links aus dem Bild. -->
+        <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+            <TextBlock Grid.Column="0" Text="{Binding Header}"
+                       VerticalAlignment="Center" FontSize="13"
+                       TextTrimming="CharacterEllipsis"
+                       ToolTip.Tip="{Binding Header}" />
+            <TextBlock Grid.Column="1" Margin="6,0,0,0" Text="(lädt…)"
                        FontStyle="Italic"
                        FontSize="11"
                        Foreground="{DynamicResource KrosteMutedTextBrush}"
                        VerticalAlignment="Center"
                        IsVisible="{Binding IsLoading}" />
-        </StackPanel>
+        </Grid>
     </TreeDataTemplate>
 
 </ResourceDictionary>

@@ -79,9 +79,9 @@
                               SelectionMode="Single">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Beschreibung" Binding="{Binding Description}" Width="*" />
-                            <DataGridTextColumn Header="Erstellt am" Binding="{Binding CreatedAt}" Width="180" />
-                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
-                            <DataGridTextColumn Header="Typ" Binding="{Binding Type}" Width="90" />
+                            <DataGridTextColumn Header="Erstellt am" Binding="{Binding CreatedAt}" Width="Auto" />
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="Auto" />
+                            <DataGridTextColumn Header="Typ" Binding="{Binding Type}" Width="Auto" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>

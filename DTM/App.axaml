@@ -288,6 +288,24 @@
             <Setter Property="Fill" Value="{DynamicResource KrosteBorderBrush}" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
         </Style>
+
+        <!-- ================================================================
+             Rollbalken reservieren Platz, statt über dem Inhalt zu liegen
+             ================================================================
+             Avalonia blendet Rollbalken standardmäßig ein und aus und zeichnet
+             sie ÜBER den Inhalt. Bei einem ScrollViewer, dessen Inhalt die
+             volle Breite nutzt, fehlt rechts damit genau die Breite des
+             Balkens: von Textzeilen die letzten Zeichen, von Eingabefeldern
+             der rechte Rand.
+
+             Das hier ist die Regel an EINER Stelle, statt in jedem Dialog
+             einen eigenen Rand nachzuziehen — der wird beim nächsten neuen
+             Fenster sonst wieder vergessen. Real aufgefallen im
+             Update-Dialog und im Verbindungs-Dialog von v2.4.0/2.4.1.
+             ================================================================ -->
+        <Style Selector="ScrollViewer">
+            <Setter Property="AllowAutoHide" Value="False" />
+        </Style>
     </Application.Styles>
 
     <Application.Resources>

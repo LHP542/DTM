@@ -23,7 +23,10 @@
             <!-- Fensterspezifischer Chrome-Button; Min/Max/Close und der
                  Glyph-Wechsel beim Maximieren kommen aus dem Control. -->
             <ctrl:TitleBar.ExtraContent>
-                <Button Classes="chrome" Click="OnAbout"
+                <!-- x:Name, damit die Prüf-Schnittstelle den Knopf ansprechen
+                     kann — sonst lässt sich das Über-Fenster nicht ohne Maus
+                     öffnen und fällt bei jeder Sichtprüfung durchs Raster. -->
+                <Button x:Name="AboutButton" Classes="chrome" Click="OnAbout"
                         Content="&#x2139;" ToolTip.Tip="Über Datenbank-Manager" />
             </ctrl:TitleBar.ExtraContent>
         </ctrl:TitleBar>
@@ -57,8 +60,14 @@
                             </Button>
                         </Grid>
                     </Border>
+                    <!-- Kein waagerechtes Rollen: sonst wächst der Baum mit dem
+                         längsten Datenbanknamen, und wer den Balken benutzt,
+                         schiebt sich die Gruppen-Beschriftung links aus dem
+                         Bild. Lange Namen werden stattdessen mit „…" gekürzt
+                         und stehen vollständig im ToolTip. -->
                     <TreeView Background="Transparent"
                               Padding="8,0,8,8"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                               ItemsSource="{Binding RootNodes}"
                               SelectedItem="{Binding SelectedNode, Mode=TwoWay}"
                               ItemTemplate="{StaticResource NodeTemplate}">

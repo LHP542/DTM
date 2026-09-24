@@ -30,11 +30,11 @@
                       AutoGenerateColumns="False"
                       GridLinesVisibility="Horizontal">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Typ"             Binding="{Binding Key}"              Width="110" />
-                    <DataGridTextColumn Header="Server"          Binding="{Binding Server}"            Width="*" />
-                    <DataGridTextColumn Header="Benutzer"        Binding="{Binding User}"              Width="130" />
-                    <DataGridTextColumn Header="Datenbank"       Binding="{Binding Database}"          Width="120" />
-                    <DataGridTextColumn Header="ConnectionString" Binding="{Binding ConnectionString}" Width="*" />
+                    <DataGridTextColumn Header="Typ"             Binding="{Binding Key}"              Width="Auto" />
+                    <DataGridTextColumn Header="Server"          Binding="{Binding Server}"            Width="2*" />
+                    <DataGridTextColumn Header="Benutzer"        Binding="{Binding User}"              Width="Auto" />
+                    <DataGridTextColumn Header="Datenbank"       Binding="{Binding Database}"          Width="Auto" />
+                    <DataGridTextColumn Header="ConnectionString" Binding="{Binding ConnectionString}" Width="*" MinWidth="150" />
                 </DataGrid.Columns>
             </DataGrid>
 

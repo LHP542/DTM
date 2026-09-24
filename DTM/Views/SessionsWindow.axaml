@@ -17,23 +17,31 @@
         <!-- Titelleiste -->
         <c:TitleBar Grid.Row="0" Title="Sessions" />
 
-        <DataGrid Grid.Row="1"
-                  ItemsSource="{Binding Sessions}"
-                  IsReadOnly="True"
-                  AutoGenerateColumns="False"
-                  GridLinesVisibility="Horizontal">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="*" />
-                <DataGridTextColumn Header="Maschine" Binding="{Binding Maschine}" Width="*" />
-                <DataGridTextColumn Header="Programm" Binding="{Binding Program}" Width="*" />
-                <DataGridTextColumn Header="Status"   Binding="{Binding Status}"   Width="Auto" />
-            </DataGrid.Columns>
-        </DataGrid>
+        <!-- Tabelle in einer Karte mit Rand — wie in allen anderen Dialogen.
+             Vorher hing das DataGrid ohne Margin direkt im Grid und klebte
+             links und rechts an der Fensterkante; als einziges Fenster im
+             Projekt. -->
+        <Border Grid.Row="1" Margin="20,14,20,14"
+                Background="{DynamicResource KrosteCardBrush}"
+                BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="1"
+                CornerRadius="8" ClipToBounds="True">
+            <DataGrid ItemsSource="{Binding Sessions}"
+                      IsReadOnly="True"
+                      AutoGenerateColumns="False"
+                      GridLinesVisibility="Horizontal">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="*" />
+                    <DataGridTextColumn Header="Maschine" Binding="{Binding Maschine}" Width="*" />
+                    <DataGridTextColumn Header="Programm" Binding="{Binding Program}" Width="*" />
+                    <DataGridTextColumn Header="Status"   Binding="{Binding Status}"   Width="Auto" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
 
         <!-- Footer: Aktionen -->
         <Border Grid.Row="2" Background="{DynamicResource KrosteCardBrush}"
                 BorderBrush="{DynamicResource KrosteBorderBrush}" BorderThickness="0,1,0,0"
-                Padding="14,10">
+                Padding="20,10">
             <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Grid.Column="0" VerticalAlignment="Center"
                            Foreground="{DynamicResource KrosteMutedTextBrush}" FontSize="12">

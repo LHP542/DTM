@@ -61,8 +61,11 @@
                               SelectionMode="Single">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Datei" Binding="{Binding Name}" Width="*" />
-                            <DataGridTextColumn Header="Datum" Binding="{Binding LastWriteTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="160" />
-                            <DataGridTextColumn Header="Größe" Binding="{Binding SizeDisplay}" Width="100" />
+                            <!-- Auto statt fester Breite: die Spalten misst das Control am Inhalt.
+                                 Mit 160 bzw. 100 stand dort "2026-09-24 12:" und
+                                 "746,9 M" - abgeschnitten, ohne jeden Hinweis. -->
+                            <DataGridTextColumn Header="Datum" Binding="{Binding LastWriteTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Width="Auto" />
+                            <DataGridTextColumn Header="Größe" Binding="{Binding SizeDisplay}" Width="Auto" />
                         </DataGrid.Columns>
                     </DataGrid>
                 </Border>
