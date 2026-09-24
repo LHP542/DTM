@@ -55,8 +55,27 @@ public sealed partial class MainWindowViewModel
         {
             var updater = _services.GetRequiredService<DTM.Updater.UpdateService>();
             var result = await updater.CheckForUpdateAsync();
-            if (result is { UpdateAvailable: true })
-                await ShowUpdateDialogAsync(updater, result);
+            if (result is not { UpdateAvailable: true }) return;
+
+            // Ist der letzte Austausch gescheitert, wird der Hinweis einmal
+            // übersprungen. Sonst entsteht genau die Schleife, in der DTM am
+            // 2026-09-24 elfmal hintereinander gelandet ist: alte Version
+            // startet, findet dasselbe Paket, lädt, scheitert, startet wieder.
+            Version? gescheitert = DTM.Updater.UpdateFailureMarker.Read();
+            if (DTM.Updater.UpdateFailureMarker.ShouldSuppress(gescheitert, result.Current, result.Latest))
+            {
+                _logger.Warn("Update auf {0} wurde beim letzten Versuch nicht eingespielt — "
+                             + "automatischer Hinweis übersprungen.", gescheitert);
+                StatusBar = $"Das letzte Update auf {gescheitert} konnte nicht eingespielt werden — "
+                          + "Details im Log. Erneuter Versuch über ℹ → Auf Updates prüfen.";
+                return;
+            }
+
+            // Der Marker hat sich erledigt (Version erreicht oder eine neuere
+            // liegt bereit) — weg damit, sonst bleibt er ewig liegen.
+            if (gescheitert is not null) DTM.Updater.UpdateFailureMarker.Clear();
+
+            await ShowUpdateDialogAsync(updater, result);
         }
         catch (Exception ex) { _logger.Warn(ex, "Update-Prüfung fehlgeschlagen."); }
     }

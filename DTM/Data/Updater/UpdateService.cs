@@ -345,7 +345,7 @@ public sealed class UpdateService : IDisposable
             await FetchAsync(update.AssetUrl, assetPath, progress, ct);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return ApplyWindows(assetPath, work, appDir);
+                return ApplyWindows(assetPath, work, appDir, update.Latest);
             return ApplyLinux(assetPath, appDir);
         }
         catch (Exception ex)
@@ -448,7 +448,7 @@ public sealed class UpdateService : IDisposable
     /// Runspace aufrufen und damit unbegrenzt blockieren. Process.Kill()
     /// schickt direkt TerminateProcess/SIGKILL — kein Finalizer, kein Hang.
     /// </summary>
-    private bool ApplyWindows(string zipPath, string work, string appDir)
+    private bool ApplyWindows(string zipPath, string work, string appDir, Version version)
     {
         var extract = Path.Combine(work, "extracted");
         ZipFile.ExtractToDirectory(zipPath, extract);
@@ -458,16 +458,53 @@ public sealed class UpdateService : IDisposable
         var bat = Path.Combine(work, "apply.bat");
         var log = Path.Combine(work, "update.log");
 
+        // robocopy statt xcopy — wegen /R und /W.
+        //
+        // Warum das der Kern des Problems ist: DTM.exe ist ein self-contained
+        // Single-File-Build von rund 190 MB. Nach Process.Kill() gibt Windows
+        // das Image dieser Datei nicht sofort frei; Wait-Process wartet auf das
+        // Prozessende, nicht auf die Freigabe der Datei. xcopy hat genau einen
+        // Versuch: es kopierte die kleinen Dateien, lief bei DTM.exe in eine
+        // Sharing-Verletzung ("Unzulaessiger SHARE-Vorgang") und brach ab — die
+        // alte Exe wurde danach wieder gestartet, meldete erneut ein Update,
+        // und das ging endlos so weiter (real am 2026-09-24, elf Versuche).
+        //
+        // Im Protokoll aelterer Laeufe sieht man dasselbe Rennen: auf einen
+        // Fehlschlag folgte Sekunden spaeter ein erfolgreicher Zweitversuch.
+        // Es war also immer schon knapp und fiel erst auf, als die Exe gross
+        // genug wurde.
+        //
+        // robocopy /R:10 /W:3 wiederholt bis zu zehnmal mit drei Sekunden
+        // Abstand — dreissig Sekunden Geduld statt einer einzigen Chance.
+        // Rueckgabewerte unter 8 bedeuten Erfolg (0 = nichts zu tun,
+        // 1 = kopiert, 2/4 = Extras bzw. Abweichungen); erst ab 8 liegt ein
+        // echter Fehler vor.
+        var marker = UpdateFailureMarker.Path;
         var lines = new[]
         {
             "@echo off",
             $"echo Warte auf Prozess {pid} >\"{log}\"",
             $"powershell -NoProfile -Command \"try {{ Wait-Process -Id {pid} -ErrorAction Stop }} catch {{}}\" >>\"{log}\" 2>&1",
-            "ping 127.0.0.1 -n 2 >NUL",
+            // Etwas Luft, bevor der erste Versuch laeuft. Die eigentliche
+            // Absicherung sind die Wiederholungen unten.
+            "ping 127.0.0.1 -n 4 >NUL",
             $"echo Kopiere Dateien >>\"{log}\"",
-            $"xcopy /E /Y /I /Q \"{extract}\\*\" \"{appDir}\\\" >>\"{log}\" 2>&1",
+            $"robocopy \"{extract}\" \"{appDir}\" /E /R:10 /W:3 /NJH /NJS /NP >>\"{log}\" 2>&1",
+            "if %ERRORLEVEL% GEQ 8 goto :fehler",
+            $"echo Kopie erfolgreich >>\"{log}\"",
+            // Ein frueher gescheiterter Versuch ist damit erledigt.
+            $"del /q \"{marker}\" >NUL 2>&1",
             $"echo Starte neu >>\"{log}\"",
             $"start \"\" \"{exe}\"",
+            "goto :ende",
+            ":fehler",
+            $"echo FEHLER: Kopie fehlgeschlagen (robocopy %ERRORLEVEL%) >>\"{log}\"",
+            // Marker, damit die neu gestartete alte Version weiss, dass der
+            // Austausch nicht geklappt hat, und nicht sofort wieder dasselbe
+            // Update anbietet. Ohne ihn entsteht genau die Endlosschleife.
+            $"echo {version} >\"{marker}\"",
+            $"start \"\" \"{exe}\"",
+            ":ende",
         };
         SystemFile.WriteAllLines(bat, lines);
 
