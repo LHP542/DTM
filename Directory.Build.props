@@ -12,5 +12,11 @@
          TreatWarningsAsErrors werden Stilverstöße zu Compile-Fehlern statt zu
          Fundsachen im Review. -->
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <!-- IDE0005 (ungenutzte using-Direktiven) meldet sich ohne die
+         XML-Doku-Erzeugung nicht, sondern verlangt sie ausdrücklich
+         (Roslyn-Issue 41640). CS1591 muss dann raus, sonst will der Compiler
+         auf jedem öffentlichen Member einen Doc-Kommentar. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 </Project>

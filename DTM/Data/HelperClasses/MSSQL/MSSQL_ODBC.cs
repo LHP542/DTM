@@ -53,42 +53,69 @@ public class MSSQL_ODBC(ServerCredential credential) : IDisposable, IDTM_ODBC
         }
     }
 
+    /// <summary>
+    /// Führt eine lesende Abfrage aus.
+    ///
+    /// <para>Läuft unter demselben <see cref="_actionLock"/> wie die
+    /// schreibenden Aufrufe. Das ist nicht kosmetisch: eine
+    /// <see cref="OdbcConnection"/> ist nicht threadsicher, und die Stats
+    /// werden aus einem <c>Task.Run</c> geholt — nach einer Aktion sogar
+    /// zeitgesteuert acht Sekunden später, also mitten in ein laufendes
+    /// CHECKDB oder BACKUP hinein.</para>
+    /// </summary>
     private DataTable get_Rows(string SQL)
     {
         if (string.IsNullOrWhiteSpace(SQL))
         {
             _logger.Error("SQL Leer");
-            throw new Exception("SQL Leer");
+            throw new InvalidOperationException("SQL Leer");
         }
 
         _logger.Debug($"SQL: {SQL}");
-        if (conn_open())
+
+        _actionLock.Wait();
+        try
         {
+            if (!conn_open())
+            {
+                _logger.Error("Keine Verbindung zur Datenbank");
+                throw new InvalidOperationException("Keine Verbindung zur Datenbank");
+            }
+
             DataTable dt = new();
-
-
             using (OdbcDataAdapter ad = new(SQL, Connection))
             {
-                try{
-                ad.Fill(dt);
+                try
+                {
+                    ad.Fill(dt);
                 }
                 catch (Exception ex)
                 {
                     _logger.Error(ex.Message);
-                    throw new Exception($"Fehler bei SQL-Ausführung: {ex.Message}");
+                    throw new InvalidOperationException($"Fehler bei SQL-Ausführung: {ex.Message}", ex);
                 }
             }
 
             _logger.Debug("get_Rows: {0} Zeilen zurückgegeben.", dt.Rows.Count);
             return dt;
-
         }
-        else
+        finally
         {
-            _logger.Error("Keine Verbindung zur Datenbank");
-            throw new Exception("Keine Verbindung zur Datenbank");                
+            _actionLock.Release();
         }
     }
+
+    /// <summary>
+    /// Maskiert ein einfaches Anführungszeichen für ein SQL-Zeichenliteral.
+    ///
+    /// <para>Datenbanknamen dürfen in SQL Server ein <c>'</c> enthalten. Ohne
+    /// diese Maskierung bricht die Abfrage bei so einem Namen mit einem
+    /// Syntaxfehler ab — die Kennzahlen bleiben dann für genau diese Datenbank
+    /// leer, ohne erkennbaren Grund. Namen als Parameter zu binden geht hier
+    /// nicht überall, weil sie teils in Funktionen wie <c>DB_ID(N'…')</c>
+    /// stehen.</para>
+    /// </summary>
+    private static string Esc(string value) => value.Replace("'", "''", StringComparison.Ordinal);
 
     public void Dispose()
     {
@@ -330,16 +357,16 @@ public class MSSQL_ODBC(ServerCredential credential) : IDisposable, IDTM_ODBC
         sql.Append($"FROM sys.master_files mf WHERE mf.database_id = d.database_id)   AS TotalSizeMB,");
 
         sql.Append($"(SELECT MAX(bs.backup_finish_date) FROM msdb.dbo.backupset bs ");
-        sql.Append($"WHERE bs.database_name = '{Database}' AND bs.type = 'D')                   AS LastFullBackup,");
+        sql.Append($"WHERE bs.database_name = '{Esc(Database)}' AND bs.type = 'D')                   AS LastFullBackup,");
 
         sql.Append($"(SELECT MAX(bs.backup_finish_date) FROM msdb.dbo.backupset bs ");
-        sql.Append($"WHERE bs.database_name = '{Database}' AND bs.type = 'I')                   AS LastDiffBackup,");
+        sql.Append($"WHERE bs.database_name = '{Esc(Database)}' AND bs.type = 'I')                   AS LastDiffBackup,");
 
         sql.Append($"(SELECT MAX(bs.backup_finish_date) FROM msdb.dbo.backupset bs ");
-        sql.Append($"WHERE bs.database_name = '{Database}' AND bs.type = 'L')                   AS LastLogBackup ");
+        sql.Append($"WHERE bs.database_name = '{Esc(Database)}' AND bs.type = 'L')                   AS LastLogBackup ");
 
         sql.Append($"FROM sys.databases d ");
-        sql.Append($"WHERE d.name = '{Database}';");
+        sql.Append($"WHERE d.name = '{Esc(Database)}';");
 
         return get_Rows(sql.ToString());
     }
@@ -356,7 +383,7 @@ public class MSSQL_ODBC(ServerCredential credential) : IDisposable, IDTM_ODBC
         sql.Append($"mf.is_percent_growth, ");
         sql.Append($"mf.physical_name ");
         sql.Append($"FROM sys.master_files mf ");
-        sql.Append($"WHERE mf.database_id = DB_ID(N'{Database}') ");
+        sql.Append($"WHERE mf.database_id = DB_ID(N'{Esc(Database)}') ");
         sql.Append($"ORDER BY mf.type_desc, mf.name; ");
 
         return get_Rows(sql.ToString());
@@ -375,7 +402,7 @@ public class MSSQL_ODBC(ServerCredential credential) : IDisposable, IDTM_ODBC
         sql.Append($"s.login_time        AS LoginTime,");
         sql.Append($"DB_NAME(s.database_id) AS CurrentDatabase ");
         sql.Append($"FROM sys.dm_exec_sessions s ");
-        sql.Append($"WHERE s.database_id = DB_ID(N'{Database}') ");
+        sql.Append($"WHERE s.database_id = DB_ID(N'{Esc(Database)}') ");
         sql.Append($"AND s.is_user_process = 1 ");
         sql.Append($"ORDER BY s.host_name, s.login_name; ");
 
@@ -391,7 +418,7 @@ public class MSSQL_ODBC(ServerCredential credential) : IDisposable, IDTM_ODBC
         sql.Append($"(SELECT TOP(1) cntr_value FROM sys.dm_os_performance_counters ");
         sql.Append($"WHERE counter_name = 'Database pages' AND object_name LIKE '%Buffer Manager%') ");
         sql.Append($"* 1.0 ");
-        sql.Append($"* (SELECT SUM(size) FROM sys.master_files WHERE database_id = DB_ID(N'{Database}') AND type = 0) ");
+        sql.Append($"* (SELECT SUM(size) FROM sys.master_files WHERE database_id = DB_ID(N'{Esc(Database)}') AND type = 0) ");
         sql.Append($"/ NULLIF((SELECT SUM(size) FROM sys.master_files WHERE type = 0), 0) ");
         sql.Append($"* 8.0 / 1024 ");
         sql.Append($"AS decimal(18,2)) ");

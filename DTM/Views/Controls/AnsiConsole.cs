@@ -13,7 +13,7 @@ namespace DTM.Views.Controls;
 /// Schlankes Konsolen-Anzeige-Control mit voller ANSI-Farb-Unterstützung.
 ///
 /// Designentscheidungen:
-///  - Eine Zeile = ein <see cref="TextBlock"/> mit eigenen <see cref="Inlines"/>.
+///  - Eine Zeile = ein <see cref="TextBlock"/> mit eigenen <see cref="TextBlock.Inlines"/>.
 ///    Damit umgehen wir den bekannten <c>SelectableTextBlock</c>-Inlines-Bug
 ///    in Avalonia 11 (#16820 und Folgeprobleme).
 ///  - <see cref="StackPanel"/> in einem <see cref="ScrollViewer"/> stapelt die

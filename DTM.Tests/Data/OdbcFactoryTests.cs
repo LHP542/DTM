@@ -113,4 +113,60 @@ public class OdbcFactoryTests
         a.Should().BeSameAs(b);
         other.Should().NotBeSameAs(a, "pro Server eine eigene Verbindung");
     }
+
+    [Fact]
+    public void Dispose_ClosesCachedConnections_AndBlocksFurtherUse()
+    {
+        var factory = new ODBC_Factory();
+        factory.Get_DATA("MariaDB", Cred("host1"));
+        factory.Get_DATA("MSSQL", Cred("host2"));
+
+        factory.Dispose();
+
+        // Nach dem Schliessen darf niemand mehr eine Verbindung bekommen —
+        // sonst baut ein spaeter eintreffender Hintergrund-Task stillschweigend
+        // eine neue auf, die dann wieder niemand schliesst.
+        Action act = () => factory.Get_DATA("MariaDB", Cred("host1"));
+        act.Should().Throw<ObjectDisposedException>();
+    }
+
+    [Fact]
+    public void Dispose_IsIdempotent()
+    {
+        var factory = new ODBC_Factory();
+        factory.Get_DATA("MariaDB", Cred("host1"));
+
+        factory.Dispose();
+        Action second = factory.Dispose;
+
+        second.Should().NotThrow();
+    }
+
+    /// <summary>
+    /// Der Cache wird nicht nur vom UI-Thread benutzt: die Kennzahlen holt
+    /// <c>LoadStatsAsync</c> in einem <c>Task.Run</c>, und der verzögerte
+    /// Refresh nach einer Aktion tut dasselbe. Zwei Threads, die gleichzeitig
+    /// in ein ungeschütztes Dictionary schreiben, können dessen Buckets
+    /// zerlegen — im schlimmsten Fall dreht sich der nächste Lookup endlos.
+    /// </summary>
+    [Fact]
+    public void Get_DATA_IsSafeUnderParallelAccess()
+    {
+        using var factory = new ODBC_Factory();
+        var results = new System.Collections.Concurrent.ConcurrentBag<object?>();
+
+        // Jeder Aufruf trifft einen NEUEN Schlüssel, also jedes Mal einen
+        // Schreibzugriff auf das Dictionary — genau die Stelle, an der ein
+        // ungeschützter Cache seine Buckets zerlegt. Mit wiederverwendeten
+        // Schlüsseln laufen fast alle Aufrufe in den Lesepfad, und der Test
+        // wird zum Schönwetter-Test.
+        Parallel.For(0, 4000, new ParallelOptions { MaxDegreeOfParallelism = 16 },
+            i => results.Add(factory.Get_DATA("MariaDB", Cred($"host{i}"))));
+
+        results.Should().HaveCount(4000);
+        results.Should().OnlyContain(r => r != null);
+        // 4000 verschiedene Server, also 4000 verschiedene Instanzen — weniger
+        // hiesse, der Cache hat unter Last Einträge verloren.
+        results.Distinct().Should().HaveCount(4000);
+    }
 }

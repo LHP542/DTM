@@ -347,6 +347,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 newServers.Add(new DB_SERVER(typ, entry.ToCredential(), entry.Backend));
         }
 
+        // Erst die alte Datenschicht schließen, dann die neue bauen. Ohne das
+        // bleiben die Verbindungen aller bisherigen Server offen — sichtbar
+        // als Sitzungen auf dem Server, die niemand mehr benutzt.
+        (_data as IDisposable)?.Dispose();
         _data = new DTM_DATA(newServers, new ODBC_Factory());
 
         SelectedNode = null;

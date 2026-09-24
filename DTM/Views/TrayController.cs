@@ -23,7 +23,7 @@ namespace DTM.Views;
 /// - <b>Restore-Guard</b>: Setzen von <see cref="WindowState.Normal"/> triggert
 ///   den Listener rekursiv → ohne <see cref="_restoreInProgress"/>-Flag
 ///   entsteht eine Minimize/Restore-Schleife. Restore läuft außerdem über
-///   <see cref="Dispatcher.UIThread.Post"/>, damit das Fenster nicht mitten im
+///   <c>Dispatcher.UIThread.Post</c>, damit das Fenster nicht mitten im
 ///   Listener-Callback flackert.
 /// - <b>Try/Catch mit Fallback</b>: Auf headless-Servern / kaputtem DBus ist
 ///   <c>TrayIcon.SetIcons</c> nicht verfügbar — dann verhält sich Minimieren

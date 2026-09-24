@@ -17,6 +17,33 @@ namespace DTM.ViewModels;
 /// </summary>
 public sealed partial class MainWindowViewModel
 {
+    /// <summary>
+    /// Holt die Kennzahlen nach acht Sekunden neu — lange genug, dass der
+    /// Recovery-Modus-Wechsel auf dem Server durch ist.
+    ///
+    /// <para><b>Nur, wenn die Datenbank dann noch ausgewählt ist.</b> Ohne
+    /// diese Prüfung überschrieb der verzögerte Lauf die Info-Karte mit den
+    /// Werten der alten Datenbank, sobald der Nutzer in der Zwischenzeit eine
+    /// andere auswählte: der Baum zeigte B, die Karte A — samt A's
+    /// Knopf-Zuständen, die dann zur angezeigten Datenbank nicht mehr
+    /// passten.</para>
+    /// </summary>
+    private void ScheduleStatsRefresh(DatabaseNodeViewModel db)
+    {
+        _ = Task.Delay(TimeSpan.FromSeconds(8)).ContinueWith(_ =>
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (!ReferenceEquals(SelectedNode, db))
+                {
+                    _logger.Debug(
+                        "Stats-Refresh für '{0}' übersprungen — inzwischen ist etwas anderes ausgewählt.",
+                        db.Database.Name);
+                    return Task.CompletedTask;
+                }
+                return LoadStatsAsync(db);
+            }));
+    }
+
     // Set-Archive-Log dispatched im FOC-SQL-Modul nach DB-Typ:
     //   MSSQL  -> Database-Set-Recovery-Mode -Recovery FULL/SIMPLE
     //   Oracle -> /mnt/dbmgmt/scripts/archivelog-on.sh / -off.sh
@@ -41,8 +68,7 @@ public sealed partial class MainWindowViewModel
         {
             RunSimpleAction("Set-Archive-Log", db, "", "ArchiveLog An");
         }
-        _ = Task.Delay(TimeSpan.FromSeconds(8))
-                .ContinueWith(_ => Dispatcher.UIThread.InvokeAsync(() => LoadStatsAsync(db)));
+        ScheduleStatsRefresh(db);
     }
 
     [RelayCommand]
@@ -62,8 +88,7 @@ public sealed partial class MainWindowViewModel
         {
             RunSimpleAction("Set-Archive-Log", db, "-Off", "ArchiveLog Aus");
         }
-        _ = Task.Delay(TimeSpan.FromSeconds(8))
-                .ContinueWith(_ => Dispatcher.UIThread.InvokeAsync(() => LoadStatsAsync(db)));
+        ScheduleStatsRefresh(db);
     }
 
     // Get-ClusterHealthStatus -Server <host> — Always-On/Failover-Cluster-Status.

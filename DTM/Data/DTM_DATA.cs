@@ -2,7 +2,7 @@ using NLog;
 
 namespace DTM;
 
-public class DTM_DATA : IDTM_DATA
+public class DTM_DATA : IDTM_DATA, IDisposable
 {
     private static readonly ILogger _logger = LogManager.GetCurrentClassLogger();
 
@@ -110,5 +110,17 @@ public class DTM_DATA : IDTM_DATA
         // (Self-signed OLVM-Zertifikate in typischen Setups).
         var rest = new DTM.ORACLE.REST(server.serverCredential!, trustAllCertificates: true);
         return new DTM.Data.Olvm.OlvmSnapshotService(rest);
+    }
+
+    /// <summary>
+    /// Gibt die Verbindungen der Factory frei. Wird beim Austausch der
+    /// Datenschicht gebraucht — der Verbindungsmanager baut beim Speichern
+    /// eine neue, und ohne diesen Aufruf bliebe die alte samt allen offenen
+    /// Server-Sitzungen liegen.
+    /// </summary>
+    public void Dispose()
+    {
+        _factory.Dispose();
+        GC.SuppressFinalize(this);
     }
 }

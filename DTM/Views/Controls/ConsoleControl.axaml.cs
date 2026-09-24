@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using DTM.Data.Terminal;
 using NLog;
-using SystemFile = System.IO.File;
 
 namespace DTM.Views.Controls;
 
@@ -125,19 +124,22 @@ public partial class ConsoleControl : UserControl
     /// <summary>
     /// Routet Stream-Output an die <see cref="AnsiConsole"/>. OUT wird ANSI-geparst
     /// (Farben), Meta-Streams (Error/Notice/Echo) bekommen feste Farben.
-    /// Zusätzlich Diagnose-Log nach %TEMP%/dtm-console.log.
+    ///
+    /// <para>Der Inhalt geht zusätzlich auf <c>Trace</c> ins reguläre NLog.
+    /// Vorher schrieb diese Methode für <b>jede einzelne Zeile</b> per
+    /// <c>AppendAllText</c> in eine Datei unter <c>%TEMP%</c> — Datei öffnen,
+    /// schreiben, schließen, pro Zeile. Bei einem Restore mit viel Ausgabe ist
+    /// das eine Menge Dateizugriffe im UI-Pfad, und die Datei wuchs unbegrenzt,
+    /// ohne je gelesen oder aufgeräumt zu werden (auf dem Entwicklungsrechner
+    /// 376 KB aus ein paar Testläufen). NLog puffert, rolliert täglich und
+    /// maskiert Geheimnisse — was diese Datei alles nicht tat.</para>
     /// </summary>
     private void Append(string? text, string kind, bool appendNewline = false)
     {
         if (string.IsNullOrEmpty(text)) return;
 
-        try
-        {
-            string logPath = Path.Combine(Path.GetTempPath(), "dtm-console.log");
-            SystemFile.AppendAllText(logPath,
-                $"{DateTime.Now:HH:mm:ss.fff} [{kind}] {text.Replace("\r", "\\r").Replace("\n", "\\n")}{Environment.NewLine}");
-        }
-        catch { /* swallow */ }
+        if (_logger.IsTraceEnabled)
+            _logger.Trace("[{0}] {1}", kind, text.TrimEnd('\r', '\n'));
 
         string display = appendNewline ? text + "\n" : text;
         switch (kind)

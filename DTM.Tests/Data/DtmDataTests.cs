@@ -17,6 +17,7 @@ public class DtmDataTests
     private sealed class FakeFactory : IODBC_Factory
     {
         public string? LastRequested;
+        public bool Disposed;
         public readonly FakeOdbc Odbc = new();
 
         public ODBC.IDTM_ODBC? Get_DATA(string name, ServerCredential cred)
@@ -24,6 +25,8 @@ public class DtmDataTests
             LastRequested = name;
             return name is "MSSQL" or "ORACLE" ? Odbc : null;
         }
+
+        public void Dispose() => Disposed = true;
     }
 
     private static (DTM_DATA data, FakeFactory factory, ServerIdentity identity) Make(
@@ -111,5 +114,22 @@ public class DtmDataTests
         Action act2 = () => data.get_Database_Names(s2.Identity);
         act1.Should().NotThrow();
         act2.Should().NotThrow();
+    }
+
+    /// <summary>
+    /// Der Verbindungsmanager baut beim Speichern eine neue Datenschicht. Wird
+    /// die alte dabei nur fallen gelassen, bleiben ihre Verbindungen offen —
+    /// sichtbar als Sitzungen auf dem Server, die niemand mehr benutzt. Und
+    /// aufräumen tut das niemand nach: DTM beendet sich im Update-Pfad per
+    /// Process.Kill(), da läuft kein Finalizer mehr.
+    /// </summary>
+    [Fact]
+    public void Dispose_ClosesTheFactory()
+    {
+        var (data, factory, _) = Make(DB_SERVER.ServerTyp.MSSQL);
+
+        ((IDisposable)data).Dispose();
+
+        factory.Disposed.Should().BeTrue();
     }
 }

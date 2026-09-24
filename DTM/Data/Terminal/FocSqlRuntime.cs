@@ -3,8 +3,8 @@ using DTM.Config;
 namespace DTM.Data.Terminal;
 
 /// <summary>
-/// Statische Brücke für die FOC-SQL-Modul-Konfiguration, analog zu
-/// <see cref="SshRuntimeConfig"/>. Wird beim App-Start gesetzt.
+/// Statische Brücke für die FOC-SQL-Modul-Konfiguration. Wird beim App-Start
+/// gesetzt und vom Verbindungsmanager aktualisiert.
 /// </summary>
 public static class FocSqlRuntime
 {

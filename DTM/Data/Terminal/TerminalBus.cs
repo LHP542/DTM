@@ -4,9 +4,9 @@ namespace DTM.Data.Terminal;
 
 /// <summary>
 /// Singleton-Mediator zwischen den DTM-Aktionen (Backup/Clone/Snapshot etc.)
-/// und der pwsh-Console im UI. Die ViewModel ruft <see cref="RunFocSqlAction"/>
-/// bzw. <see cref="RunFocSqlSimple"/>; die aktuell registrierte
-/// <see cref="ITerminalSession"/> (siehe <see cref="RegisterPowerShellSession"/>)
+/// und der pwsh-Console im UI. Die ViewModel ruft <see cref="TerminalBus.RunFocSqlAction"/>
+/// bzw. <see cref="TerminalBus.RunFocSqlSimple"/>; die aktuell registrierte
+/// <see cref="ITerminalSession"/> (siehe <see cref="TerminalBus.RegisterPowerShellSession"/>)
 /// führt den FOC-SQL-Modulaufruf aus, sodass der Output live im pwsh-Tab erscheint.
 /// Wenn kein pwsh-Tab läuft, wird der optionale onUnavailable-Fallback aufgerufen.
 /// </summary>
@@ -182,7 +182,7 @@ public static class TerminalBus
     /// <param name="title">Header im Tab.</param>
     /// <param name="server">
     /// Optional: MSSQL-Host (-Server &lt;host&gt; ans Cmdlet). Siehe
-    /// <see cref="RunFocSqlAction"/> für Details.
+    /// <see cref="TerminalBus.RunFocSqlAction"/> für Details.
     /// </param>
     /// <param name="onUnavailable">Fallback wenn kein pwsh-Tab aktiv.</param>
     public static void RunFocSqlSimple(
@@ -224,7 +224,7 @@ public static class TerminalBus
     /// <summary>
     /// Ruft eine FOC-SQL-Funktion auf, die <c>-Server</c> statt <c>-Database</c>
     /// nimmt (aktuell nur <c>Get-ClusterHealthStatus</c>). Sonst analog zu
-    /// <see cref="RunFocSqlSimple"/>.
+    /// <see cref="TerminalBus.RunFocSqlSimple"/>.
     /// </summary>
     public static void RunFocSqlServerAction(
         string functionName, string server, string title, Action? onUnavailable = null)
