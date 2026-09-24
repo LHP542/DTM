@@ -30,8 +30,16 @@ jobs:
           restore-keys: nuget-${{ runner.os }}-
       - name: Build (Release, ganze Solution)
         run: dotnet build DTM.slnx -c Release
+      # KEINE VSTest-Flags. Seit DTM über die Microsoft.Testing.Platform läuft,
+      # kennt der Runner "--logger" nicht: er führt NULL Tests aus und endet mit
+      # "Zero tests ran" / Exitcode 5 — rot, OHNE dass ein Test fehlschlägt.
+      # Genau das ist beim Tag v2.4.0 passiert: ci.yml war mit 60eff64 schon
+      # korrigiert, diese Datei blieb übersehen, und der Release-Lauf brach ab,
+      # bevor überhaupt ein Paket gebaut wurde. Beide Dateien gehören synchron.
       - name: Tests ausführen
-        run: dotnet test DTM.Tests/DTM.Tests.csproj --no-build -c Release --logger "console;verbosity=normal"
+        run: >
+          dotnet test DTM.Tests/DTM.Tests.csproj --no-build -c Release --
+          --report-xunit-trx --report-xunit-trx-filename test-results.trx
 
   build-windows:
     name: Build Windows (win-x64)
