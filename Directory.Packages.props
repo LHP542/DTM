@@ -25,6 +25,18 @@
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.11" />
     <PackageVersion Include="Microsoft.PowerShell.SDK" Version="7.6.5" />
     <PackageVersion Include="System.Data.Odbc" Version="10.0.11" />
+    <!-- MariaDB/MySQL-Zugriff. Bewusst MySqlConnector (MIT) statt ODBC oder
+         Oracles MySql.Data: rein managed, damit auf den Clients KEIN
+         zusaetzlicher Treiber installiert werden muss — DTM wird als ZIP
+         verteilt. MySql.Data steht zudem unter GPL-mit-FOSS-Ausnahme. -->
+    <PackageVersion Include="MySqlConnector" Version="2.6.2" />
+    <!-- MySqlConnector fordert diese beiden in 8.0.2 an. Transitives Pinning
+         hebt sie auf die 10.0-Reihe, die DTM ueber Microsoft.AspNetCore.App
+         ohnehin mitbringt: haelt die Abhaengigkeiten konsistent und erspart
+         den Download zweier veralteter Pakete — der hinter dem Firmen-Proxy
+         ausserdem mit 403 scheitert. -->
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
     <!-- Transitive Pin: Avalonia 12.1 zieht System.Security.Cryptography.Xml
          10.0.6 mit, das mehrere hoch-Sev-CVEs hat (NU1903). Auf 10.0.10 heben. -->
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.11" />

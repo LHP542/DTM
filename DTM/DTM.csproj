@@ -35,6 +35,7 @@
     </PackageReference>
     <PackageReference Include="NLog" />
     <PackageReference Include="System.Data.Odbc" />
+    <PackageReference Include="MySqlConnector" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Desktop" />

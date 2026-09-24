@@ -29,17 +29,30 @@ namespace DTM
                 return existing;
             }
 
-            ODBC.IDTM_ODBC? instance = Name switch
+            // Gross-/Kleinschreibung vereinheitlichen: der Aufrufer reicht
+            // ServerTyp.ToString() durch, und das liefert "MariaDB" — ein
+            // case-sensitiver Vergleich gegen "MARIADB" ginge ins Leere.
+            ODBC.IDTM_ODBC? instance = Name.ToUpperInvariant() switch
             {
-                "MSSQL"  => new MSSQL.MSSQL_ODBC(credential),
-                "ORACLE" => new ORACLE.ORACLE_ODBC(credential),
-                _        => null
+                "MSSQL"   => new MSSQL.MSSQL_ODBC(credential),
+                "ORACLE"  => new ORACLE.ORACLE_ODBC(credential),
+                // MariaDB laeuft ueber MySqlConnector, nicht ueber ODBC — das
+                // Interface verlangt nur die Lesemethoden, keine Technik.
+                "MARIADB" => new MariaDb.MariaDb_Connector(credential),
+                _         => null
             };
 
             if (instance is null)
             {
-                _logger.Warn("ODBC_Factory: Unbekannter Datenbanktyp '{0}'", Name);
-                return null;
+                // Frueher nur eine Warnung und null zurueck — die Aufrufer in
+                // DTM_DATA dereferenzieren das Ergebnis aber mit "!", was zu
+                // einer NullReferenceException ohne jeden Hinweis auf die
+                // Ursache fuehrte. Eine klare Meldung ist hier mehr wert als
+                // ein stiller Rueckgabewert.
+                _logger.Error("ODBC_Factory: Kein Backend fuer Datenbanktyp '{0}'.", Name);
+                throw new NotSupportedException(
+                    $"Fuer den Datenbanktyp '{Name}' gibt es kein Backend. "
+                    + "Unterstuetzt werden MSSQL, ORACLE und MARIADB.");
             }
 
             _cache[key] = instance;

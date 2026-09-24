@@ -48,11 +48,19 @@ public class DbServerTests
     }
 
     [Fact]
-    public void ServerTyp_ContainsPostgreSQL()
+    public void ServerTyp_ContainsMariaDb()
     {
-        Enum.GetValues<DB_SERVER.ServerTyp>().Should().Contain(DB_SERVER.ServerTyp.PostgreSQL);
+        Enum.GetValues<DB_SERVER.ServerTyp>().Should().Contain(DB_SERVER.ServerTyp.MariaDB);
     }
 
+    /// <summary>
+    /// Der Typ-Dropdown im EditConnectionWindow speist sich direkt aus diesem
+    /// Enum. Jeder Wert darin ist also waehlbar und muss ein Backend haben —
+    /// deshalb steht hier eine feste Zahl und nicht „mindestens". Kommt ein
+    /// Typ dazu, ohne dass er implementiert ist, faellt dieser Test um.
+    /// (PostgreSQL stand genau so jahrelang drin und lief in der Factory ins
+    /// Leere.)
+    /// </summary>
     [Fact]
     public void ServerTyp_Count_IsThree()
     {

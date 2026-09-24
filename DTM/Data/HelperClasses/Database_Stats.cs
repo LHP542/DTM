@@ -66,6 +66,44 @@ namespace DTM
         }
     }
 
+    /// <summary>
+    /// Kennzahlen einer MariaDB-/MySQL-Datenbank (= eines Schemas).
+    ///
+    /// <para>Die Felder sind bewusst andere als bei MSSQL: ein Schema hat
+    /// keine Dateien, keinen Recovery-Modus und keinen Online/Offline-Zustand.
+    /// Was es gibt, kommt aus <c>information_schema</c> — Groesse getrennt
+    /// nach Daten und Indizes, Zeichensatz, Sortierung und die verwendeten
+    /// Storage-Engines.</para>
+    /// </summary>
+    public record Database_Stats_MariaDb : Database_Stats
+    {
+        /// <summary>Server-Version, z. B. „11.4.2-MariaDB".</summary>
+        public string? ServerVersion { get; set; }
+
+        /// <summary>Standard-Zeichensatz des Schemas (z. B. <c>utf8mb4</c>).</summary>
+        public string? CharacterSet { get; set; }
+
+        /// <summary>Standard-Sortierung des Schemas.</summary>
+        public string? Collation { get; set; }
+
+        public int TableCount { get; set; }
+
+        /// <summary>Summe <c>index_length</c> ueber alle Tabellen.</summary>
+        public double IndexSizeMB { get; set; }
+
+        /// <summary>Daten + Indizes — das Gegenstueck zu MSSQLs TotalSizeMB.</summary>
+        public double TotalSizeMB { get; set; }
+
+        /// <summary>
+        /// Verwendete Storage-Engines mit Tabellenzahl, z. B. „InnoDB (42)".
+        /// Gemischte Engines sind ein haeufiger Grund, warum ein Backup oder
+        /// eine Wartung sich anders verhaelt als erwartet — deshalb sichtbar.
+        /// </summary>
+        public string? Engines { get; set; }
+
+        public Database_Stats_MariaDb() : base() { }
+    }
+
     public record Database_Stats_ORACLE : Database_Stats
     {
         public string? InstanceName { get; set; }

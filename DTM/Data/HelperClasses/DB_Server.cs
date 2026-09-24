@@ -6,7 +6,12 @@ namespace DTM
         {
             ORACLE,
             MSSQL,
-            PostgreSQL
+            // Phase 16: direkter Zugriff ueber MySqlConnector, ohne FOC-SQL.
+            // PostgreSQL stand hier frueher als Platzhalter — ohne jede
+            // Implementierung. Der Typ-Dropdown speist sich direkt aus diesem
+            // Enum, ein nicht implementierter Wert war dort also waehlbar und
+            // lief in der Factory ins Leere. Kommt zurueck, wenn er gebaut wird.
+            MariaDB
         }
 
         public ServerTyp Typ { get; }

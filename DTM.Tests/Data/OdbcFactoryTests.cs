@@ -68,10 +68,49 @@ public class OdbcFactoryTests
     }
 
     [Fact]
-    public void Get_DATA_UnknownType_ReturnsNull()
+    public void Get_DATA_UnknownType_ThrowsWithClearMessage()
+    {
+        // Frueher kam hier null zurueck — die Aufrufer in DTM_DATA
+        // dereferenzieren das Ergebnis aber mit "!", also gab es eine
+        // NullReferenceException ohne jeden Hinweis auf die Ursache.
+        // (Das Beispiel war bis Phase 16 "MARIADB" — inzwischen implementiert.)
+        var factory = new ODBC_Factory();
+
+        Action act = () => factory.Get_DATA("Informix", Cred("host1"));
+
+        act.Should().Throw<NotSupportedException>().WithMessage("*Informix*");
+    }
+
+    [Fact]
+    public void Get_DATA_MariaDb_ReturnsConnector()
     {
         var factory = new ODBC_Factory();
 
-        factory.Get_DATA("MARIADB", Cred("host1")).Should().BeNull();
+        factory.Get_DATA("MariaDB", Cred("host1"))
+            .Should().BeOfType<DTM.MariaDb.MariaDb_Connector>();
+    }
+
+    [Fact]
+    public void Get_DATA_IsCaseInsensitive()
+    {
+        // Die Aufrufer reichen ServerTyp.ToString() durch — also "MariaDB",
+        // nicht "MARIADB". Ein case-sensitiver Vergleich ginge ins Leere.
+        var factory = new ODBC_Factory();
+
+        factory.Get_DATA("mariadb", Cred("host1"))
+            .Should().BeOfType<DTM.MariaDb.MariaDb_Connector>();
+    }
+
+    [Fact]
+    public void Get_DATA_MariaDb_CachesPerServer()
+    {
+        var factory = new ODBC_Factory();
+
+        var a = factory.Get_DATA("MariaDB", Cred("host1"));
+        var b = factory.Get_DATA("MariaDB", Cred("host1"));
+        var other = factory.Get_DATA("MariaDB", Cred("host2"));
+
+        a.Should().BeSameAs(b);
+        other.Should().NotBeSameAs(a, "pro Server eine eigene Verbindung");
     }
 }
