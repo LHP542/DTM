@@ -1,5 +1,16 @@
 [
   {
+    "version": "2.4.1",
+    "date": "2026-09-24",
+    "notes": [
+      "Behebt eine Endlosschleife beim Selbst-Update: DTM lud das Paket, startete neu und bot dasselbe Update sofort wieder an. Ursache war das Ersetzen der Dateien — DTM.exe ist rund 190 MB groß, und Windows gibt die Datei nach dem Beenden nicht sofort frei. Der Kopiervorgang hatte genau einen Versuch, lief in eine Sharing-Verletzung und brach ab; danach startete die ALTE Version wieder. Der Austausch wiederholt den Versuch jetzt bis zu zehnmal.",
+      "Falls das Einspielen trotzdem scheitert, meldet DTM das beim nächsten Start in der Statusleiste und bietet dasselbe Update nicht sofort erneut an. Ein neuer Versuch ist jederzeit über ℹ → Auf Updates prüfen möglich.",
+      "Update-Dialog: von jeder Textzeile fehlten rechts ein bis zwei Zeichen, weil der Rollbalken über dem Text lag. Ebenso war die Beschriftung 'Später (30 min)' auf dem Knopf abgeschnitten.",
+      "Dieselbe abgeschnittene Beschriftung gab es auch im Verbindungsmanager, im Verbindungs-Dialog und im Zeit-Dialog — alle Knöpfe wachsen jetzt mit ihrem Text."
+    ],
+    "modulesChanged": []
+  },
+  {
     "version": "2.4.0",
     "date": "2026-09-24",
     "notes": [
