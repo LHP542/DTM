@@ -22,7 +22,7 @@
 ## Projekt
 
 - **Name:** `DTM`
-- **Kurzbeschreibung:** Avalonia-Desktop-App zur PowerShell-gestützten Administration von MSSQL- und Oracle-Datenbanken (Backup, Clone, Snapshot, Archive-Log, Samba-Copy) über das Modul `FOC-SQL.psm1` in einer in-process PowerShell-Session.
+- **Kurzbeschreibung:** Avalonia-Desktop-App zur Administration von MSSQL-, Oracle- und MariaDB-Datenbanken (Backup, Clone, Snapshot, Archive-Log, Samba-Copy). MSSQL und Oracle laufen über das Modul `FOC-SQL.psm1` in einer in-process PowerShell-Session; MSSQL-Server mit Backend `OdbcDirect` (DMZ ohne WinRM) und MariaDB werden direkt angesprochen.
 - **Repository:** `https://github.com/LHP542/DTM`
 - **Lokaler Pfad:** `~/Entwicklung/DTM` (Linux) bzw. `D:\Entwicklung\DTM` (Windows)
 - **Projektspezifische Besonderheiten:** Embedded PowerShell-Runspace via `Microsoft.PowerShell.SDK`; externes Update-Skript `dtm_update.ps1`; keine KI-Integration; Logo der Landeshauptstadt Potsdam (`Assets/lhp_logo.png`).
@@ -1296,6 +1296,81 @@ war zum Zeitpunkt der Umstellung aber noch leer.
 breit messen und `TextWrapping="Wrap"` greift nie. Nachgezogen — der im
 Screenshot sichtbare Textabriss im MSSQL-Banner blieb allerdings bestehen und
 ist vermutlich ein Rand-Artefakt des In-Process-Screenshots, kein Layoutfehler.
+
+#### Phase 16 — MariaDB (noch nicht getaggt, naechster Tag waere `v2.4.0`)
+
+**Anlass (Lars, 2026-09-23):** „ich brauch eine verbindung zu maria db,
+genauso wie zu mssql ohne foc-sql". Umfang abgestimmt: Ansehen + Wartung +
+Sicherung/Restore. Treiber: **MySqlConnector 2.6.2** (MIT, rein managed).
+
+Der entscheidende Unterschied zu allem Bisherigen: MariaDB haengt an **keinem**
+der beiden bestehenden Wege. Kein FOC-SQL (kein PowerShell-Remoting zu einem
+Linux-Datenbankserver) und auch kein ODBC (das haette auf jedem Client einen
+installierten Treiber verlangt — DTM wird als ZIP verteilt). Deshalb ein
+eigener Zweig unter `Data/HelperClasses/MariaDb/`.
+
+Design-Entscheidungen:
+- **`IDTM_ODBC` wird weiterverwendet.** Der Name ist historisch; das Interface
+  verlangt nur `get_Datenbank_Names` und `GetDatabase_Stats` und schreibt keine
+  Technik vor. `MariaDb_Connector` implementiert es, die `ODBC_Factory` cached
+  ihn wie die anderen pro `"<Typ>::<Server>"`.
+- **Keine Backend-Wahl.** `ServerBackend` bleibt MSSQL vorbehalten — bei MariaDB
+  gibt es nichts zu waehlen. `EditConnectionViewModel.IsMssql` blendet Backend-
+  und PS-Remoting-Panel aus und leert die Felder beim Speichern.
+- **Dispatch wie in Phase 10 am Aufrufer**, kein Backend-Interface. Die
+  Signaturen passen nach wie vor nicht zusammen (FOC-SQL ist fire-and-forget im
+  pwsh-Tab, MariaDB ist synchrones SQL mit Notices).
+- **`PostgreSQL` aus dem `ServerTyp`-Enum entfernt.** Der Wert war ein
+  Platzhalter ohne Implementierung, aber im Dropdown waehlbar — wer ihn nahm,
+  lief in eine Factory-Sackgasse.
+
+Sub-Items:
+
+- [x] **16.1** Fundament: Enum-Wert, `MariaDb_Connector` (Datenbankliste,
+      Kennzahlen aus `information_schema`, Sessions), `Database_Stats_MariaDb`,
+      Registrierung in `ODBC_Factory`/`DTM_DATA`. — `M`
+      _(erledigt: `3725ffa`. Port-Angabe im Server-Feld (`db01:3307`)
+      mitgebaut — **eigener Test hat dabei einen echten Fehler gefunden**: bei
+      einer blanken IPv6-Adresse wurde alles hinter dem letzten `:` als Port
+      gelesen, aus `fe80::1` wurde Host `fe80:` auf Port 1. Die Verbindung waere
+      gegen den falschen Rechner gelaufen statt klar zu scheitern. Jetzt
+      verlangt IPv6 die Klammer-Form `[fe80::1]:3307`.)_
+- [x] **16.2** Dienste: `MariaDbActionService` (KILL, `CHECK`/`ANALYZE`/
+      `OPTIMIZE TABLE` mit Fortschritt pro Tabelle) und `MariaDbBackupService`
+      (Dump und Restore ueber `mariadb-dump`/`mariadb`). — `L`
+      _(erledigt: `b8d20af`. **Das Passwort steht nie auf der Kommandozeile** —
+      Prozess-Argumente kann auf dem Rechner jeder lesen, der die Prozessliste
+      sieht. Es geht ueber eine temporaere Optionsdatei als erstes Argument
+      (`--defaults-extra-file`), die leer angelegt, unter Unix auf 0600 gesetzt
+      und erst dann beschrieben wird, und die im `finally` wieder verschwindet.
+      Ein abgebrochener Dump loescht seine halbe Datei: sie saehe aus wie ein
+      Backup und liesse sich nicht einspielen.
+      Tabellen- und Datenbanknamen sind die einzige Stelle, an der ein Name
+      ungeprueft in den SQL-Text muss (nicht als Parameter bindbar) —
+      `QuoteIdentifier` verdoppelt Backticks, mit eigenem Injection-Test.)_
+- [x] **16.3** Oberflaeche: Info-Karte mit passenden Zeilen (Version statt
+      Comp. Level, Zeichensatz statt Recovery, zusaetzlich Tabellen/Engines),
+      Wartungs-Gruppe, MariaDB-Werkzeuge im Verbindungsmanager,
+      Backup-Browser fuer Dumps. — `M`
+      _(erledigt: `84ffdf0`. Der Backup-Browser bedient jetzt drei Quellen mit
+      einer Ansicht; der Hinweis im Bestaetigungs-Dialog haengt an der Quelle,
+      weil „Alle aktiven Sessions werden vorher beendet" bei MariaDB schlicht
+      falsch waere — der Client tut das nicht.
+      **Nebenbefund, mitgenommen:** Speichern im Verbindungsmanager baute ein
+      frisches `FocSqlConfig` und hat damit alles ueberschrieben, was sonst noch
+      in der `settings.json` stand — unter anderem die REST-API-Optionen samt
+      Token. Jetzt werden die bestehenden Einstellungen geladen und nur die
+      Felder dieses Fensters gesetzt.)_
+
+**Bewusst nicht dabei:** Replikations-Verwaltung, Benutzer-/Rechteverwaltung,
+Binlog-basiertes Point-in-Time-Recovery. Alles drei ist eigenstaendiger Umfang
+und war nicht Teil der Absprache.
+
+**Offen:** Ein echter Server war beim Bauen nicht verfuegbar — geprueft sind
+Verbindungsmanager und Einstellungen in der laufenden App, die Datenpfade nur
+ueber Tests. Der erste Lauf gegen eine echte MariaDB steht noch aus; die
+wahrscheinlichste Stolperstelle ist der Pfad zu `mariadb-dump` auf dem
+Arbeitsplatz.
 
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 

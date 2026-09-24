@@ -7,11 +7,15 @@
 [![Release](https://img.shields.io/github/v/release/LHP542/DTM)](https://github.com/LHP542/DTM/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Avalonia-Desktop-App (.NET 10) zur Verwaltung von MSSQL- und Oracle-Datenbanken
-(Backup, Clone, Snapshot, Archive-Log, Samba-Copy). Alle Datenbank-Aktionen
-laufen über das PowerShell-Modul **FOC-SQL.psm1**; DTM baut kein eigenes
-Remoting nach, sondern ruft die Modulfunktionen in einer eingebetteten
-PowerShell-Session auf.
+Avalonia-Desktop-App (.NET 10) zur Verwaltung von MSSQL-, Oracle- und
+MariaDB-Datenbanken (Backup, Clone, Snapshot, Archive-Log, Samba-Copy).
+
+Bei MSSQL und Oracle laufen die Aktionen über das PowerShell-Modul
+**FOC-SQL.psm1**; DTM baut kein eigenes Remoting nach, sondern ruft die
+Modulfunktionen in einer eingebetteten PowerShell-Session auf. Zwei Ausnahmen
+kommen ohne das Modul aus: MSSQL-Server mit dem Backend `OdbcDirect` (für die
+DMZ, wo WinRM gesperrt ist) und **MariaDB**, das grundsätzlich direkt
+angesprochen wird.
 
 Entwickelt von **Lars Oste** · Landeshauptstadt Potsdam · Arbeitsgruppe 5424 IT-Basis-Dienste
 
@@ -47,6 +51,9 @@ chmod +x DTM-*-x86_64.AppImage
   Get-Credential | Export-Clixml "$env:USERPROFILE\credential.xml"
   ```
 - Das FOC-SQL-Modul unter der konfigurierten Samba-Quelle.
+- Für **MariaDB** nichts davon: der Zugriff ist rein managed (kein Treiber, kein
+  PowerShell). Nur für Dump und Restore werden die Kommandozeilenwerkzeuge
+  `mariadb-dump` und `mariadb` gebraucht — siehe „Verbindungen verwalten".
 
 ---
 
@@ -67,8 +74,8 @@ Das ⚙-Symbol neben der „Datenbanken"-Überschrift öffnet den Dialog
 
 | Feld | Bedeutung |
 |------|-----------|
-| Typ | Datenbanktyp (`MSSQL`, `ORACLE`) — DropDown |
-| Server | Hostname oder IP des Datenbankservers |
+| Typ | Datenbanktyp (`MSSQL`, `ORACLE`, `MariaDB`) — DropDown |
+| Server | Hostname oder IP des Datenbankservers. Bei MariaDB darf ein abweichender Port angehängt werden: `db01:3307`, bei IPv6 in Klammern (`[fe80::1]:3307`) |
 | Benutzer | DB-Benutzername |
 | Passwort | Wird verschlüsselt gespeichert (DPAPI unter Windows, Base64 unter Linux) |
 | Datenbank | Standard-Datenbankname |
@@ -87,6 +94,11 @@ oder `OdbcDirect` (direkte SQL-Ausführung via ODBC — für DMZ-Server ohne Win
 15 der 17 Aktionen verfügbar; Copy-to-Samba und Sync-to-Test sind File-System-
 Operationen und deaktiviert).
 
+Bei Oracle und MariaDB entfallen beide Blöcke: Oracle geht über SSH-Keys,
+MariaDB ganz ohne PowerShell. Wechselt man den Typ eines bestehenden Eintrags
+von MSSQL weg, werden die Remoting-Felder beim Speichern geleert — es bleibt
+kein vergessenes Passwort in der Datei zurück.
+
 Aktionen: **Neu**, **Bearbeiten** (Doppelklick oder Schaltfläche), **Löschen**.
 Änderungen werden sofort in `%APPDATA%\DTM\connections.json` persistiert.
 
@@ -96,6 +108,21 @@ Unter **FOC-SQL Modul** im gleichen Dialog:
 |------|-----------|
 | Samba-Quelle | UNC-Pfad mit `FOC-SQL.psm1` (z. B. `\\server\share\Modules\FOC`) |
 | Modulpfad (Override) | Absoluter lokaler Pfad; leer = Samba-Logik aktiv |
+
+Unter **MariaDB-Werkzeuge** — nur nötig, wenn MariaDB-Verbindungen gepflegt
+sind:
+
+| Feld | Bedeutung |
+|------|-----------|
+| mariadb-dump | Voller Pfad zum Dump-Werkzeug; leer = im `PATH` suchen (`mariadb-dump`, ersatzweise `mysqldump`) |
+| mariadb (Client) | Voller Pfad zum Client; leer = im `PATH` suchen (`mariadb`, ersatzweise `mysql`). Wird nur zum Zurückspielen gebraucht |
+| Backup-Ziel | Wurzelverzeichnis für Dumps; leer = `%USERPROFILE%\DTM-Backups\MariaDB`. Darunter legt DTM je Server und Datenbank einen Unterordner an |
+
+MariaDB kennt kein `BACKUP DATABASE` — ein vollständiger, wieder einspielbarer
+Dump entsteht nur über das Kommandozeilenwerkzeug. Fehlt es, meldet DTM das
+beim ersten Dump-Versuch und nennt beide Wege (in den `PATH` aufnehmen oder
+Pfad hier eintragen). Das Passwort steht dabei nie auf der Kommandozeile: DTM
+übergibt es über eine temporäre Optionsdatei, die danach wieder gelöscht wird.
 
 ---
 
@@ -185,6 +212,15 @@ in SQL Server Management Studio bzw. den Oracle-Dictionary-Views:
   „Log Aus" bzw. „Shrink Log".
 - **Oracle:** Summe aus `dba_data_files` **+** `dba_temp_files` (inkl. TEMP-
   Tablespaces).
+- **MariaDB:** Daten **+** Indizes aus `information_schema.tables`. Der Wert
+  ist die vom Server gemeldete Belegung und kann bei InnoDB geringfügig von der
+  Dateigröße abweichen.
+
+Bei MariaDB tragen zwei Zeilen eine andere Angabe, weil es kein Gegenstück
+gibt: statt „Comp. Level" die **Server-Version**, statt „Recovery" der
+**Zeichensatz** samt Collation — sie entscheidet über Vergleiche und
+Sortierreihenfolge. Dazu kommt eine Zeile **Tabellen** mit der Anzahl und den
+verwendeten Engines (z. B. `42 — InnoDB`).
 
 ---
 
@@ -215,6 +251,28 @@ Antworten (Nummer, `ja`/`j`) in die Befehlszeile tippen.
 Die Buttons spiegeln den aktuellen Modus: ist „ON"/`FULL` aktiv, ist „Log An"
 deaktiviert und „Log Aus" klickbar — und umgekehrt. Nach einem Klick
 aktualisieren sich die Stats automatisch nach ca. 8 Sekunden.
+
+### MariaDB
+
+MariaDB läuft komplett ohne FOC-SQL und ohne PowerShell — DTM spricht den
+Server direkt über MySqlConnector an. Es gibt deshalb keine Backend-Wahl.
+
+| Button | Was passiert | Bestätigung |
+|--------|--------------|-------------|
+| Dump | Vollständiger Dump über `mariadb-dump` (`--single-transaction`, inklusive Prozeduren, Events und Trigger) in das Backup-Verzeichnis | – |
+| Browser | Liste der vorhandenen Dumps mit Restore-Knopf | ja, vor dem Restore |
+| Prüfen | `CHECK TABLE` über alle Tabellen — rein lesend | – |
+| Analysieren | `ANALYZE TABLE` — aktualisiert die Optimizer-Statistiken | – |
+| Optimieren | `OPTIMIZE TABLE` — schreibt jede Tabelle neu und gibt Platz frei | ja |
+| Sessions (Klick auf die Kachel) | Liste der Verbindungen, Beenden über `KILL` (die eigene bleibt verschont) | ja, doppelt |
+
+Snapshots, Archive-Log, Recovery-Modus, Cluster-Health, Clone und DB → Samba
+sind bei MariaDB ausgeblendet — dafür gibt es kein Gegenstück.
+
+Beim Restore ist ein Unterschied zu MSSQL wichtig: DTM beendet dabei **keine**
+offenen Verbindungen. Laufende Schreibzugriffe können den eingespielten Stand
+also sofort wieder verändern. Wer sichergehen will, beendet die Sessions vorher
+über den Sessions-Dialog.
 
 **Oracle-Restore-Vorschau:** Bei Oracle öffnet sich vor `Restore-Snapshot` ein
 Dialog mit den verfügbaren Restore Points und der PDB-Liste der CDB. Bei
@@ -383,6 +441,11 @@ in den Einstellungen konfigurierte Samba-Quelle bzw. den Modulpfad-Override.
   - `AnsiParser` / `AnsiPalette` / `AnsiConsole` — farbige Ausgabe.
 - **Data/HelperClasses/**
   - ODBC-Zugriff für DB-Liste und Statistik (MSSQL/Oracle).
+  - `MariaDb/` — eigener Zweig ohne ODBC und ohne PowerShell:
+    `MariaDb_Connector` (Datenbankliste, Kennzahlen, Sessions über
+    MySqlConnector), `MariaDbActionService` (KILL, `CHECK`/`ANALYZE`/`OPTIMIZE
+    TABLE`) und `MariaDbBackupService` (Dump und Restore über die externen
+    Werkzeuge; Passwort über eine temporäre Optionsdatei, nie als Argument).
   - `LogMask` — maskiert Passwörter in Connection-Strings vor dem Logging
     (ergänzt den globalen `${masked}`-Renderer als Ad-hoc-Schutz).
   - `ORACLE_REST` — oVirt/OLVM REST-API für VM-FQDNs und -Snapshots.
