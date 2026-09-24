@@ -1370,11 +1370,59 @@ Sub-Items:
 Binlog-basiertes Point-in-Time-Recovery. Alles drei ist eigenständiger Umfang
 und war nicht Teil der Absprache.
 
-**Offen:** Ein echter Server war beim Bauen nicht verfügbar — geprüft sind
-Verbindungsmanager und Einstellungen in der laufenden App, die Datenpfade nur
-über Tests. Der erste Lauf gegen eine echte MariaDB steht noch aus; die
-wahrscheinlichste Stolperstelle ist der Pfad zu `mariadb-dump` auf dem
-Arbeitsplatz.
+##### Offen: der erste Lauf gegen einen echten Server
+
+Stand 2026-09-24 gibt es noch keinen Testserver. Geprüft sind bisher
+Verbindungsmanager und Einstellungen in der laufenden App; die Datenpfade nur
+über Tests. **Lars: der Server wird einen Linux-Unterbau bekommen.** Diese
+Liste ist die Checkliste für den ersten echten Lauf — jeder Punkt ist eine
+Vermutung aus dem Code, keine Messung.
+
+**Was zuerst schiefgehen dürfte:**
+
+1. **Pfad zu `mariadb-dump` auf dem Arbeitsplatz.** Die Werkzeuge laufen auf
+   dem **Client**, nicht auf dem Server — DTM verbindet sich über TCP und ruft
+   `mariadb-dump` lokal auf. Ein Linux-Server ändert daran nichts. Liegt es
+   nicht im `PATH`, kommt beim ersten Dump eine klare Meldung mit beiden Wegen
+   (PATH oder Eintrag im Verbindungsmanager). Ohne installierte Client-Tools
+   funktionieren Ansehen und Wartung, nur Sicherung und Restore nicht.
+
+2. **`lower_case_table_names` ist unter Linux standardmäßig 0** — Datenbank-
+   und Tabellennamen sind dort **case-sensitiv**, weil sie auf Verzeichnis- und
+   Dateinamen abgebildet werden. Unter Windows ist es 1. Zu prüfen ist, ob DTM
+   irgendwo Namen case-insensitiv vergleicht und dadurch die falsche oder gar
+   keine Datenbank trifft. Der Verbindungs-Cache der `ODBC_Factory` nutzt
+   bewusst `OrdinalIgnoreCase`, das betrifft aber nur Servernamen und ist in
+   Ordnung. `MariaDbActionService.QuoteIdentifier` reicht den Namen unverändert
+   durch — das ist richtig so und darf nicht „normalisiert" werden.
+
+3. **Zugriff von außen.** Der Server muss `bind-address` so gesetzt haben,
+   dass er nicht nur auf `127.0.0.1` lauscht, und das Konto muss vom
+   Client-Host aus erlaubt sein (`benutzer@%` oder der konkrete Host). Sonst
+   scheitert schon die Datenbankliste. Rechte, die DTM braucht: `SELECT` auf
+   `information_schema`, `PROCESS` für die Sitzungsliste, `SUPER` bzw.
+   `CONNECTION ADMIN` für `KILL` fremder Sitzungen, dazu die üblichen Rechte
+   für `CHECK`/`ANALYZE`/`OPTIMIZE TABLE` und für den Dump.
+
+**Zwei Punkte aus der Code-Durchsicht vom 2026-09-24, beide unbelegt:**
+
+4. **`GetInt32` auf `COUNT(*)`.** MariaDB liefert `COUNT(*)` als `BIGINT`;
+   `MariaDb_Connector` liest es an zwei Stellen mit `r.GetInt32(…)`
+   (Zeile 195 Tabellenzahl, Zeile 225 Anzahl je Engine). Ob
+   MySqlConnector das klaglos umwandelt oder mit `InvalidCastException` wirft,
+   ließ sich ohne Server nicht klären — **nicht raten, sondern beim ersten
+   Lauf ansehen**. Wirft es, ist der Fix `GetInt64` plus Umwandlung; betroffen
+   sind Tabellenzahl und die Engine-Auflistung.
+
+5. **Fünf Rundreisen pro Datenbankauswahl** (Größe, Zeichensatz, Engines,
+   Version, Sitzungen). Das lässt sich zu ein bis zwei Abfragen zusammenlegen,
+   lohnt aber nur, wenn die Latenz spürbar ist — was ohne Server niemand
+   messen kann. Erst messen, dann zusammenlegen.
+
+**Wenn der Server steht, in dieser Reihenfolge:** Verbindung anlegen →
+Datenbankliste → eine Datenbank auswählen (deckt Punkt 4 ab) → Sitzungen
+ansehen → `Prüfen` → Dump → Backup-Browser → Restore auf einer Wegwerf-
+Datenbank. Danach `logs/info.log` auf `Warn`/`Error` durchsehen.
 
 #### Phase 17 — Skill-Abgleich (2026-09-24, noch nicht getaggt)
 
