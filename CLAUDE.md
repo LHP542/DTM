@@ -441,8 +441,12 @@ ab v8 gilt die Xceed-Lizenz, kommerzielle Nutzung ist kostenpflichtig.
       `.editorconfig` (file-scoped Namespaces, Accessibility-Modifier erzwingen) +
       `LICENSE`. — `S`
       _(erledigt: `f9e1236` für `Directory.Build.props` + `.editorconfig` +
-      csproj-Aufräumung, MIT-LICENSE © 2025-2026 Lars Oste separat. Bestehender
-      Code ist mit den neuen Regeln konform — keine Quellcode-Anpassung nötig.)_
+      csproj-Aufräumung, MIT-LICENSE © 2025-2026 Lars Oste separat.
+      **Korrektur vom 2026-09-24:** hier stand „Bestehender Code ist mit den
+      neuen Regeln konform — keine Quellcode-Anpassung nötig". Das war nicht
+      nachgeprüft, sondern angenommen. Ohne `EnforceCodeStyleInBuild` läuft die
+      `.editorconfig` nur im Editor und taucht im Build nirgends auf; mit der
+      Zeile meldete der Build sofort 29 Verstöße. Nachgezogen in Phase 17.1.)_
 
 #### Phase 1 — Quick Wins (keine Submodul-Änderung nötig)
 
@@ -1371,6 +1375,80 @@ Verbindungsmanager und Einstellungen in der laufenden App, die Datenpfade nur
 über Tests. Der erste Lauf gegen eine echte MariaDB steht noch aus; die
 wahrscheinlichste Stolperstelle ist der Pfad zu `mariadb-dump` auf dem
 Arbeitsplatz.
+
+#### Phase 17 — Skill-Abgleich (2026-09-24, noch nicht getaggt)
+
+**Anlass (Lars):** „kannst du bitte dtm gegen die skills prüfen und
+korrigieren" — nach dem Umzug der Skills in die Organisation `KrosteSkills`
+und dem Nachziehen beider Repos.
+
+Der Kanon war weitgehend erfüllt (flache Struktur, `.slnx`, CPM, MinVer,
+Node-24-Actions, app.manifest, Icon, Tray, Single-Instance, NLog-Masking,
+Self-Update, atomare Persistenz, REST-API statt UI-Fernsteuerung). Offen
+waren die Punkte unten.
+
+- [x] **17.1** `EnforceCodeStyleInBuild` in `Directory.Build.props`. Der
+      wichtigste Fund: die `.editorconfig` lag seit Phase 0.4 im Repo und
+      wirkte nur im Editor. Mit der Zeile meldete der Build sofort **29
+      Verstöße** — 12 Dateien mit Block-Namespace und 17 fehlende
+      Zugriffsmodifizierer an Interface-Mitgliedern. Die Behauptung in 0.4,
+      der Bestand sei konform, war nie geprüft worden. — `M`
+      _(erledigt: `9c26acb`. Das Umbau-Skript für die Namespaces hat
+      `AsyncUtil.cs` korrekt verweigert, weil sie mit zwei statt vier
+      Leerzeichen eingerückt war — von Hand nachgezogen. Genau dafür ist die
+      „lieber überspringen als falsch umbauen"-Regel da.)_
+- [x] **17.2** Echte Umlaute statt `ae/oe/ue/ss`: **1323 Ersetzungen in 111
+      Dateien**, allein „fuer" 211-mal. — `L`
+      _(erledigt: `e4b82c1`. Zwei Sicherungen, weil dieselbe Aufgabe in
+      Parkett zweimal die Codebase zerlegt hat, ohne dass der Build rot
+      wurde: explizite Wortliste mit Wortgrenzen statt einer generischen
+      `ue`→`ü`-Regel (die hätte Queue, Dauer, Steuer, neue und Quelle
+      zerlegt), und in `.cs` ein Zustandsautomat, der nur in Kommentaren und
+      Zeichenketten ersetzt — Bezeichner bleiben damit garantiert ASCII.
+      Abgenommen wurde **nicht am grünen Build**, sondern am Diff: keine
+      Änderung an Bindings, `x:Name`, `x:Key`, `Selector` oder `Classes`;
+      kein Bezeichner mit Umlaut; SQL-Schlüsselwörter, Cmdlet-Namen und
+      Schalter unangetastet.
+      Nebenbei: `scripts/*.ps1` haben jetzt ein UTF-8-BOM — ohne das liest
+      Windows PowerShell 5.1 sie als ANSI. `release.sh` bekommt bewusst
+      keins, ein BOM vor der Shebang-Zeile macht das Skript unbrauchbar.)_
+- [x] **17.3** Ressourcen- und Klassenverweise als Test statt als Skript.
+      Vier Prüfungen über das XAML: jeder `DynamicResource`-Schlüssel
+      definiert, jede `Classes`-Angabe mit Selektor, keine doppelten
+      Schlüssel, keine Farbliterale außerhalb der Palette. — `M`
+      _(erledigt: `acdea8b`. Beide Prüfungen mit einem absichtlich
+      verbogenen Schlüssel gegengeprüft — ein Abgleich, der nichts findet,
+      weil die Pfadauflösung danebengreift, wäre schlimmer als keiner.)_
+- [x] **17.4** Pflicht-Test `LandedOnInteractiveChild` in der `TitleBar`.
+      Heute hängt dort über `ExtraContent` nur ein Button, und Buttons
+      fangen den Druck selbst ab — auffallen würde das Fehlen erst beim
+      ersten Auswahlfeld in der Titelleiste, das sich dann gar nicht mehr
+      aufklappen ließe. Dazu `ExtendClientAreaTitleBarHeightHint = -1` in
+      `ChromeWindow`. — `S` _(erledigt: `9c26acb`)_
+- [x] **17.5** Knopfreihen auf `WrapPanel`, Rand für den Rollbalken in zwei
+      Dialogen, Spaltenbreiten im Verbindungsmanager (es stand „MSS" statt
+      MSSQL). — `S` _(erledigt: `68765ea`, per Bildschirmfoto abgenommen)_
+- [x] **17.6** Kleinigkeiten: `System.GC.HeapHardLimit` und `IsTestProject`
+      im Testprojekt, `GlobalUsings.cs` mit `global using Xunit;`,
+      `actions/setup-dotnet` von v5 auf v6. — `S` _(erledigt: `9c26acb`)_
+- [ ] **17.7** `dotnet.defaultSolution` in `.vscode/settings.json`. **Offen
+      — muss Lars von Hand eintragen.** Ohne den Eintrag legt sich das C#
+      Dev Kit bei einer `.slnx` eine eigene `.sln` im Workspace-Cache an und
+      hält daran fest, auch wenn später Projekte dazukommen; der
+      Test-Explorer arbeitet dann auf einer veralteten Projektliste und
+      bricht mit „Test Run Aborted" bei 0 Tests ab, während `dotnet test`
+      auf der Kommandozeile alles findet. Der Schreibzugriff wurde
+      abgelehnt, weil in derselben Datei `claudeCodeChat.permissions.yoloMode`
+      steht und jede Fassung der Datei diese Zeile mitführt. Einzutragen:
+      `"dotnet.defaultSolution": "DTM.slnx"`.
+
+**Bewusst nicht geändert:** `external/FOC-SQL` — zwei Dateien dort sind kein
+gültiges UTF-8, das ist aber ein eigenes Repo und nur als
+Entwicklungs-Referenz eingebunden.
+
+**Weiterhin dokumentierte Ausnahmen:** keine Localization (interner
+deutschsprachiger Nutzerkreis), keine KI-Integration, Update über einen
+Ordner im Netz statt GitHub — alle drei stehen so auch im Skill.
 
 #### Phase 8 — Erweiterte Stats & Transaktions-Management (Future)
 
